@@ -1,0 +1,2528 @@
+<!DOCTYPE html>
+<html lang="en-AU">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>RMIT Process Writing Assistant</title>
+
+<!-- External libraries (loaded from CDNs that SharePoint typically allows) -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/mammoth/1.6.0/mammoth.browser.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/mermaid@10.9.0/dist/mermaid.min.js"></script>
+<script src="https://unpkg.com/docx@8.5.0/build/index.umd.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+<script src="https://unpkg.com/bpmn-js@13.2.2/dist/bpmn-navigated-viewer.production.min.js"></script>
+<link rel="stylesheet" href="https://unpkg.com/bpmn-js@13.2.2/dist/assets/diagram-js.css">
+<link rel="stylesheet" href="https://unpkg.com/bpmn-js@13.2.2/dist/assets/bpmn-js.css">
+<link rel="stylesheet" href="https://unpkg.com/bpmn-js@13.2.2/dist/assets/bpmn-font/css/bpmn-embedded.css">
+
+<style>
+  :root {
+    --rmit-red: #E61E2A;
+    --rmit-red-dark: #B5161F;
+    --rmit-black: #000000;
+    --rmit-grey: #F4F4F4;
+    --rmit-grey-mid: #D9D9D9;
+    --rmit-text: #1D1D1D;
+    --severity-error: #C0223D;
+    --severity-warning: #C77700;
+    --severity-info: #1F6FB5;
+    --severity-pass: #2E7D32;
+  }
+  * { box-sizing: border-box; }
+  html, body {
+    margin: 0; padding: 0;
+    font-family: 'Segoe UI', Arial, sans-serif;
+    color: var(--rmit-text);
+    background: #FFFFFF;
+    line-height: 1.5;
+  }
+  header.app-header {
+    background: var(--rmit-red);
+    color: #FFFFFF;
+    padding: 18px 28px;
+    display: flex; align-items: center; gap: 16px;
+  }
+  header.app-header .brand { font-weight: 700; font-size: 22px; letter-spacing: 0.3px; }
+  header.app-header .sub { font-size: 13px; opacity: 0.9; }
+  main { max-width: 1200px; margin: 0 auto; padding: 24px; }
+  h1, h2, h3, h4 { font-weight: 600; }
+  h2 { color: var(--rmit-red); border-bottom: 2px solid var(--rmit-grey-mid); padding-bottom: 6px; margin-top: 32px; }
+  h3 { color: var(--rmit-black); margin-top: 20px; }
+
+  .card {
+    background: #FFFFFF;
+    border: 1px solid var(--rmit-grey-mid);
+    border-radius: 6px;
+    padding: 20px;
+    margin-bottom: 16px;
+  }
+
+  .tabs { display: flex; border-bottom: 2px solid var(--rmit-grey-mid); margin-bottom: 16px; }
+  .tab {
+    padding: 10px 18px; cursor: pointer; border: none; background: none;
+    font-size: 14px; font-weight: 500; color: var(--rmit-text);
+    border-bottom: 3px solid transparent; margin-bottom: -2px;
+  }
+  .tab.active { color: var(--rmit-red); border-bottom-color: var(--rmit-red); }
+  .tab-panel { display: none; }
+  .tab-panel.active { display: block; }
+
+  button.btn {
+    padding: 10px 20px; border: none; border-radius: 4px;
+    font-size: 14px; font-weight: 600; cursor: pointer;
+    transition: background 0.15s;
+  }
+  button.btn-primary { background: var(--rmit-red); color: #FFFFFF; }
+  button.btn-primary:hover { background: var(--rmit-red-dark); }
+  button.btn-primary:disabled { background: var(--rmit-grey-mid); cursor: not-allowed; }
+  button.btn-secondary { background: #FFFFFF; color: var(--rmit-text); border: 1px solid var(--rmit-grey-mid); }
+  button.btn-secondary:hover { background: var(--rmit-grey); }
+
+  .button-row { display: flex; gap: 12px; flex-wrap: wrap; align-items: center; margin-top: 16px; }
+
+  textarea, input[type="text"], input[type="email"], select {
+    width: 100%; padding: 10px; border: 1px solid var(--rmit-grey-mid);
+    border-radius: 4px; font-family: inherit; font-size: 14px;
+  }
+  textarea { min-height: 240px; resize: vertical; font-family: 'Consolas', 'Courier New', monospace; }
+  label { display: block; margin-bottom: 6px; font-weight: 500; font-size: 13px; }
+
+  .file-drop {
+    border: 2px dashed var(--rmit-grey-mid); border-radius: 6px;
+    padding: 36px; text-align: center; transition: all 0.15s;
+    background: var(--rmit-grey);
+  }
+  .file-drop.dragging { border-color: var(--rmit-red); background: #FFF5F5; }
+  .file-drop input[type="file"] { display: none; }
+  .file-drop-label { color: var(--rmit-red); font-weight: 600; cursor: pointer; text-decoration: underline; }
+  .file-name { margin-top: 10px; font-size: 13px; color: var(--rmit-text); }
+
+  .form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+  .form-grid .full { grid-column: 1 / -1; }
+
+  .activity-block {
+    background: var(--rmit-grey); border-radius: 4px; padding: 14px; margin-bottom: 10px;
+    border-left: 3px solid var(--rmit-red);
+  }
+  .activity-block .activity-header { display: flex; gap: 10px; align-items: center; margin-bottom: 8px; }
+  .activity-block input { font-weight: 500; }
+  .task-input { display: flex; gap: 8px; margin-bottom: 6px; }
+  .task-input input { flex: 1; }
+  .small-btn { padding: 6px 10px; font-size: 12px; border: 1px solid var(--rmit-grey-mid); background: #FFFFFF; border-radius: 4px; cursor: pointer; }
+  .small-btn:hover { background: var(--rmit-grey); }
+  .icon-btn { padding: 4px 8px; font-size: 12px; border: none; background: transparent; cursor: pointer; color: var(--rmit-red); }
+
+  /* Results */
+  .results-tabs .tab.active { color: var(--rmit-red); border-bottom-color: var(--rmit-red); }
+  .summary-bar {
+    display: flex; gap: 20px; flex-wrap: wrap; padding: 14px;
+    background: var(--rmit-grey); border-radius: 4px; margin-bottom: 16px;
+  }
+  .summary-stat { display: flex; flex-direction: column; }
+  .summary-stat .num { font-size: 24px; font-weight: 700; }
+  .summary-stat .lbl { font-size: 12px; text-transform: uppercase; letter-spacing: 0.5px; }
+  .summary-stat.error .num { color: var(--severity-error); }
+  .summary-stat.warning .num { color: var(--severity-warning); }
+  .summary-stat.info .num { color: var(--severity-info); }
+  .summary-stat.pass .num { color: var(--severity-pass); }
+
+  .issue {
+    border-left: 4px solid var(--severity-info);
+    padding: 12px 14px; margin-bottom: 8px; background: #FAFAFA; border-radius: 0 4px 4px 0;
+  }
+  .issue.error { border-left-color: var(--severity-error); }
+  .issue.warning { border-left-color: var(--severity-warning); }
+  .issue.info { border-left-color: var(--severity-info); }
+  .issue .row1 { display: flex; justify-content: space-between; gap: 10px; }
+  .issue .severity {
+    text-transform: uppercase; font-size: 11px; font-weight: 700; letter-spacing: 0.5px;
+    padding: 2px 8px; border-radius: 3px;
+  }
+  .issue.error .severity { background: #FDECEE; color: var(--severity-error); }
+  .issue.warning .severity { background: #FFF4E5; color: var(--severity-warning); }
+  .issue.info .severity { background: #E8F1FB; color: var(--severity-info); }
+  .issue .source { font-size: 11px; color: #666; }
+  .issue .message { font-weight: 500; margin: 4px 0; }
+  .issue .location { font-size: 12px; color: #555; font-style: italic; }
+  .issue .suggestion { font-size: 13px; margin-top: 6px; padding: 6px 8px; background: #FFFFFF; border-left: 2px solid var(--rmit-grey-mid); }
+
+  .recommendation {
+    padding: 16px; border-radius: 6px; background: #F0F7FF; border-left: 4px solid var(--severity-info);
+    margin-bottom: 16px;
+  }
+  .recommendation.process { background: #EDF7EE; border-left-color: var(--severity-pass); }
+  .recommendation.guide { background: #FFF8E1; border-left-color: var(--severity-warning); }
+  .recommendation.both { background: #F0F7FF; border-left-color: var(--severity-info); }
+  .recommendation h3 { margin-top: 0; }
+
+  /* Workflow render area */
+  #workflowRender {
+    border: 1px solid var(--rmit-grey-mid);
+    background: #FFFFFF; min-height: 600px; height: 600px;
+    overflow: hidden; border-radius: 4px; position: relative;
+    cursor: grab;
+  }
+  #workflowRender:active { cursor: grabbing; }
+  #workflowRender .bjs-container { background: #FFFFFF; }
+
+  /* Hide bpmn-js powered-by watermark */
+  #workflowRender .bjs-powered-by { display: none !important; }
+
+  /* ============== Themed bpmn-js shapes ============== */
+  /* Common typography */
+  #workflowRender .djs-label,
+  #workflowRender text { font-family: 'Segoe UI', Arial, sans-serif !important; font-weight: 500; }
+
+  /* Theme toggle UI */
+  .theme-toggle { display: inline-flex; gap: 0; border: 1px solid var(--rmit-grey-mid); border-radius: 4px; overflow: hidden; }
+  .theme-toggle button {
+    padding: 6px 12px; border: none; background: #FFFFFF; cursor: pointer;
+    font-size: 12px; font-weight: 500; color: var(--rmit-text);
+  }
+  .theme-toggle button.active { background: var(--rmit-red); color: #FFFFFF; }
+  .theme-toggle button:not(.active):hover { background: var(--rmit-grey); }
+  #workflowRender svg { max-width: 100%; }
+
+  /* Generated doc preview — also used for PDF export */
+  .doc-preview {
+    background: #FFFFFF; padding: 32px; border: 1px solid var(--rmit-grey-mid);
+    border-radius: 4px; max-height: 600px; overflow-y: auto;
+    font-family: 'Segoe UI', Arial, sans-serif; line-height: 1.5; color: #1D1D1D;
+  }
+  .doc-preview h1 {
+    color: var(--rmit-red); font-size: 22px; margin: 0 0 6px;
+    border-bottom: 3px solid var(--rmit-red); padding-bottom: 8px;
+  }
+  .doc-preview h2 {
+    font-size: 15px; color: var(--rmit-black); border: none;
+    margin: 22px 0 8px; text-transform: uppercase; letter-spacing: 0.6px;
+    color: var(--rmit-red);
+  }
+  .doc-preview p { margin: 6px 0; }
+  .doc-preview .meta { background: #FAFAFA; border-left: 3px solid var(--rmit-grey-mid); padding: 10px 14px; margin: 10px 0 18px; font-size: 13px; }
+  .doc-preview .meta strong { color: var(--rmit-black); display: inline-block; min-width: 90px; }
+  .doc-preview .activity {
+    margin: 22px 0; padding: 14px 16px 10px;
+    border-left: 3px solid var(--rmit-red); background: #FCFCFC;
+    page-break-inside: avoid; break-inside: avoid;
+  }
+  .doc-preview .activity + .activity { border-top: 1px dashed var(--rmit-grey-mid); margin-top: 26px; padding-top: 18px; }
+  .doc-preview .activity .num { font-weight: 700; color: var(--rmit-red); margin-right: 6px; }
+  .doc-preview .activity .role { font-size: 12px; color: #666; font-style: italic; margin: 4px 0 10px; }
+  .doc-preview .task { display: block; padding: 4px 0 4px 28px; text-indent: -16px; margin: 2px 0; }
+  .doc-preview .task strong { color: var(--rmit-red); margin-right: 4px; }
+  .doc-preview ul, .doc-preview ol { display: block; margin: 8px 0 8px 28px; padding: 0; }
+  .doc-preview ul li, .doc-preview ol li { display: list-item; margin: 4px 0; }
+  .doc-preview .note {
+    background: #FFF8E1; border-left: 3px solid var(--severity-warning);
+    padding: 10px 14px; margin: 10px 0 10px 28px; font-size: 13px;
+    page-break-inside: avoid; break-inside: avoid;
+  }
+  .doc-preview .note strong { color: var(--severity-warning); }
+  .doc-preview .generated-line { color: #777; font-size: 12px; font-style: italic; margin-bottom: 14px; }
+  @media print {
+    .doc-preview { max-height: none; overflow: visible; border: none; padding: 0; }
+    .doc-preview .activity { page-break-inside: avoid; }
+    .doc-preview .note { page-break-inside: avoid; }
+  }
+
+  .hint { font-size: 12px; color: #666; margin-top: 4px; }
+  .hidden { display: none !important; }
+
+  footer {
+    margin-top: 60px; padding: 20px 28px;
+    background: var(--rmit-grey); color: #666;
+    font-size: 12px; text-align: center;
+    border-top: 1px solid var(--rmit-grey-mid);
+  }
+  .pill {
+    display: inline-block; padding: 2px 8px; border-radius: 10px;
+    font-size: 11px; font-weight: 600; background: var(--rmit-grey); color: var(--rmit-text);
+    margin-left: 6px;
+  }
+  .pill.cove { background: #FDECEE; color: var(--rmit-red); }
+  .pill.rmit { background: #E8F1FB; color: var(--severity-info); }
+  .pill.nintex { background: #EDF7EE; color: var(--severity-pass); }
+
+  details { margin: 8px 0; }
+  details summary { cursor: pointer; font-weight: 500; padding: 6px 0; }
+</style>
+</head>
+<body>
+
+<header class="app-header">
+  <div>
+    <div class="brand">RMIT Process Writing Assistant</div>
+    <div class="sub">Reviews your process against the CoVE Golden Rules, RMIT Tips and Nintex Process Writing Techniques</div>
+  </div>
+</header>
+
+<main>
+
+  <!-- ==================== INPUT ==================== -->
+  <section class="card" id="inputCard">
+    <h2>1. Provide your process</h2>
+    <p>Upload a Nintex Process Manager export, a filled-in Word template, paste your draft, or build it step by step using the form.</p>
+
+    <div class="tabs" role="tablist">
+      <button class="tab active" data-tab="upload">Upload file</button>
+      <button class="tab" data-tab="paste">Paste / type</button>
+      <button class="tab" data-tab="form">Build with form</button>
+    </div>
+
+    <!-- Upload -->
+    <div class="tab-panel active" data-tab="upload">
+      <div class="file-drop" id="fileDrop">
+        <input type="file" id="fileInput" accept=".pdf,.docx,.doc,.txt">
+        <div>Drag a file here or <label class="file-drop-label" for="fileInput">browse to upload</label></div>
+        <div class="hint">Accepted: .pdf (including Nintex Process Manager exports), .docx, .txt</div>
+        <div class="file-name" id="fileName"></div>
+      </div>
+      <div class="button-row">
+        <button class="btn btn-secondary" id="downloadTemplateBtn">Download blank Word template</button>
+      </div>
+    </div>
+
+    <!-- Paste -->
+    <div class="tab-panel" data-tab="paste">
+      <label for="pasteArea">Paste or type the process below. Use the same headings as the template (Process name, Owner, Expert, Trigger, Inputs, Outputs, then numbered Activities).</label>
+      <textarea id="pasteArea" placeholder="Process name: Create new TeachVE Hub Site Page&#10;Owner: Deanne Roze&#10;Expert: Natalie Gray&#10;Trigger: New content required on TeachVE Hub site&#10;Inputs: None&#10;Outputs: New page published&#10;&#10;1.0 Plan and write content&#10;Role: CoVE - Subject Matter Expert (SME)&#10;a Define the purpose and scope of the new content&#10;b Determine if the content requires a new page&#10;c Write the content for the page&#10;&#10;2.0 Draft page in TeachVE&#10;Role: CoVE - Teach VE Site Member&#10;a Develop a draft of the new page&#10;b Save the page as a draft"></textarea>
+    </div>
+
+    <!-- Form -->
+    <div class="tab-panel" data-tab="form">
+      <div class="form-grid">
+        <div><label>Process name</label><input type="text" id="formTitle" placeholder="Verb-first name, e.g. 'Create New TeachVE Hub Site Page'"></div>
+        <div><label>Process owner</label><input type="text" id="formOwner" placeholder="Single name"></div>
+        <div><label>Process expert</label><input type="text" id="formExpert" placeholder="Single name (must differ from owner)"></div>
+        <div><label>Trigger</label><input type="text" id="formTrigger" placeholder="What starts the process"></div>
+        <div><label>Inputs</label><input type="text" id="formInputs" placeholder="Forms, data, materials needed"></div>
+        <div><label>Outputs</label><input type="text" id="formOutputs" placeholder="What the process produces"></div>
+      </div>
+      <h3>Activities</h3>
+      <div id="activityList"></div>
+      <div class="button-row">
+        <button class="small-btn" id="addActivityBtn">+ Add activity</button>
+      </div>
+    </div>
+
+    <div class="button-row">
+      <button class="btn btn-primary" id="analyseBtn">Analyse process</button>
+      <button class="btn btn-secondary" id="resetBtn">Reset</button>
+    </div>
+  </section>
+
+  <!-- ==================== RESULTS ==================== -->
+  <section class="card hidden" id="resultsCard">
+    <h2>2. Results</h2>
+
+    <div class="summary-bar" id="summaryBar"></div>
+
+    <div class="tabs results-tabs" role="tablist">
+      <button class="tab active" data-rtab="recommendation">Recommendation</button>
+      <button class="tab" data-rtab="issues">Issues &amp; gaps</button>
+      <button class="tab" data-rtab="workflow">Visual workflow</button>
+      <button class="tab" data-rtab="document">Generated document</button>
+    </div>
+
+    <div class="tab-panel active" data-rtab="recommendation"><div id="recommendationOut"></div></div>
+    <div class="tab-panel" data-rtab="issues"><div id="issuesOut"></div></div>
+    <div class="tab-panel" data-rtab="workflow">
+      <h3 id="workflowTitle" style="margin:0 0 4px;color:var(--rmit-red);font-size:16px;"></h3>
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;">
+        <span class="hint" style="margin:0;">BPMN 2.0 diagram. <strong>Drag</strong> to pan &middot; <strong>Scroll</strong> to zoom &middot; Switch palette to suit your audience.</span>
+        <div class="theme-toggle" id="themeToggle">
+          <button data-theme="nintex" class="active">Nintex palette</button>
+          <button data-theme="rmit">RMIT palette</button>
+        </div>
+      </div>
+      <div id="workflowRender" class="theme-nintex"></div>
+      <div class="button-row" style="justify-content:space-between;">
+        <div style="display:flex;gap:6px;">
+          <button class="small-btn" id="zoomInBtn" title="Zoom in">+</button>
+          <button class="small-btn" id="zoomOutBtn" title="Zoom out">&minus;</button>
+          <button class="small-btn" id="zoomFitBtn" title="Fit to view">Fit</button>
+        </div>
+        <div style="display:flex;gap:12px;flex-wrap:wrap;">
+          <button class="btn btn-secondary" id="downloadSvgBtn">Download SVG</button>
+          <button class="btn btn-secondary" id="downloadPngBtn">Download PNG</button>
+          <button class="btn btn-secondary" id="downloadBpmnBtn">Download .bpmn (XML)</button>
+        </div>
+      </div>
+    </div>
+    <div class="tab-panel" data-rtab="document">
+      <p class="hint" style="margin-bottom:6px;"><strong>Tip:</strong> click anywhere in the document below to edit it. Your edits flow into the Word and PDF download. Use <em>Reset edits</em> to revert to the auto-generated content.</p>
+      <div class="doc-preview" id="docPreview" contenteditable="true" spellcheck="true"></div>
+      <div class="button-row">
+        <button class="btn btn-primary" id="downloadDocxBtn">Download as Word (.docx)</button>
+        <button class="btn btn-primary" id="downloadPdfBtn">Download as PDF</button>
+        <button class="btn btn-secondary" id="resetEditsBtn">Reset edits</button>
+      </div>
+    </div>
+  </section>
+
+  <!-- ==================== ABOUT ==================== -->
+  <section class="card">
+    <h2>About this tool</h2>
+    <p>This tool reviews your process documentation against three published standards used at RMIT:</p>
+    <ul>
+      <li><strong>CoVE Process Writing Golden Rules</strong> <span class="pill cove">CoVE</span> &mdash; the College of Vocational Education's 11 rules for clear, consistent process maps.</li>
+      <li><strong>RMIT Tips for Process Editors &amp; Champions</strong> <span class="pill rmit">RMIT</span> &mdash; including activity title length, owner/expert separation, audience terminology and verb usage.</li>
+      <li><strong>Nintex Process Writing Techniques</strong> <span class="pill nintex">Nintex</span> &mdash; the eight Nintex techniques covering 80/20 normal vs exception, sub-process triggers, decisions vs notes, and verb-first naming.</li>
+    </ul>
+    <p>The review runs entirely in your browser using rule-based logic &mdash; no data leaves your device. The architecture allows a generative-AI 'polish' option to be added later without changing the underlying rules engine.</p>
+  </section>
+
+</main>
+
+<footer>
+  RMIT Process Writing Assistant &middot; CoVE Projects and Business Transformation &middot; Built for SharePoint embedding
+</footer>
+
+<script>
+/* ============================================================
+   PDF.js worker config
+   ============================================================ */
+if (window.pdfjsLib) {
+  pdfjsLib.GlobalWorkerOptions.workerSrc =
+    'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
+}
+
+/* ============================================================
+   Mermaid init
+   ============================================================ */
+if (window.mermaid) {
+  mermaid.initialize({ startOnLoad: false, theme: 'base', themeVariables: {
+    primaryColor: '#FFFFFF', primaryTextColor: '#1D1D1D',
+    primaryBorderColor: '#E61E2A', lineColor: '#1D1D1D',
+    fontFamily: 'Segoe UI, Arial, sans-serif'
+  }});
+}
+
+/* ============================================================
+   APPROVED VERBS
+   ----------------------------------------------------------------
+   Originally seeded from the supplied VERB_LIST_CATEGORISED.docx,
+   then broadened with common process-writing verbs (task-level,
+   UI/system actions, documentation and change verbs). To prune or
+   extend, edit the arrays below directly.
+
+   Verbs are stored lower-case. Two-word verbs (e.g. "set up",
+   "sign in") are supported by startsWithApprovedVerb().
+   ============================================================ */
+const APPROVED_VERBS = {
+  'Collaboration & Communication': [
+    // Original list
+    'advise','announce','approve','brief','consult','convene','coordinate','delegate',
+    'email','engage','escalate','facilitate','forward','inform','liaise','negotiate',
+    'notify','recommend','respond','send',
+    // Added (broader set)
+    'acknowledge','agree','attend','call','clarify','communicate','contact','debrief',
+    'demonstrate','discuss','explain','feedback','follow up','greet','host','instruct',
+    'introduce','invite','join','mediate','meet','mention','message','post','present',
+    'propose','question','raise','reach out','refer','reply','report','request','share',
+    'speak','suggest','talk','thank','welcome','write'
+  ],
+  'Implementation & Execution': [
+    // Original list
+    'action','administer','allocate','amend','apply','book','build','cancel','collect',
+    'commence','complete','conduct','configure','confirm','create','deliver','deploy',
+    'develop','discontinue','distribute','download','establish','execute','export',
+    'identify','import','initiate','install','locate','lodge','maintain','manage','map',
+    'monitor','operate','order','perform','plan','prepare','process','provide','publish',
+    'purchase','receive','reconcile','resolve','run','schedule','set up','submit',
+    'support','train','transition','update','upload','use','work',
+    // Added (task-level work + UI/system actions)
+    'access','accept','activate','add','align','analyse','analyze','assemble','assess',
+    'assign','attach','calculate','capture','change','check','choose','clean','click',
+    'close','compare','compose','conclude','connect','copy','deactivate','define',
+    'delete','determine','disable','disconnect','dispatch','draft','edit','embed',
+    'enable','end','ensure','enter','evaluate','examine','expand','extract','fill',
+    'filter','find','finalise','finalize','fix','follow','format','gather','generate',
+    'grant','group','handle','highlight','hold','implement','indicate','input',
+    'inspect','integrate','investigate','issue','keep','launch','link','list','load',
+    'log in','log out','mark','match','merge','move','name','navigate','observe',
+    'obtain','open','organise','organize','package','paste','populate','prevent',
+    'print','produce','prompt','protect','query','redirect','refresh','reject','remove',
+    'rename','render','repair','replace','reset','restart','restore','retain',
+    'retrieve','return','review','revoke','save','scan','search','secure','segment',
+    'select','set','setup','sign','sign in','sign off','sign out','sort','specify',
+    'split','start','state','sync','tag','take','test','tick','transfer','translate',
+    'transmit','trigger','troubleshoot','unlock','validate','verify','view','visit'
+  ],
+  'Documentation & Knowledge': [
+    // Original list
+    'archive','audit','catalogue','document','file','register','track',
+    // Added
+    'annotate','cite','classify','describe','detail','draft','index','label','log',
+    'note','record','redact','reference','store','summarise','summarize','tag',
+    'transcribe','version'
+  ],
+  'Improvement & Change': [
+    // Original list
+    'adjust','enhance','improve','modify','optimise','redesign','standardise','streamline',
+    // Added
+    'accelerate','automate','consolidate','correct','customise','customize','decommission',
+    'deprecate','eliminate','evolve','migrate','minimise','minimize','modernise',
+    'modernize','overhaul','prioritise','prioritize','rebuild','refactor','refine',
+    'reform','reorganise','reorganize','rework','scale','simplify','transform','upgrade'
+  ]
+};
+const APPROVED_VERBS_FLAT = Object.values(APPROVED_VERBS).flat();
+const APPROVED_VERBS_SET = new Set(APPROVED_VERBS_FLAT);
+
+/* Strip known prefixes from process titles before verb-first checking.
+   Handles patterns like "CoVE - PBT -", "RMIT - HR -", etc.
+   Only strips when the prefix is short tokens separated by " - ". */
+function stripTitlePrefix(title) {
+  if (!title) return title;
+  return title.replace(/^([\w&\/]+\s+-\s+){1,3}/, '').trim();
+}
+
+/* ============================================================
+   REQUIRED TITLE PREFIXES
+   ----------------------------------------------------------------
+   Process titles must begin with one of the strings in this list.
+   To support more departments later, add their prefix here, e.g.:
+     ['CoVE - ', 'STEM - ', 'Library - ']
+   To disable the check entirely, set to an empty array [].
+   ============================================================ */
+const REQUIRED_TITLE_PREFIXES = ['CoVE - '];
+
+/* ============================================================
+   STATE
+   ============================================================ */
+let currentModel = null; // ProcessModel after parse
+let currentIssues = [];
+let currentRecommendation = null;
+let currentMermaid = '';
+let currentBpmnXml = '';
+let bpmnViewer = null;
+let originalDocHtml = '';   // initial generated HTML, used by Reset edits
+
+/* ============================================================
+   TAB SWITCHING (input + results)
+   ============================================================ */
+document.querySelectorAll('#inputCard .tabs .tab').forEach(btn => {
+  btn.addEventListener('click', () => {
+    document.querySelectorAll('#inputCard .tabs .tab').forEach(b => b.classList.remove('active'));
+    document.querySelectorAll('#inputCard > .tab-panel').forEach(p => p.classList.remove('active'));
+    btn.classList.add('active');
+    document.querySelector(`#inputCard > .tab-panel[data-tab="${btn.dataset.tab}"]`).classList.add('active');
+  });
+});
+document.querySelectorAll('.results-tabs .tab').forEach(btn => {
+  btn.addEventListener('click', () => {
+    document.querySelectorAll('.results-tabs .tab').forEach(b => b.classList.remove('active'));
+    document.querySelectorAll('#resultsCard > .tab-panel').forEach(p => p.classList.remove('active'));
+    btn.classList.add('active');
+    document.querySelector(`#resultsCard > .tab-panel[data-rtab="${btn.dataset.rtab}"]`).classList.add('active');
+    // When the workflow tab becomes visible, re-fit + re-theme the BPMN diagram
+    if (btn.dataset.rtab === 'workflow' && bpmnViewer) {
+      // Several retries to let layout settle, then fit-viewport reliably.
+      const fitAndTheme = () => {
+        try { bpmnViewer.get('canvas').zoom('fit-viewport', 'auto'); } catch (e) {}
+        const activeTheme = document.querySelector('#themeToggle button.active');
+        applyBpmnTheme(activeTheme ? activeTheme.dataset.theme : 'nintex');
+      };
+      setTimeout(fitAndTheme, 50);
+      setTimeout(fitAndTheme, 200);
+    }
+  });
+});
+
+/* ============================================================
+   FILE UPLOAD
+   ============================================================ */
+const fileDrop = document.getElementById('fileDrop');
+const fileInput = document.getElementById('fileInput');
+const fileNameEl = document.getElementById('fileName');
+let uploadedFile = null;
+
+['dragenter','dragover'].forEach(ev => fileDrop.addEventListener(ev, e => {
+  e.preventDefault(); fileDrop.classList.add('dragging');
+}));
+['dragleave','drop'].forEach(ev => fileDrop.addEventListener(ev, e => {
+  e.preventDefault(); fileDrop.classList.remove('dragging');
+}));
+fileDrop.addEventListener('drop', e => {
+  if (e.dataTransfer.files.length) {
+    uploadedFile = e.dataTransfer.files[0];
+    fileNameEl.textContent = `Selected: ${uploadedFile.name}`;
+  }
+});
+fileInput.addEventListener('change', () => {
+  if (fileInput.files.length) {
+    uploadedFile = fileInput.files[0];
+    fileNameEl.textContent = `Selected: ${uploadedFile.name}`;
+  }
+});
+
+/* ============================================================
+   FORM-MODE ACTIVITY BUILDER
+   ============================================================ */
+let activityCounter = 0;
+function addActivityRow(prefill = {}) {
+  activityCounter += 1;
+  const idx = activityCounter;
+  const block = document.createElement('div');
+  block.className = 'activity-block';
+  block.dataset.index = idx;
+  block.innerHTML = `
+    <div class="activity-header">
+      <strong>${idx}.0</strong>
+      <input type="text" class="activity-title" placeholder="Verb-first activity title (2-7 words)" value="${prefill.title || ''}">
+      <button class="icon-btn remove-activity" title="Remove">&times;</button>
+    </div>
+    <input type="text" class="activity-role" placeholder="Responsible role (single role)" value="${prefill.role || ''}" style="margin-bottom:8px;">
+    <div class="task-list"></div>
+    <button class="small-btn add-task">+ Add task</button>
+  `;
+  document.getElementById('activityList').appendChild(block);
+  block.querySelector('.add-task').addEventListener('click', () => addTaskRow(block));
+  block.querySelector('.remove-activity').addEventListener('click', () => block.remove());
+  addTaskRow(block);
+}
+function addTaskRow(activityBlock) {
+  const taskList = activityBlock.querySelector('.task-list');
+  const row = document.createElement('div');
+  row.className = 'task-input';
+  row.innerHTML = `
+    <input type="text" class="task-text" placeholder="Verb-first task (e.g. 'Review completed form')">
+    <button class="icon-btn remove-task" title="Remove">&times;</button>
+  `;
+  row.querySelector('.remove-task').addEventListener('click', () => row.remove());
+  taskList.appendChild(row);
+}
+document.getElementById('addActivityBtn').addEventListener('click', () => addActivityRow());
+addActivityRow(); // start with one empty activity
+
+/* ============================================================
+   RESET
+   ============================================================ */
+document.getElementById('resetBtn').addEventListener('click', () => {
+  uploadedFile = null;
+  fileInput.value = '';
+  fileNameEl.textContent = '';
+  document.getElementById('pasteArea').value = '';
+  document.getElementById('formTitle').value = '';
+  document.getElementById('formOwner').value = '';
+  document.getElementById('formExpert').value = '';
+  document.getElementById('formTrigger').value = '';
+  document.getElementById('formInputs').value = '';
+  document.getElementById('formOutputs').value = '';
+  document.getElementById('activityList').innerHTML = '';
+  activityCounter = 0;
+  addActivityRow();
+  document.getElementById('resultsCard').classList.add('hidden');
+  currentModel = null; currentIssues = []; currentRecommendation = null; currentMermaid = '';
+});
+
+/* ============================================================
+   ANALYSE — main entry point (parsers/rules/render added later)
+   ============================================================ */
+document.getElementById('analyseBtn').addEventListener('click', async () => {
+  const activeTab = document.querySelector('#inputCard .tabs .tab.active').dataset.tab;
+  let model;
+  try {
+    if (activeTab === 'upload') {
+      if (!uploadedFile) { alert('Please upload a file first.'); return; }
+      model = await parseUploadedFile(uploadedFile);
+    } else if (activeTab === 'paste') {
+      const txt = document.getElementById('pasteArea').value.trim();
+      if (!txt) { alert('Please paste your process content first.'); return; }
+      model = parseStructuredText(txt);
+    } else {
+      model = readFormModel();
+    }
+  } catch (err) {
+    console.error(err);
+    alert('Could not parse the input: ' + err.message);
+    return;
+  }
+
+  currentModel = model;
+  currentIssues = runRulesEngine(model);
+  currentRecommendation = recommendArtefactType(model);
+  currentMermaid = buildMermaid(model);
+  currentBpmnXml = buildBpmnXml(model);
+
+  renderResults();
+});
+
+/* ============================================================
+   PROCESS MODEL SHAPE
+   ============================================================
+   {
+     title, version, owner, expert,
+     objective, background,
+     trigger, inputs, outputs,
+     roles: [],         // distinct role strings
+     activities: [
+       { number, title, role(s), tasks:[{letter,text,attachment?}],
+         notes:[{title,body}], links:[{type,name}] }
+     ],
+     decisions: [],     // detected decision steps
+     systems: [],
+     raci: { responsible:[], accountable:[], consulted:[], informed:[] },
+     source: 'nintex-pdf' | 'docx' | 'pasted' | 'form'
+   }
+   ============================================================ */
+
+/* ============================================================
+   NINTEX PDF PARSER
+   ============================================================ */
+async function parseUploadedFile(file) {
+  const ext = file.name.toLowerCase().split('.').pop();
+  if (ext === 'pdf') {
+    const arrayBuf = await file.arrayBuffer();
+    const text = await extractPdfText(arrayBuf);
+    if (looksLikeNintexExport(text)) {
+      return parseNintexPdf(text);
+    }
+    return parseStructuredText(text);
+  } else if (ext === 'docx') {
+    const arrayBuf = await file.arrayBuffer();
+    const result = await mammoth.extractRawText({ arrayBuffer: arrayBuf });
+    return parseStructuredText(result.value);
+  } else if (ext === 'txt') {
+    const txt = await file.text();
+    return parseStructuredText(txt);
+  } else {
+    throw new Error('Unsupported file type. Use .pdf, .docx, or .txt');
+  }
+}
+
+async function extractPdfText(arrayBuf) {
+  const pdf = await pdfjsLib.getDocument({ data: arrayBuf }).promise;
+  const allLines = [];
+  for (let p = 1; p <= pdf.numPages; p++) {
+    const page = await pdf.getPage(p);
+    const view = page.view; // [x1, y1, x2, y2]
+    const pageWidth = view[2] - view[0];
+    const content = await page.getTextContent();
+    const items = content.items
+      .filter(i => i.str && i.str.trim())
+      .map(i => ({ str: i.str, x: i.transform[4], y: i.transform[5] }));
+
+    // Detect column layout. Nintex exports use a 2-column layout on most pages.
+    // Column boundary heuristic: pageWidth/2 (~ x=297 for A4 portrait).
+    const columnBoundary = pageWidth / 2;
+
+    // Decide whether this page is two-column. If a meaningful number of items
+    // sit on each side of the midpoint, treat as two-column; otherwise single.
+    const left  = items.filter(i => i.x <  columnBoundary);
+    const right = items.filter(i => i.x >= columnBoundary);
+    const isTwoColumn = left.length > 10 && right.length > 10;
+
+    const buildColumnLines = (colItems) => {
+      const lineMap = new Map();
+      colItems.forEach(it => {
+        // Y-bucket with tolerance for slight baseline variation
+        const yKey = Math.round(it.y / 2) * 2;
+        if (!lineMap.has(yKey)) lineMap.set(yKey, []);
+        lineMap.get(yKey).push(it);
+      });
+      const sortedYs = Array.from(lineMap.keys()).sort((a,b) => b - a);
+      const out = [];
+      sortedYs.forEach(y => {
+        const lineItems = lineMap.get(y).sort((a,b) => a.x - b.x);
+        const lineText = lineItems.map(i => i.str).join(' ').replace(/\s+/g,' ').trim();
+        if (lineText) out.push({ page: p, x: lineItems[0].x, y, text: lineText });
+      });
+      return out;
+    };
+
+    if (isTwoColumn) {
+      buildColumnLines(left).forEach(l => allLines.push(l));
+      buildColumnLines(right).forEach(l => allLines.push(l));
+    } else {
+      buildColumnLines(items).forEach(l => allLines.push(l));
+    }
+  }
+  return allLines;
+}
+
+function looksLikeNintexExport(lines) {
+  const joined = lines.map(l => l.text).join('\n');
+  return /Uncontrolled Copy Only/i.test(joined)
+      || /Process Manager/i.test(joined)
+      || /Procedure[\s\S]{0,40}Triggers & Inputs/i.test(joined);
+}
+
+function parseNintexPdf(lines) {
+  // Strip repeating headers/footers
+  const filtered = lines.filter(l => {
+    const t = l.text;
+    if (/^RMIT >/.test(t)) return false;
+    if (/Uncontrolled Copy Only/.test(t)) return false;
+    if (/^Page \d+ of \d+$/.test(t)) return false;
+    if (/^CRICOS provider number/.test(t)) return false;
+    if (/^Last Edited/.test(t)) return false;
+    return true;
+  });
+
+  // Find document title — handle multi-line titles. The version "vX.Y" appears on
+  // the last line of the title; preceding lines (up to 3) form the title.
+  let title = '';
+  let version = '';
+  for (let i = 0; i < Math.min(filtered.length, 16); i++) {
+    const m = filtered[i].text.match(/^(.+?)\s+v(\d+\.\d+)$/);
+    if (m) {
+      version = 'v' + m[2];
+      const titleLines = [m[1].trim()];
+      // Look back up to 3 lines for the rest of the title (not section headings).
+      for (let j = i - 1; j >= 0 && j >= i - 3; j--) {
+        const prev = filtered[j].text;
+        if (/^(Summary|Procedure|Triggers|Outputs|RACI|Systems|OFI|Timeframes|Variance)/i.test(prev)) break;
+        if (/CRICOS|RMIT >|Uncontrolled|Page \d/.test(prev)) break;
+        titleLines.unshift(prev.trim());
+      }
+      title = titleLines.join(' ').replace(/\s+/g,' ').trim();
+      break;
+    }
+  }
+  if (!title && filtered.length) title = filtered[0].text;
+
+  // Concatenate all text for section parsing
+  const all = filtered.map(l => l.text).join('\n');
+
+  const model = {
+    title, version,
+    owner: '', expert: '',
+    objective: '', background: '',
+    trigger: '', inputs: '', outputs: '',
+    roles: [],
+    activities: [],
+    decisions: [],
+    systems: [],
+    raci: { responsible: [], accountable: [], consulted: [], informed: [] },
+    source: 'nintex-pdf'
+  };
+
+  // Section extraction helper
+  const sectionRanges = extractSectionRanges(all, [
+    'Summary','Procedure','Triggers & Inputs','Outputs & Targets',
+    'Process Dependencies','RACI','Systems','OFI','Timeframes','Variance Scenarios'
+  ]);
+
+  // SUMMARY
+  if (sectionRanges.Summary) {
+    const s = sectionRanges.Summary;
+    const ob = s.match(/Objective\s*([\s\S]*?)(?=Background|Owner|Expert|$)/i);
+    if (ob) model.objective = ob[1].trim();
+    const bg = s.match(/Background\s*([\s\S]*?)(?=Owner|Expert|$)/i);
+    if (bg) model.background = bg[1].trim();
+    const ow = s.match(/Owner\s+([^\n]+)/i);
+    if (ow) model.owner = ow[1].trim();
+    const ex = s.match(/Expert\s+([^\n]+)/i);
+    if (ex) model.expert = ex[1].trim();
+  }
+
+  // PROCEDURE — parse activities
+  if (sectionRanges.Procedure) {
+    model.activities = parseProcedureBlock(sectionRanges.Procedure);
+    model.roles = Array.from(new Set(
+      model.activities.flatMap(a => (a.role || '').split(',').map(r => r.trim()).filter(Boolean))
+    ));
+  }
+
+  // TRIGGERS & INPUTS
+  if (sectionRanges['Triggers & Inputs']) {
+    const ti = sectionRanges['Triggers & Inputs'];
+    const trigMatch = ti.match(/TRIGGERS\s*([\s\S]*?)(?=INPUTS|$)/i);
+    if (trigMatch) {
+      const rawLines = trigMatch[1].split('\n').map(s => s.trim()).filter(Boolean);
+      // Use the presence of frequency words ("Ad Hoc", "Daily" etc.) as a marker:
+      // a line containing one signals the START of a new trigger row.
+      // Lines without those are continuations of the previous row.
+      const freqRe = /\b(Ad\s*Hoc|Once|Daily|Weekly|Fortnightly|Monthly|Quarterly|Bi-Annually|Annually|Yearly|Continuous|Real\s*Time)\b/i;
+      const stripJunk = (s) => s
+        .replace(/\b(Starts|Frequency|Volume)\b/gi, '')
+        .replace(/\b(Ad\s*Hoc|Once|Daily|Weekly|Fortnightly|Monthly|Quarterly|Bi-Annually|Annually|Yearly|Continuous|Real\s*Time)\b/gi, '')
+        .replace(/\bn\/a\b/gi, '')
+        .replace(/\bN\/A\b/g, '')
+        .replace(/\bNone\s*Noted\b/gi, '')
+        .replace(/^\s*[\d,]+\s*$/, '')
+        .replace(/\s+/g, ' ')
+        .trim();
+      const triggerRows = [];
+      let current = '';
+      rawLines.forEach(line => {
+        // Skip the table header row outright
+        if (/^Starts\s+Frequency\s+Volume$/i.test(line)) return;
+        const isNewRow = freqRe.test(line);
+        const cleanedLine = stripJunk(line);
+        if (isNewRow) {
+          // Push previous, start new
+          if (current) triggerRows.push(current);
+          current = cleanedLine;
+        } else {
+          // Continuation — re-join hyphenated wraps if previous ended with -
+          if (/-$/.test(current)) current = current.replace(/-$/, '') + cleanedLine;
+          else if (current) current += ' ' + cleanedLine;
+          else current = cleanedLine;
+        }
+      });
+      if (current) triggerRows.push(current);
+      // Final clean-up: trim each, drop too-short fragments
+      model.trigger = triggerRows
+        .map(s => s.replace(/\s+/g, ' ').trim())
+        .filter(s => s.length > 5)
+        .join('; ');
+    }
+    const inpMatch = ti.match(/INPUTS\s*([\s\S]*?)$/i);
+    if (inpMatch) {
+      const inputText = inpMatch[1].replace(/None Noted/i, '').trim();
+      model.inputs = inputText || 'None';
+    }
+  }
+
+  // OUTPUTS — table with columns Output | To Process | How Used.
+  // Take the 'Output' column and skip 'How Used' descriptive jumble.
+  if (sectionRanges['Outputs & Targets']) {
+    const o = sectionRanges['Outputs & Targets'];
+    const outMatch = o.match(/OUTPUTS\s*([\s\S]*?)(?=PERFORMANCE TARGETS|$)/i);
+    if (outMatch) {
+      const rawLines = outMatch[1].split('\n').map(s => s.trim());
+      const skipPatterns = [
+        /^Output$/i, /^To Process$/i, /^How Used$/i,
+        /^N\/A$/i, /^None Noted$/i,
+        /^Informatio?n?\s*is?\s*$/i, /^publi(shed)?\s*$/i,
+        /^accessible\s*$/i, /^and\s*$/i, /^on\s*$/i, /^the\s*$/i,
+        /^[a-z]\s+is\s*$/i,  // fragment leftovers
+        /^[\.,;]+$/  // stray punctuation
+      ];
+      const outputLines = rawLines.filter(l =>
+        l && !skipPatterns.some(p => p.test(l))
+      );
+      // Join hyphenated wraps
+      let combined = '';
+      outputLines.forEach(l => {
+        if (combined && /-$/.test(combined)) combined = combined.replace(/-$/,'') + l;
+        else if (combined) combined += ' ' + l;
+        else combined = l;
+      });
+      combined = combined.replace(/\s+/g, ' ').trim();
+      // Heuristic split on capital-after-lowercase to separate distinct outputs
+      const split = combined.match(/[A-Z][^A-Z]*?(?=\s+[A-Z][a-z])|.+$/g);
+      if (split && split.length > 1) {
+        // Filter out short/junk fragments
+        const cleaned = split.map(s => s.trim()).filter(s => s.length > 4);
+        model.outputs = cleaned.length ? cleaned.join('; ') : combined;
+      } else {
+        model.outputs = combined;
+      }
+    }
+  }
+
+  // RACI
+  if (sectionRanges.RACI) {
+    const r = sectionRanges.RACI;
+    const grab = (label) => {
+      const re = new RegExp(label + '\\s*([\\s\\S]*?)(?=RESPONSIBLE|ACCOUNTABLE|CONSULTED|INFORMED|$)','i');
+      const m = r.match(re);
+      return m ? m[1].split('\n').map(s => s.trim()).filter(Boolean) : [];
+    };
+    model.raci.responsible = grab('RESPONSIBLE');
+    model.raci.accountable = grab('ACCOUNTABLE');
+    model.raci.consulted = grab('CONSULTED');
+    model.raci.informed = grab('INFORMED');
+  }
+
+  // SYSTEMS
+  if (sectionRanges.Systems) {
+    const s = sectionRanges.Systems;
+    if (!/None Noted/i.test(s)) {
+      model.systems = s.split('\n').map(s => s.trim()).filter(Boolean);
+    }
+  }
+
+  return model;
+}
+
+function extractSectionRanges(text, sectionNames) {
+  const ranges = {};
+  // Find indices of each heading
+  const positions = [];
+  sectionNames.forEach(name => {
+    const re = new RegExp('(^|\\n)' + name.replace(/[.*+?^${}()|[\]\\]/g,'\\$&') + '(?:\\n|\\s*$)', 'gi');
+    let m;
+    while ((m = re.exec(text)) !== null) {
+      positions.push({ name, index: m.index + (m[1] ? m[1].length : 0) });
+    }
+  });
+  positions.sort((a,b) => a.index - b.index);
+  // Heuristic: section names like "Triggers & Inputs" and "Outputs & Targets" can
+  // appear on page 1 of the swimlane diagram as decorative pills. We want the real
+  // section, which is the one whose body contains the sub-header (TRIGGERS / OUTPUTS).
+  const subHeaderForSection = {
+    'Triggers & Inputs': 'TRIGGERS',
+    'Outputs & Targets': 'OUTPUTS'
+  };
+  for (let i = 0; i < positions.length; i++) {
+    const start = positions[i].index + positions[i].name.length;
+    const end = i + 1 < positions.length ? positions[i+1].index : text.length;
+    const body = text.slice(start, end).trim();
+    const sub = subHeaderForSection[positions[i].name];
+    if (sub) {
+      // Only accept this occurrence if body actually contains the sub-header.
+      if (body.indexOf(sub) === -1) continue;
+      ranges[positions[i].name] = body;
+    } else if (!ranges[positions[i].name]) {
+      ranges[positions[i].name] = body;
+    }
+  }
+  return ranges;
+}
+
+function parseProcedureBlock(block) {
+  // Activities begin with patterns like "1.0 Title" on their own line, followed by role line(s),
+  // then sub-tasks "a Text", "b Text", etc., and NOTE blocks "NOTE Question" then body.
+  // PROCESS or sub-process links appear as "PROCESS Some sub-process name".
+  const lines = block.split('\n').map(l => l.replace(/\s+/g,' ').trim()).filter(Boolean);
+
+  const activities = [];
+  let current = null;
+  let currentTask = null;
+  let inNote = false;
+  let currentNote = null;
+  let expectingRole = false;
+
+  const activityRe = /^(\d+\.\d+)\s+(.+)$/;
+  const taskRe     = /^([a-z])\s+(.+)$/;
+  const noteRe     = /^NOTE\s+(.+)$/;
+  const procRe     = /^PROCESS\s+(.+)$/;
+
+  for (const line of lines) {
+    const am = line.match(activityRe);
+    if (am) {
+      if (current) activities.push(current);
+      current = { number: am[1], title: am[2], role: '', tasks: [], notes: [], links: [] };
+      currentTask = null; inNote = false; currentNote = null;
+      expectingRole = true;
+      continue;
+    }
+    if (!current) continue;
+
+    if (expectingRole) {
+      // Role line(s) — keep collecting consecutive non-task/note/process lines as the role.
+      // The role often spans 2 lines, e.g. "CoVE - Subject Matter Expert (SME), CoVE - Teach VE / Site Member".
+      if (!taskRe.test(line) && !noteRe.test(line) && !procRe.test(line) && !activityRe.test(line)) {
+        current.role = current.role ? (current.role + ' ' + line) : line;
+        continue;
+      }
+      expectingRole = false;
+    }
+
+    const nm = line.match(noteRe);
+    if (nm) {
+      currentNote = { title: nm[1].trim(), body: '' };
+      current.notes.push(currentNote);
+      inNote = true; currentTask = null;
+      continue;
+    }
+
+    const pm = line.match(procRe);
+    if (pm) {
+      current.links.push({ type: 'process', name: pm[1].trim() });
+      inNote = false; currentTask = null;
+      continue;
+    }
+
+    const tm = line.match(taskRe);
+    if (tm) {
+      currentTask = { letter: tm[1], text: tm[2].trim(), attachment: null };
+      current.tasks.push(currentTask);
+      inNote = false;
+      continue;
+    }
+
+    // continuation line — append to current note or current task
+    if (inNote && currentNote) {
+      currentNote.body += (currentNote.body ? ' ' : '') + line;
+    } else if (currentTask) {
+      // detect attachment lines like "TeachVE Hub - Site Pages" followed by a URL
+      if (/^https?:\/\//i.test(line)) {
+        currentTask.attachment = (currentTask.attachment || '') + ' ' + line;
+      } else if (line.length < 120 && !/^[A-Z]+\s*[A-Z]/.test(line)) {
+        // append to task text only if it looks like a wrap
+        currentTask.text += ' ' + line;
+      }
+    }
+  }
+  if (current) activities.push(current);
+
+  // detect decisions: tasks containing "?", "Yes/No", "if approval", etc.
+  activities.forEach(a => {
+    a.tasks.forEach(t => {
+      if (/\?/.test(t.text) || /yes\/no/i.test(t.text)) {
+        t.isDecision = true;
+      }
+    });
+  });
+
+  return activities;
+}
+
+/* ============================================================
+   STRUCTURED TEXT PARSER (paste / extracted .docx / template)
+   ============================================================
+   Expected format:
+     Process name: ...
+     Owner: ...
+     Expert: ...
+     Trigger: ...
+     Inputs: ...
+     Outputs: ...
+
+     1.0 Activity title
+     Role: ...
+     a Task one
+     b Task two
+     NOTE Question?
+     Answer text.
+
+     2.0 Next activity
+     ...
+   ============================================================ */
+function parseStructuredText(text) {
+  const lines = text.split(/\r?\n/).map(l => l.trim());
+  const model = {
+    title: '', version: '',
+    owner: '', expert: '',
+    objective: '', background: '',
+    trigger: '', inputs: '', outputs: '',
+    roles: [],
+    activities: [],
+    decisions: [],
+    systems: [],
+    raci: { responsible: [], accountable: [], consulted: [], informed: [] },
+    source: 'pasted'
+  };
+
+  let inProcedure = false;
+  let current = null;
+  let currentNote = null;
+  let inNote = false;
+
+  const fieldRe = /^(Process name|Title|Owner|Expert|Trigger|Inputs?|Outputs?|Objective|Background)\s*[:\-]\s*(.+)$/i;
+  // Liberal activity numbering: matches "1.0", "1.", "1,", "(1)", "1)", "1:", "1 -" plus title.
+  const activityRe = /^\(?\s*(\d+)(\.\d+|\.|,|\)|:|\s+-)\s+(.+)$/;
+  const roleRe = /^Role\s*[:\-]\s*(.+)$/i;
+  const taskRe = /^([a-z])[\.\)]?\s+(.+)$/;
+  const noteRe = /^NOTE\s+(.+)$/i;
+
+  for (const raw of lines) {
+    const line = raw.trim();
+    if (!line) { inNote = false; continue; }
+
+    if (!inProcedure) {
+      const fm = line.match(fieldRe);
+      if (fm) {
+        const key = fm[1].toLowerCase();
+        const val = fm[2].trim();
+        if (key.startsWith('process') || key === 'title') model.title = val;
+        else if (key === 'owner') model.owner = val;
+        else if (key === 'expert') model.expert = val;
+        else if (key === 'trigger') model.trigger = val;
+        else if (key.startsWith('input')) model.inputs = val;
+        else if (key.startsWith('output')) model.outputs = val;
+        else if (key === 'objective') model.objective = val;
+        else if (key === 'background') model.background = val;
+        continue;
+      }
+    }
+
+    const am = line.match(activityRe);
+    if (am) {
+      if (current) model.activities.push(current);
+      // Normalise the number: keep as "N.0" for display consistency.
+      // am[1] = digit, am[2] = separator, am[3] = title.
+      const sep = am[2];
+      const number = /^\.\d+$/.test(sep) ? am[1] + sep : am[1] + '.0';
+      current = { number, title: am[3], role: '', tasks: [], notes: [], links: [] };
+      currentNote = null; inNote = false;
+      inProcedure = true;
+      continue;
+    }
+    if (!current) continue;
+
+    const rm = line.match(roleRe);
+    if (rm) { current.role = rm[1]; continue; }
+
+    const nm = line.match(noteRe);
+    if (nm) {
+      currentNote = { title: nm[1], body: '' };
+      current.notes.push(currentNote);
+      inNote = true;
+      continue;
+    }
+
+    const tm = line.match(taskRe);
+    if (tm) {
+      current.tasks.push({ letter: tm[1], text: tm[2] });
+      inNote = false;
+      continue;
+    }
+
+    if (inNote && currentNote) {
+      currentNote.body += (currentNote.body ? ' ' : '') + line;
+    }
+  }
+  if (current) model.activities.push(current);
+
+  model.roles = Array.from(new Set(
+    model.activities.flatMap(a => (a.role || '').split(',').map(r => r.trim()).filter(Boolean))
+  ));
+
+  model.activities.forEach(a => a.tasks.forEach(t => {
+    if (/\?/.test(t.text) || /yes\/no/i.test(t.text)) t.isDecision = true;
+  }));
+
+  return model;
+}
+
+/* ============================================================
+   FORM PARSER
+   ============================================================ */
+function readFormModel() {
+  const model = {
+    title: document.getElementById('formTitle').value.trim(),
+    version: '',
+    owner: document.getElementById('formOwner').value.trim(),
+    expert: document.getElementById('formExpert').value.trim(),
+    objective: '', background: '',
+    trigger: document.getElementById('formTrigger').value.trim(),
+    inputs: document.getElementById('formInputs').value.trim(),
+    outputs: document.getElementById('formOutputs').value.trim(),
+    roles: [],
+    activities: [],
+    decisions: [],
+    systems: [],
+    raci: { responsible: [], accountable: [], consulted: [], informed: [] },
+    source: 'form'
+  };
+  document.querySelectorAll('#activityList .activity-block').forEach((block, i) => {
+    const title = block.querySelector('.activity-title').value.trim();
+    const role  = block.querySelector('.activity-role').value.trim();
+    if (!title) return;
+    const number = `${i + 1}.0`;
+    const tasks = [];
+    block.querySelectorAll('.task-text').forEach((inp, j) => {
+      const t = inp.value.trim();
+      if (t) tasks.push({ letter: String.fromCharCode(97 + j), text: t });
+    });
+    model.activities.push({ number, title, role, tasks, notes: [], links: [] });
+  });
+  model.roles = Array.from(new Set(
+    model.activities.flatMap(a => (a.role || '').split(',').map(r => r.trim()).filter(Boolean))
+  ));
+  model.activities.forEach(a => a.tasks.forEach(t => {
+    if (/\?/.test(t.text) || /yes\/no/i.test(t.text)) t.isDecision = true;
+  }));
+  return model;
+}
+
+/* ============================================================
+   RULES ENGINE
+   ============================================================
+   Each rule returns 0..n issue objects:
+     { id, source, severity:'error'|'warning'|'info'|'pass',
+       message, location?, suggestion? }
+
+   Sources:
+     CoVE  = CoVE Process Writing Golden Rules
+     RMIT  = RMIT Tips for Process Editors & Champions
+     Nintex = Nintex Process Writing Techniques
+   ============================================================ */
+
+const BANNED_TERMS = [
+  { phrase: 'all staff', message: '"ALL STAFF" should not be used. The process will appear on every Promapp dashboard.' },
+  { phrase: 'tbd', message: '"TBD" leaves the reader without an answer.' },
+  { phrase: 'tba', message: '"TBA" leaves the reader without an answer.' },
+  { phrase: 'etc', message: '"etc." is vague; list the items or remove.' },
+  { phrase: 'etc.', message: '"etc." is vague; list the items or remove.' }
+];
+
+// Words that signal passive voice / hedging the activity verb-first rule
+const PASSIVE_LEADS = ['be ', 'is ', 'are ', 'was ', 'were ', 'being ', 'been '];
+
+function startsWithApprovedVerb(text) {
+  if (!text) return false;
+  const first = text.trim().toLowerCase().split(/\s+/)[0].replace(/[.,;:]/g,'');
+  // Handle "set up" as two-word verb
+  const firstTwo = text.trim().toLowerCase().split(/\s+/).slice(0,2).join(' ').replace(/[.,;:]/g,'');
+  return APPROVED_VERBS_SET.has(first) || APPROVED_VERBS_SET.has(firstTwo);
+}
+function firstWord(text) {
+  return (text || '').trim().split(/\s+/)[0] || '';
+}
+
+function runRulesEngine(model) {
+  const issues = [];
+  const push = (i) => issues.push(i);
+
+  // ---------- TITLE & STRUCTURE (CoVE 6, RMIT, Nintex 5) ----------
+  if (!model.title) {
+    push({ id:'title-missing', source:'CoVE', severity:'error',
+      message:'Process is missing a title.',
+      suggestion:'Add a verb-first title, e.g. "Create new TeachVE Hub Site Page".' });
+  } else {
+    // Required prefix check (e.g. "CoVE - ").
+    if (REQUIRED_TITLE_PREFIXES.length > 0) {
+      const startsOk = REQUIRED_TITLE_PREFIXES.some(p => model.title.startsWith(p));
+      if (!startsOk) {
+        const list = REQUIRED_TITLE_PREFIXES.map(p => `"${p}"`).join(' or ');
+        push({ id:'title-prefix', source:'CoVE', severity:'warning',
+          message:`Process title does not begin with the required prefix (${list}).`,
+          location: model.title,
+          suggestion:`Rename the process so it starts with ${list} — this keeps process names consistent across the College.` });
+      }
+    }
+    // Strip known prefixes before verb-first check.
+    const titleAfterPrefix = stripTitlePrefix(model.title);
+    if (!startsWithApprovedVerb(titleAfterPrefix)) {
+      push({ id:'title-verb', source:'Nintex', severity:'warning',
+        message:`Process title does not start with an approved verb (after prefix, starts with "${firstWord(titleAfterPrefix)}").`,
+        location: model.title,
+        suggestion:'Begin the title (after any "CoVE - PBT - " style prefix) with a verb from the categorised verb list, e.g. Create, Update, Manage, Plan.' });
+    }
+  }
+
+  // ---------- TRIGGER / INPUTS / OUTPUTS (CoVE 1) ----------
+  if (!model.trigger) {
+    push({ id:'no-trigger', source:'CoVE', severity:'error',
+      message:'Trigger is not defined.',
+      suggestion:'State exactly what starts the process (e.g. "Staff member requests a new laptop via ServiceNow").' });
+  }
+  if (!model.outputs) {
+    push({ id:'no-outputs', source:'CoVE', severity:'warning',
+      message:'Outputs are not defined.',
+      suggestion:'State the end result of the process (e.g. "Laptop provided to staff member").' });
+  }
+  if (!model.inputs) {
+    push({ id:'no-inputs', source:'CoVE', severity:'info',
+      message:'Inputs are not noted.',
+      suggestion:'If the process needs forms, data or materials to start, list them here. Use "None" if not applicable.' });
+  }
+
+  // ---------- OWNER / EXPERT (RMIT) ----------
+  if (model.owner && model.expert && model.owner.toLowerCase() === model.expert.toLowerCase()) {
+    push({ id:'owner-equals-expert', source:'RMIT', severity:'error',
+      message:'Process Owner and Process Expert must be different people.',
+      suggestion:'Assign a different person as Expert so the correct approval chain applies.' });
+  }
+  if (!model.owner) {
+    push({ id:'no-owner', source:'RMIT', severity:'warning',
+      message:'Process Owner is not specified.',
+      suggestion:'Owner is accountable for the process being effective and improving.' });
+  }
+  if (!model.expert) {
+    push({ id:'no-expert', source:'RMIT', severity:'warning',
+      message:'Process Expert is not specified.',
+      suggestion:'Expert is accountable alongside the Owner; they must be a different person.' });
+  }
+
+  // ---------- ACTIVITY COUNT (RMIT, Nintex 3, CoVE 2) ----------
+  const actCount = model.activities.length;
+  if (actCount === 0) {
+    push({ id:'no-activities', source:'CoVE', severity:'error',
+      message:'No activities have been defined.',
+      suggestion:'Add 3–10 high-level activities that describe the flow.' });
+  } else if (actCount > 10) {
+    push({ id:'too-many-activities', source:'Nintex', severity:'warning',
+      message:`Process has ${actCount} activities. Aim for a maximum of 10.`,
+      suggestion:'Look for a logical break to split into sub-processes (Nintex Technique 4).' });
+  } else if (actCount === 1 || actCount === 2) {
+    push({ id:'too-few-activities', source:'Nintex', severity:'info',
+      message:`Process has only ${actCount} activit${actCount===1?'y':'ies'}.`,
+      suggestion:'If this only has a couple of steps, consider whether a knowledge article or guide would be more useful than a process.' });
+  }
+
+  // ---------- PER-ACTIVITY CHECKS ----------
+  model.activities.forEach((a, idx) => {
+    const loc = `Activity ${a.number} – ${a.title}`;
+
+    // Verb-first activity title (CoVE 6, RMIT, Nintex 5)
+    if (a.title && !startsWithApprovedVerb(a.title)) {
+      push({ id:`act-verb-${idx}`, source:'CoVE', severity:'warning',
+        message:`Activity ${a.number} title does not start with an approved verb (starts with "${firstWord(a.title)}").`,
+        location: loc,
+        suggestion:'Use a verb from the categorised verb list (Receive, Review, Approve, Notify, Close, etc.).' });
+    }
+
+    // Activity title length 2–7 words (RMIT)
+    const wc = a.title.split(/\s+/).filter(Boolean).length;
+    if (a.title && (wc < 2 || wc > 7)) {
+      push({ id:`act-length-${idx}`, source:'RMIT', severity:'info',
+        message:`Activity ${a.number} title is ${wc} word${wc===1?'':'s'} (RMIT recommends 2–7).`,
+        location: loc });
+    }
+
+    // One responsible role per activity (CoVE 3)
+    if (!a.role) {
+      push({ id:`act-norole-${idx}`, source:'CoVE', severity:'warning',
+        message:`Activity ${a.number} has no responsible role.`,
+        location: loc,
+        suggestion:'Assign a single accountable role. Others may support, but only one role is responsible.' });
+    } else {
+      // The export pattern often shows multiple comma-separated roles for activities done jointly.
+      // Flag two or more as info — sometimes intentional, but worth a check.
+      const roles = a.role.split(',').map(r => r.trim()).filter(Boolean);
+      if (roles.length > 1) {
+        push({ id:`act-multirole-${idx}`, source:'CoVE', severity:'info',
+          message:`Activity ${a.number} lists ${roles.length} roles: ${roles.join('; ')}.`,
+          location: loc,
+          suggestion:'CoVE Golden Rule 3 recommends one accountable role per activity. Confirm one is primary.' });
+      }
+    }
+
+    // Banned audience term "ALL STAFF" (RMIT)
+    BANNED_TERMS.forEach(b => {
+      const re = new RegExp('\\b' + b.phrase.replace(/[.\\]/g,'\\$&') + '\\b','i');
+      if (re.test(a.title) || re.test(a.role || '') ) {
+        push({ id:`banned-${b.phrase}-${idx}`, source:'RMIT', severity:'warning',
+          message: b.message + ` (Activity ${a.number})`,
+          location: loc });
+      }
+      a.tasks.forEach((t,ti) => {
+        if (re.test(t.text)) {
+          push({ id:`banned-${b.phrase}-${idx}-${ti}`, source:'RMIT', severity:'warning',
+            message: b.message + ` (Task ${a.number}${t.letter})`,
+            location: loc });
+        }
+      });
+    });
+
+    // Tasks: verb-first + length (RMIT, Nintex 5)
+    if (a.tasks.length === 0) {
+      push({ id:`no-tasks-${idx}`, source:'Nintex', severity:'info',
+        message:`Activity ${a.number} has no tasks.`,
+        location: loc,
+        suggestion:'Either add 1–10 tasks, or consider whether this activity is needed.' });
+    }
+    if (a.tasks.length > 10) {
+      push({ id:`too-many-tasks-${idx}`, source:'Nintex', severity:'warning',
+        message:`Activity ${a.number} has ${a.tasks.length} tasks. Recommended max is ~10.`,
+        location: loc,
+        suggestion:'Consider splitting this activity, or attaching a guide for transactional detail (Nintex Technique 7).' });
+    }
+    a.tasks.forEach((t, ti) => {
+      if (!startsWithApprovedVerb(t.text)) {
+        push({ id:`task-verb-${idx}-${ti}`, source:'Nintex', severity:'warning',
+          message:`Task ${a.number}${t.letter} does not start with an approved verb (starts with "${firstWord(t.text)}").`,
+          location: `Task ${a.number}${t.letter} – ${t.text}`,
+          suggestion:'Begin with a verb from the categorised verb list. The Nintex test: "What is the person expected to do?"' });
+      }
+      // overly-long task (>30 words → likely transactional detail that belongs in a guide)
+      const tw = t.text.split(/\s+/).filter(Boolean).length;
+      if (tw > 30) {
+        push({ id:`task-long-${idx}-${ti}`, source:'CoVE', severity:'info',
+          message:`Task ${a.number}${t.letter} is ${tw} words.`,
+          location: `Task ${a.number}${t.letter}`,
+          suggestion:'Keep language concise (CoVE Rule 5). If this is system click-through detail, move it into an attached guide (Nintex Technique 7).' });
+      }
+    });
+
+    // NOTES: must be Question + Answer (RMIT, Nintex 1, 6)
+    a.notes.forEach((n, ni) => {
+      if (!/\?\s*$/.test(n.title.trim())) {
+        push({ id:`note-question-${idx}-${ni}`, source:'RMIT', severity:'warning',
+          message:`Note "${truncate(n.title,60)}" is not phrased as a question.`,
+          location: loc,
+          suggestion:'NOTE titles must always be a question. The reader can then skip the body if they know the answer (RMIT, Nintex Technique 1).' });
+      }
+      if (!n.body || n.body.length < 10) {
+        push({ id:`note-empty-${idx}-${ni}`, source:'RMIT', severity:'info',
+          message:`Note "${truncate(n.title,60)}" has no answer body.`,
+          location: loc,
+          suggestion:'Provide the answer to the question; otherwise consider removing the note.' });
+      }
+    });
+  });
+
+  // ---------- DECISION COMPLETENESS (CoVE 7) ----------
+  let hasDecisions = false;
+  model.activities.forEach(a => {
+    a.tasks.forEach(t => {
+      if (t.isDecision) {
+        hasDecisions = true;
+        // Attempt to detect Yes/No follow-up
+        const taskText = t.text.toLowerCase();
+        const hasYesPath = /yes\b/i.test(taskText) || /if (yes|approved|confirmed)/i.test(taskText);
+        const hasNoPath  = /no\b/i.test(taskText) || /if (no|not approved|rejected|denied)/i.test(taskText);
+        if (!(hasYesPath && hasNoPath)) {
+          push({ id:`decision-paths-${a.number}-${t.letter}`, source:'CoVE', severity:'warning',
+            message:`Decision in ${a.number}${t.letter} may not show both Yes and No paths.`,
+            location: `Task ${a.number}${t.letter} – ${t.text}`,
+            suggestion:'Yes/No questions need both branches. The "No" path should lead to one follow-up action then end (CoVE Rule 7).' });
+        }
+      }
+    });
+  });
+
+  // ---------- HANDOVER POINTS (CoVE 11) ----------
+  // Heuristic: if activities have different roles, look for an explicit handover indicator
+  const roleSequence = model.activities.map(a => (a.role || '').split(',')[0].trim());
+  for (let i = 1; i < roleSequence.length; i++) {
+    if (roleSequence[i] && roleSequence[i-1] && roleSequence[i] !== roleSequence[i-1]) {
+      const prevAct = model.activities[i-1];
+      const handoverWords = /(send|notify|forward|email|escalate|hand over|notification)/i;
+      const prevTaskTexts = prevAct.tasks.map(t => t.text).join(' ');
+      if (!handoverWords.test(prevTaskTexts)) {
+        push({ id:`handover-${i}`, source:'CoVE', severity:'info',
+          message:`Role change between ${prevAct.number} (${roleSequence[i-1]}) and ${model.activities[i].number} (${roleSequence[i]}) — handover may be unclear.`,
+          location: `${prevAct.number} → ${model.activities[i].number}`,
+          suggestion:'Make the handover explicit, e.g. a "Notify..." or "Send..." task at the end of the previous activity (CoVE Rule 11).' });
+      }
+    }
+  }
+
+  // ---------- ATTACHED GUIDES (CoVE 8, Nintex 7) ----------
+  let totalAttachments = 0;
+  model.activities.forEach(a => {
+    a.tasks.forEach(t => { if (t.attachment) totalAttachments++; });
+    a.links.forEach(l => totalAttachments++);
+  });
+  if (model.activities.length > 0 && totalAttachments === 0) {
+    push({ id:'no-attachments', source:'Nintex', severity:'info',
+      message:'No supporting guides, links or sub-process references attached.',
+      suggestion:'If your process refers to a system, form or detailed instruction, attach a guide or web link (CoVE Rule 8 / Nintex Technique 7).' });
+  }
+
+  // ---------- DUPLICATE / SIMILAR ACTIVITY TITLES ----------
+  const titles = model.activities.map(a => a.title.toLowerCase());
+  titles.forEach((t,i) => {
+    if (titles.indexOf(t) !== i) {
+      push({ id:`dup-title-${i}`, source:'CoVE', severity:'warning',
+        message:`Activity ${model.activities[i].number} duplicates an earlier activity title.`,
+        location: model.activities[i].title,
+        suggestion:'Rename so each activity has a unique, distinguishable title.' });
+    }
+  });
+
+  // ---------- READABILITY SAMPLE ----------
+  const allText = (model.objective + ' ' + model.background + ' ' +
+    model.activities.map(a => a.tasks.map(t => t.text).join(' ')).join(' ')).trim();
+  if (allText) {
+    const sentences = allText.split(/[.!?]+/).filter(s => s.trim().length > 4);
+    const wordCount = allText.split(/\s+/).filter(Boolean).length;
+    const avgSentLen = sentences.length ? wordCount / sentences.length : 0;
+    if (avgSentLen > 22) {
+      push({ id:'readability-long', source:'CoVE', severity:'info',
+        message:`Average sentence length is ${avgSentLen.toFixed(1)} words.`,
+        suggestion:'CoVE Rule 5: keep language concise. Aim for sentences under 20 words; break long ones into separate steps.' });
+    }
+  }
+
+  // Deduplicate issues that are identical in message + severity + location.
+  // When the same issue would fire multiple times, collapse to one and append
+  // a count so the user knows it occurs more than once.
+  const seen = new Map();
+  const deduped = [];
+  for (const i of issues) {
+    const key = i.severity + '|' + i.message + '|' + (i.location || '');
+    if (seen.has(key)) {
+      const existing = seen.get(key);
+      existing._count = (existing._count || 1) + 1;
+      existing.message = existing.message.replace(/\s*\(×\d+\)$/, '') + ` (×${existing._count})`;
+    } else {
+      const copy = { ...i };
+      seen.set(key, copy);
+      deduped.push(copy);
+    }
+  }
+  return deduped;
+}
+
+function truncate(s, n) {
+  return s && s.length > n ? s.slice(0, n) + '…' : s;
+}
+
+/* ============================================================
+   PROCESS vs KNOWLEDGE-ARTICLE / GUIDE RECOMMENDATION
+   Decision tree based on Nintex Technique 7 (transactional detail
+   belongs in a guide), Nintex FAQ ("Do not create a process for
+   something that only has a couple of steps") and CoVE Rule 8.
+   ============================================================ */
+function recommendArtefactType(model) {
+  const reasons = [];
+  let processScore = 0;
+  let guideScore = 0;
+
+  const acts = model.activities.length;
+  const totalTasks = model.activities.reduce((s,a) => s + a.tasks.length, 0);
+  const distinctRoles = (new Set(
+    model.activities.flatMap(a => (a.role||'').split(',').map(r => r.trim()).filter(Boolean))
+  )).size;
+  const decisions = model.activities.flatMap(a => a.tasks).filter(t => t.isDecision).length;
+  const longTasks = model.activities.flatMap(a => a.tasks).filter(t => t.text.split(/\s+/).length > 25).length;
+  const hasSystemSteps = /system|servicenow|sharepoint|workday|teams|outlook|navigate|click|select|edit|save|publish/i
+    .test(model.activities.flatMap(a => a.tasks.map(t => t.text)).join(' '));
+
+  if (acts >= 3) { processScore += 2; reasons.push(`${acts} high-level activities — fits a process map.`); }
+  if (acts <= 2) { guideScore += 2; reasons.push(`Only ${acts} activit${acts===1?'y':'ies'} — Nintex FAQ: don't create a process for something with a couple of steps.`); }
+  if (distinctRoles >= 2) { processScore += 2; reasons.push(`${distinctRoles} distinct roles — handovers benefit from a process map.`); }
+  if (distinctRoles <= 1) { guideScore += 1; reasons.push(`Only ${distinctRoles} role involved — a guide may be enough.`); }
+  if (decisions >= 1) { processScore += 1; reasons.push(`${decisions} decision point${decisions>1?'s':''} — process map shows branching clearly.`); }
+  if (longTasks >= 2 || (longTasks > 0 && hasSystemSteps)) {
+    guideScore += 2;
+    reasons.push(`${longTasks} task${longTasks>1?'s have':' has'} transactional detail (>25 words) — Nintex Technique 7: capture in a guide, not the map.`);
+  }
+  if (totalTasks > 0 && totalTasks / Math.max(acts,1) > 8) {
+    guideScore += 1;
+    reasons.push(`Average ${(totalTasks/acts).toFixed(1)} tasks per activity — high transactional detail suggests an attached guide.`);
+  }
+
+  let type, title, summary;
+  if (processScore - guideScore >= 2) {
+    type = 'process';
+    title = 'Recommendation: Create a process map';
+    summary = 'Your content has the structural shape of a process — multiple high-level activities, role handovers, and decision points. Build it in Nintex Process Manager.';
+  } else if (guideScore - processScore >= 2) {
+    type = 'guide';
+    title = 'Recommendation: Create a knowledge article or guide';
+    summary = 'Your content reads more like task-level instruction than a multi-role process. Consider a knowledge article or attached guide rather than a process map.';
+  } else {
+    type = 'both';
+    title = 'Recommendation: Create both — a process map AND a supporting guide';
+    summary = 'You have process-shaped content but with detailed transactional steps. Build a high-level process map and attach a knowledge article or guide for the click-through detail (Nintex Technique 7, CoVE Rule 8).';
+  }
+
+  return { type, title, summary, reasons, scores: { processScore, guideScore } };
+}
+
+/* ============================================================
+   MERMAID FLOWCHART BUILDER (swimlane via subgraphs)
+   ============================================================ */
+/* ============================================================
+   THEME PALETTES + JS-applied styling for bpmn-js
+   bpmn-js writes fill/stroke as SVG attributes; CSS overrides
+   sometimes lose to library defaults. Applying via JS guarantees
+   the colours stick regardless of CSS specificity.
+   ============================================================ */
+const BPMN_THEMES = {
+  nintex: {
+    taskFill:  '#1F5FA0', taskStroke:  '#14437A', taskText:  '#FFFFFF',
+    startFill: '#5BA653', startStroke: '#2E7D32', startText: '#FFFFFF',
+    endFill:   '#E61E2A', endStroke:   '#B5161F', endText:   '#FFFFFF',
+    laneFill:  '#FCFCFC', laneStroke:  '#C8C8C8', laneText:  '#1F5FA0',
+    poolStroke:'#1F5FA0', poolText:    '#1F5FA0',
+    flowStroke:'#1D1D1D'
+  },
+  rmit: {
+    taskFill:  '#E61E2A', taskStroke:  '#B5161F', taskText:  '#FFFFFF',
+    startFill: '#2E7D32', startStroke: '#1B5E20', startText: '#FFFFFF',
+    endFill:   '#1D1D1D', endStroke:   '#000000', endText:   '#FFFFFF',
+    laneFill:  '#FAFAFA', laneStroke:  '#C8C8C8', laneText:  '#E61E2A',
+    poolStroke:'#E61E2A', poolText:    '#E61E2A',
+    flowStroke:'#1D1D1D'
+  }
+};
+
+function applyBpmnTheme(themeName) {
+  const t = BPMN_THEMES[themeName] || BPMN_THEMES.nintex;
+  const wf = document.getElementById('workflowRender');
+  if (!wf) return;
+  wf.classList.remove('theme-nintex', 'theme-rmit');
+  wf.classList.add('theme-' + themeName);
+
+  // Liberal helpers — set BOTH the SVG attribute and inline style.
+  const paint = (el, fill, stroke, strokeWidth) => {
+    if (!el) return;
+    if (fill !== undefined && fill !== null) {
+      el.setAttribute('fill', fill);
+      el.style.setProperty('fill', fill, 'important');
+    }
+    if (stroke !== undefined && stroke !== null) {
+      el.setAttribute('stroke', stroke);
+      el.style.setProperty('stroke', stroke, 'important');
+    }
+    if (strokeWidth) {
+      el.setAttribute('stroke-width', strokeWidth);
+      el.style.setProperty('stroke-width', strokeWidth, 'important');
+    }
+  };
+  const paintText = (el, fill, weight) => {
+    if (!el) return;
+    el.setAttribute('fill', fill);
+    el.style.setProperty('fill', fill, 'important');
+    if (weight) el.style.setProperty('font-weight', weight, 'important');
+  };
+
+  const findEls = (idPrefix, descendantSelector) =>
+    wf.querySelectorAll('[data-element-id^="' + idPrefix + '"] ' + descendantSelector);
+
+  // Tasks: any rect inside the task element (covers .djs-visual nesting variations)
+  findEls('Task_', 'rect:not(.djs-hit):not(.djs-outline)').forEach(el => {
+    paint(el, t.taskFill, t.taskStroke, '2');
+    el.setAttribute('rx', '6'); el.setAttribute('ry', '6');
+  });
+  findEls('Task_', 'text').forEach(el => paintText(el, t.taskText, '600'));
+
+  // Start event
+  findEls('StartEvent', 'circle').forEach(el => paint(el, t.startFill, t.startStroke, '3'));
+  findEls('StartEvent', 'text').forEach(el => paintText(el, '#1D1D1D', '500'));
+
+  // End event
+  findEls('EndEvent', 'circle').forEach(el => paint(el, t.endFill, t.endStroke, '3'));
+  findEls('EndEvent', 'text').forEach(el => paintText(el, '#1D1D1D', '500'));
+
+  // Lanes
+  findEls('Lane_', 'rect:not(.djs-hit):not(.djs-outline)').forEach(el => paint(el, t.laneFill, t.laneStroke, '1'));
+  findEls('Lane_', 'text').forEach(el => paintText(el, t.laneText, '700'));
+
+  // Pool
+  findEls('Participant_', 'rect:not(.djs-hit):not(.djs-outline)').forEach(el => paint(el, '#FFFFFF', t.poolStroke, '1.5'));
+  findEls('Participant_', 'text').forEach(el => paintText(el, t.poolText, '700'));
+
+  // Sequence flows
+  wf.querySelectorAll('g.djs-connection path').forEach(el => {
+    paint(el, 'none', t.flowStroke, '2');
+  });
+  wf.querySelectorAll('g.djs-connection polygon').forEach(el => {
+    paint(el, t.flowStroke, t.flowStroke, '1');
+  });
+
+  // Diagnostic: log how many of each shape we themed
+  const counts = {
+    tasks: findEls('Task_', 'rect:not(.djs-hit):not(.djs-outline)').length,
+    starts: findEls('StartEvent', 'circle').length,
+    ends: findEls('EndEvent', 'circle').length,
+    lanes: findEls('Lane_', 'rect:not(.djs-hit):not(.djs-outline)').length
+  };
+  console.log('[applyBpmnTheme] painted:', themeName, counts);
+}
+
+/* ============================================================
+   BPMN XML BUILDER (BPMN 2.0 with collaboration + lanes + DI)
+   ============================================================ */
+// BPMN XML builder — generates a BPMN 2.0 XML document with collaboration,
+// pool/lanes by role, tasks for activities, start/end events for trigger/output,
+// sequence flows, and BPMN DI (diagram interchange) layout.
+
+function buildBpmnXml(model) {
+  const xmlEscape = (s) => String(s || '')
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&apos;');
+
+  // ---------- Layout constants ----------
+  const POOL_X = 160, POOL_Y = 80;
+  const POOL_HEADER = 0;        // no pool-title column; title shown horizontally above the diagram
+  const LANE_HEADER = 50;       // wide so vertical lane label fits on one line
+  const LANE_HEIGHT = 160;      // taller so vertical lane labels fit on one or two lines
+  const TASK_W = 140, TASK_H = 60;
+  const TASK_GAP_X = 30;
+  const EVENT_SIZE = 36;
+  const SIDE_PADDING = 30;
+
+  // ---------- Roles & lanes ----------
+  const activities = model.activities || [];
+  // Strip redundant prefix from lane names if pool title already has it.
+  // E.g. pool "CoVE - PBT - Create..." -> drop leading "CoVE - " from lane labels.
+  const poolPrefixMatch = (model.title || '').match(/^([\w&\/]+\s+-\s+){1,3}/);
+  const stripPoolPrefix = poolPrefixMatch ? poolPrefixMatch[0] : '';
+  const cleanRole = (r) => {
+    if (!r) return 'Unassigned';
+    let cleaned = r.split(',')[0].trim();
+    if (stripPoolPrefix && /^CoVE\s*-\s*/.test(cleaned)) {
+      cleaned = cleaned.replace(/^CoVE\s*-\s*/, '');
+    }
+    return cleaned || 'Unassigned';
+  };
+  const roleOf = (a) => cleanRole(a.role);
+  const distinctRoles = [];
+  const roleIndex = new Map();
+  activities.forEach(a => {
+    const r = roleOf(a);
+    if (!roleIndex.has(r)) {
+      roleIndex.set(r, distinctRoles.length);
+      distinctRoles.push(r);
+    }
+  });
+  if (distinctRoles.length === 0) {
+    distinctRoles.push('Unassigned');
+    roleIndex.set('Unassigned', 0);
+  }
+
+  // ---------- Positions ----------
+  const laneContentTop = POOL_Y;
+  const taskLeft = POOL_X + POOL_HEADER + LANE_HEADER + SIDE_PADDING + EVENT_SIZE + 30;
+  const taskY = (laneIdx) => laneContentTop + laneIdx * LANE_HEIGHT + (LANE_HEIGHT - TASK_H) / 2;
+  const eventY = (laneIdx) => laneContentTop + laneIdx * LANE_HEIGHT + (LANE_HEIGHT - EVENT_SIZE) / 2;
+
+  const taskPositions = activities.map((a, i) => {
+    const lane = roleIndex.get(roleOf(a));
+    return {
+      id: `Task_${i + 1}`,
+      x: taskLeft + i * (TASK_W + TASK_GAP_X),
+      y: taskY(lane),
+      lane
+    };
+  });
+
+  // Start event: left of first task, in first task's lane
+  const startLane = activities.length ? taskPositions[0].lane : 0;
+  const startEvent = {
+    id: 'StartEvent_1',
+    x: POOL_X + POOL_HEADER + LANE_HEADER + SIDE_PADDING,
+    y: eventY(startLane),
+    lane: startLane
+  };
+
+  // End event: right of last task, in last task's lane
+  const endLane = activities.length ? taskPositions[activities.length - 1].lane : 0;
+  const endEvent = {
+    id: 'EndEvent_1',
+    x: activities.length
+        ? taskPositions[activities.length - 1].x + TASK_W + 30
+        : startEvent.x + 100,
+    y: eventY(endLane),
+    lane: endLane
+  };
+
+  // Pool dimensions
+  const poolWidth = (endEvent.x - POOL_X) + EVENT_SIZE + SIDE_PADDING;
+  const poolHeight = distinctRoles.length * LANE_HEIGHT;
+
+  // ---------- Build process body XML ----------
+  const flowNodeRefs = {};   // laneIdx -> [ids]
+  for (let i = 0; i < distinctRoles.length; i++) flowNodeRefs[i] = [];
+  flowNodeRefs[startEvent.lane].push(startEvent.id);
+  taskPositions.forEach((t, i) => flowNodeRefs[t.lane].push(`Task_${i + 1}`));
+  flowNodeRefs[endEvent.lane].push(endEvent.id);
+
+  // Sequence flows: start -> task1 -> task2 -> ... -> taskN -> end
+  const flows = [];
+  if (activities.length) {
+    flows.push({ id: 'Flow_start', source: startEvent.id, target: 'Task_1' });
+    for (let i = 0; i < activities.length - 1; i++) {
+      flows.push({ id: `Flow_${i + 1}`, source: `Task_${i + 1}`, target: `Task_${i + 2}` });
+    }
+    flows.push({ id: 'Flow_end', source: `Task_${activities.length}`, target: endEvent.id });
+  } else {
+    flows.push({ id: 'Flow_start', source: startEvent.id, target: endEvent.id });
+  }
+
+  // ---------- Compute waypoints ----------
+  const nodePos = {};
+  nodePos[startEvent.id] = { x: startEvent.x, y: startEvent.y, w: EVENT_SIZE, h: EVENT_SIZE };
+  taskPositions.forEach((t, i) => nodePos[`Task_${i + 1}`] = { x: t.x, y: t.y, w: TASK_W, h: TASK_H });
+  nodePos[endEvent.id] = { x: endEvent.x, y: endEvent.y, w: EVENT_SIZE, h: EVENT_SIZE };
+
+  const flowWaypoints = (sourceId, targetId) => {
+    const s = nodePos[sourceId], t = nodePos[targetId];
+    const sx = s.x + s.w, sy = s.y + s.h / 2;        // right-middle of source
+    const tx = t.x,        ty = t.y + t.h / 2;        // left-middle of target
+    if (Math.abs(sy - ty) < 2) {
+      return [{ x: sx, y: sy }, { x: tx, y: ty }];
+    }
+    // Route with vertical jog at midpoint
+    const midX = (sx + tx) / 2;
+    return [
+      { x: sx, y: sy },
+      { x: midX, y: sy },
+      { x: midX, y: ty },
+      { x: tx, y: ty }
+    ];
+  };
+
+  // ---------- XML assembly ----------
+  const titleSafe = xmlEscape(model.title || 'Process');
+
+  const lanesXml = distinctRoles.map((r, i) =>
+    `      <bpmn:lane id="Lane_${i + 1}" name="${xmlEscape(r)}">\n` +
+    flowNodeRefs[i].map(id => `        <bpmn:flowNodeRef>${id}</bpmn:flowNodeRef>`).join('\n') +
+    `\n      </bpmn:lane>`
+  ).join('\n');
+
+  const tasksXml = activities.map((a, i) => {
+    const id = `Task_${i + 1}`;
+    const incoming = i === 0 ? 'Flow_start' : `Flow_${i}`;
+    const outgoing = i === activities.length - 1 ? 'Flow_end' : `Flow_${i + 1}`;
+    const name = xmlEscape(`${a.number} ${a.title}`);
+    return `    <bpmn:task id="${id}" name="${name}">
+      <bpmn:incoming>${incoming}</bpmn:incoming>
+      <bpmn:outgoing>${outgoing}</bpmn:outgoing>
+    </bpmn:task>`;
+  }).join('\n');
+
+  // Sanitise event labels: drop table-jumble fragments, cap length.
+  const cleanEventLabel = (s, fallback) => {
+    if (!s) return fallback;
+    let t = String(s);
+    // Remove obvious table-column fragments
+    t = t.replace(/\b(Output|To Process|How Used|N\/A|Information|Informatio|publi(shed)?|accessible)\b/gi, '');
+    t = t.replace(/\s+/g, ' ').trim();
+    // Take first sensible segment (split on ';' and pick the first non-empty)
+    const parts = t.split(/[;\n]+/).map(p => p.trim()).filter(p => p.length > 3);
+    t = parts[0] || '';
+    // Cap to ~40 chars with ellipsis
+    if (t.length > 40) t = t.substring(0, 38).replace(/\s+\S*$/, '') + '...';
+    return t || fallback;
+  };
+  const startLabel = cleanEventLabel(model.trigger, 'Start');
+  const endLabel   = cleanEventLabel(model.outputs, 'End');
+  const startXml = `    <bpmn:startEvent id="StartEvent_1" name="${xmlEscape(startLabel)}">
+      <bpmn:outgoing>Flow_start</bpmn:outgoing>
+    </bpmn:startEvent>`;
+  const endXml = `    <bpmn:endEvent id="EndEvent_1" name="${xmlEscape(endLabel)}">
+      <bpmn:incoming>Flow_end</bpmn:incoming>
+    </bpmn:endEvent>`;
+
+  const flowsXml = flows.map(f =>
+    `    <bpmn:sequenceFlow id="${f.id}" sourceRef="${f.source}" targetRef="${f.target}" />`
+  ).join('\n');
+
+  // DI: pool, lanes, shapes, edges
+  const poolShape = `      <bpmndi:BPMNShape id="Participant_1_di" bpmnElement="Participant_1" isHorizontal="true">
+        <dc:Bounds x="${POOL_X}" y="${POOL_Y}" width="${poolWidth}" height="${poolHeight}" />
+      </bpmndi:BPMNShape>`;
+
+  const laneShapes = distinctRoles.map((r, i) =>
+    `      <bpmndi:BPMNShape id="Lane_${i + 1}_di" bpmnElement="Lane_${i + 1}" isHorizontal="true">
+        <dc:Bounds x="${POOL_X + POOL_HEADER}" y="${POOL_Y + i * LANE_HEIGHT}" width="${poolWidth - POOL_HEADER}" height="${LANE_HEIGHT}" />
+      </bpmndi:BPMNShape>`
+  ).join('\n');
+
+  const taskShapes = taskPositions.map((t, i) =>
+    `      <bpmndi:BPMNShape id="Task_${i + 1}_di" bpmnElement="Task_${i + 1}">
+        <dc:Bounds x="${t.x}" y="${t.y}" width="${TASK_W}" height="${TASK_H}" />
+      </bpmndi:BPMNShape>`
+  ).join('\n');
+
+  const startShape = `      <bpmndi:BPMNShape id="StartEvent_1_di" bpmnElement="StartEvent_1">
+        <dc:Bounds x="${startEvent.x}" y="${startEvent.y}" width="${EVENT_SIZE}" height="${EVENT_SIZE}" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="${startEvent.x - 20}" y="${startEvent.y + EVENT_SIZE + 4}" width="80" height="14" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>`;
+  const endShape = `      <bpmndi:BPMNShape id="EndEvent_1_di" bpmnElement="EndEvent_1">
+        <dc:Bounds x="${endEvent.x}" y="${endEvent.y}" width="${EVENT_SIZE}" height="${EVENT_SIZE}" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="${endEvent.x - 20}" y="${endEvent.y + EVENT_SIZE + 4}" width="80" height="14" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>`;
+
+  const flowEdges = flows.map(f => {
+    const wp = flowWaypoints(f.source, f.target);
+    const wpXml = wp.map(p => `        <di:waypoint x="${Math.round(p.x)}" y="${Math.round(p.y)}" />`).join('\n');
+    return `      <bpmndi:BPMNEdge id="${f.id}_di" bpmnElement="${f.id}">
+${wpXml}
+      </bpmndi:BPMNEdge>`;
+  }).join('\n');
+
+  return `<?xml version="1.0" encoding="UTF-8"?>
+<bpmn:definitions xmlns:bpmn="http://www.omg.org/spec/BPMN/20100524/MODEL"
+  xmlns:bpmndi="http://www.omg.org/spec/BPMN/20100524/DI"
+  xmlns:dc="http://www.omg.org/spec/DD/20100524/DC"
+  xmlns:di="http://www.omg.org/spec/DD/20100524/DI"
+  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  id="Definitions_1"
+  targetNamespace="http://bpmn.io/schema/bpmn">
+  <bpmn:collaboration id="Collaboration_1">
+    <bpmn:participant id="Participant_1" name="" processRef="Process_1" />
+  </bpmn:collaboration>
+  <bpmn:process id="Process_1" isExecutable="false">
+    <bpmn:laneSet id="LaneSet_1">
+${lanesXml}
+    </bpmn:laneSet>
+${startXml}
+${tasksXml}
+${endXml}
+${flowsXml}
+  </bpmn:process>
+  <bpmndi:BPMNDiagram id="BPMNDiagram_1">
+    <bpmndi:BPMNPlane id="BPMNPlane_1" bpmnElement="Collaboration_1">
+${poolShape}
+${laneShapes}
+${startShape}
+${taskShapes}
+${endShape}
+${flowEdges}
+    </bpmndi:BPMNPlane>
+  </bpmndi:BPMNDiagram>
+</bpmn:definitions>`;
+}
+
+function buildMermaid(model) {
+  if (!model.activities.length) return 'flowchart TD\n  A["No activities to display"]';
+  // Sanitiser for node labels: quotes get escaped, parens/brackets/semicolons removed,
+  // newlines flattened, length capped. Mermaid handles the rest when wrapped in "".
+  const safe = (s, max = 80) => (s || '')
+    .replace(/[\r\n]+/g, ' ')
+    .replace(/[()\[\]{}|]/g, '')
+    .replace(/[;]+/g, ',')
+    .replace(/"/g, '\\"')
+    .replace(/\s+/g, ' ')
+    .trim()
+    .slice(0, max);
+  const nodeId = (i) => `A${i+1}`;
+
+  const roleBuckets = {};
+  model.activities.forEach((a, i) => {
+    const primary = (a.role || 'Unassigned').split(',')[0].trim() || 'Unassigned';
+    if (!roleBuckets[primary]) roleBuckets[primary] = [];
+    roleBuckets[primary].push({ a, i });
+  });
+
+  const lines = ['flowchart TD'];
+  lines.push(`  start(["Trigger: ${safe(model.trigger || 'Process starts', 60)}"])`);
+
+  Object.entries(roleBuckets).forEach(([role, items], r) => {
+    lines.push(`  subgraph lane${r}["${safe(role, 60)}"]`);
+    lines.push('    direction TB');
+    items.forEach(({a, i}) => {
+      const label = `${a.number} ${safe(a.title, 60)}`;
+      const id = nodeId(i);
+      const isDec = a.tasks.some(t => t.isDecision);
+      if (isDec) lines.push(`    ${id}{"${label}"}`);
+      else       lines.push(`    ${id}["${label}"]`);
+    });
+    lines.push('  end');
+  });
+
+  lines.push(`  start --> ${nodeId(0)}`);
+  for (let i = 0; i < model.activities.length - 1; i++) {
+    lines.push(`  ${nodeId(i)} --> ${nodeId(i+1)}`);
+  }
+  lines.push(`  ${nodeId(model.activities.length - 1)} --> finish(["Output: ${safe(model.outputs || 'Process complete', 60)}"])`);
+
+  model.activities.forEach((a, i) => {
+    a.links.forEach((l, li) => {
+      if (l.type === 'process') {
+        lines.push(`  ${nodeId(i)} -.linked.-> SP${i}_${li}["${safe(l.name, 60)}"]`);
+      }
+    });
+  });
+
+  return lines.join('\n');
+}
+
+/* ============================================================
+   RESULTS RENDERING
+   ============================================================ */
+async function renderResults() {
+  document.getElementById('resultsCard').classList.remove('hidden');
+  document.getElementById('resultsCard').scrollIntoView({ behavior: 'smooth' });
+
+  // Summary bar
+  const counts = currentIssues.reduce((acc, i) => { acc[i.severity] = (acc[i.severity]||0)+1; return acc; }, {});
+  const sb = document.getElementById('summaryBar');
+  sb.innerHTML = `
+    <div class="summary-stat error"><span class="num">${counts.error||0}</span><span class="lbl">Errors</span></div>
+    <div class="summary-stat warning"><span class="num">${counts.warning||0}</span><span class="lbl">Warnings</span></div>
+    <div class="summary-stat info"><span class="num">${counts.info||0}</span><span class="lbl">Suggestions</span></div>
+    <div class="summary-stat pass"><span class="num">${currentModel.activities.length}</span><span class="lbl">Activities</span></div>
+    <div class="summary-stat"><span class="num">${currentModel.activities.reduce((s,a)=>s+a.tasks.length,0)}</span><span class="lbl">Tasks</span></div>
+  `;
+
+  // Recommendation
+  const r = currentRecommendation;
+  document.getElementById('recommendationOut').innerHTML = `
+    <div class="recommendation ${r.type}">
+      <h3>${r.title}</h3>
+      <p>${r.summary}</p>
+      <details open><summary>Why? (${r.reasons.length} factor${r.reasons.length===1?'':'s'} considered)</summary>
+        <ul>${r.reasons.map(x => `<li>${x}</li>`).join('')}</ul>
+      </details>
+    </div>
+  `;
+
+  // Issues
+  const grouped = { error: [], warning: [], info: [] };
+  currentIssues.forEach(i => grouped[i.severity]?.push(i));
+  const renderIssue = (i) => `
+    <div class="issue ${i.severity}">
+      <div class="row1">
+        <span class="severity">${i.severity}</span>
+        <span class="source pill ${i.source.toLowerCase()}">${i.source}</span>
+      </div>
+      <div class="message">${i.message}</div>
+      ${i.location ? `<div class="location">${i.location}</div>` : ''}
+      ${i.suggestion ? `<div class="suggestion"><strong>Try:</strong> ${i.suggestion}</div>` : ''}
+    </div>`;
+  document.getElementById('issuesOut').innerHTML = currentIssues.length === 0
+    ? '<p>No issues found — your process meets the encoded rules.</p>'
+    : (
+        (grouped.error.length ? `<h3>Errors</h3>${grouped.error.map(renderIssue).join('')}` : '') +
+        (grouped.warning.length ? `<h3>Warnings</h3>${grouped.warning.map(renderIssue).join('')}` : '') +
+        (grouped.info.length ? `<h3>Suggestions</h3>${grouped.info.map(renderIssue).join('')}` : '')
+      );
+
+  // Workflow — render with bpmn-js (Mermaid kept as fallback)
+  const wf = document.getElementById('workflowRender');
+  wf.innerHTML = '';
+  let bpmnOk = false;
+  if (typeof BpmnJS !== 'undefined' && currentBpmnXml) {
+    try {
+      if (bpmnViewer) { try { bpmnViewer.destroy(); } catch (e) {} }
+      bpmnViewer = new BpmnJS({ container: wf });
+      const { warnings } = await bpmnViewer.importXML(currentBpmnXml);
+      if (warnings && warnings.length) console.warn('BPMN warnings:', warnings);
+      // Try to fit-viewport — if container is hidden (tab not active) this throws,
+      // so we defer the zoom + theme to when the workflow tab is shown.
+      // Populate the horizontal process-title heading above the diagram
+      const titleEl = document.getElementById('workflowTitle');
+      if (titleEl) titleEl.textContent = currentModel.title || '';
+      const tryFitAndTheme = () => {
+        try {
+          bpmnViewer.get('canvas').zoom('fit-viewport', 'auto');
+        } catch (e) {
+          // Likely the container has 0 dimensions because the tab is hidden.
+          // applyBpmnTheme will be retried via the tab activation handler.
+        }
+        const activeTheme = document.querySelector('#themeToggle button.active');
+        applyBpmnTheme(activeTheme ? activeTheme.dataset.theme : 'nintex');
+      };
+      requestAnimationFrame(() => requestAnimationFrame(tryFitAndTheme));
+      bpmnOk = true;
+    } catch (e) {
+      console.error('bpmn-js render failed:', e);
+      wf.innerHTML = '';
+    }
+  }
+  if (!bpmnOk) {
+    try {
+      const { svg } = await mermaid.render('mermaid-svg-' + Date.now(), currentMermaid);
+      wf.innerHTML = svg;
+    } catch (e) {
+      wf.innerHTML = '<p><em>Could not render diagram:</em> ' + e.message + '</p><pre>' + currentMermaid + '</pre>';
+    }
+  }
+
+  // Document preview — store original so Reset edits can restore it.
+  originalDocHtml = renderDocPreview(currentModel);
+  document.getElementById('docPreview').innerHTML = originalDocHtml;
+
+}
+
+function renderDocPreview(m) {
+  // Render a labelled meta field. Splits on ';' for bulleted sub-items when present.
+  const metaField = (label, value) => {
+    const v = (value || '').trim();
+    if (!v) return `<p><strong>${label}:</strong> —</p>`;
+    const parts = v.split(/\s*;\s*/).filter(Boolean);
+    if (parts.length > 1) {
+      return `<p><strong>${label}:</strong></p><ul>${parts.map(p => `<li>${escapeHtml(p)}</li>`).join('')}</ul>`;
+    }
+    return `<p><strong>${label}:</strong> ${escapeHtml(v)}</p>`;
+  };
+  let html = `<h1>${escapeHtml(m.title || 'Untitled process')}${m.version ? ' <small>'+escapeHtml(m.version)+'</small>' : ''}</h1>`;
+  html += `<p class="generated-line">Generated: ${formatAusDate(new Date())}</p>`;
+  html += `<div class="meta">`;
+  html += `<p><strong>Owner:</strong> ${escapeHtml(m.owner||'—')}</p>`;
+  html += `<p><strong>Expert:</strong> ${escapeHtml(m.expert||'—')}</p>`;
+  html += metaField('Trigger', m.trigger);
+  html += metaField('Inputs', m.inputs);
+  html += metaField('Outputs', m.outputs);
+  html += `</div>`;
+  if (m.objective) html += `<h2>Objective</h2><p>${escapeHtml(m.objective)}</p>`;
+  if (m.background) html += `<h2>Background</h2><p>${escapeHtml(m.background)}</p>`;
+  html += `<h2>Procedure</h2>`;
+  m.activities.forEach(a => {
+    html += `<div class="activity"><div><span class="num">${escapeHtml(a.number)}</span> <strong>${escapeHtml(a.title)}</strong></div>`;
+    if (a.role) html += `<div class="role">Role: ${escapeHtml(a.role)}</div>`;
+    a.tasks.forEach(t => {
+      html += `<div class="task"><strong>${escapeHtml(t.letter)}.</strong> ${escapeHtml(t.text)}</div>`;
+    });
+    a.notes.forEach(n => {
+      html += `<div class="note"><strong>NOTE:</strong> ${escapeHtml(n.title)}<br>${escapeHtml(n.body||'')}</div>`;
+    });
+    a.links.forEach(l => {
+      html += `<div class="task" style="font-style:italic;color:#666;">&#x21B3; Linked process: ${escapeHtml(l.name)}</div>`;
+    });
+    html += `</div>`;
+  });
+  return html;
+}
+function escapeHtml(s) {
+  return (s == null ? '' : String(s))
+    .replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+}
+
+// Australian date format: "29 April 2026"
+function formatAusDate(d) {
+  const months = ['January','February','March','April','May','June',
+    'July','August','September','October','November','December'];
+  return `${d.getDate()} ${months[d.getMonth()]} ${d.getFullYear()}`;
+}
+
+/* ============================================================
+   WORD (.docx) EXPORT
+   ============================================================ */
+async function downloadAsDocx() {
+  if (!currentModel) return;
+  const m = currentModel;
+  const D = window.docx;
+  if (!D) { alert('Word library not loaded.'); return; }
+  const { Document, Packer, Paragraph, TextRun, HeadingLevel, AlignmentType } = D;
+
+  // If the user has edited the doc preview, walk the live HTML and emit paragraphs from it.
+  // Otherwise, build the doc from the structured model (cleaner formatting).
+  const docPreviewEl = document.getElementById('docPreview');
+  const liveHtml = docPreviewEl ? docPreviewEl.innerHTML.trim() : '';
+  const userHasEdited = liveHtml && liveHtml !== originalDocHtml.trim();
+  if (userHasEdited) {
+    const children = htmlToDocxParagraphs(docPreviewEl, D);
+    const doc = new Document({ sections: [{ properties: {}, children }] });
+    const blob = await Packer.toBlob(doc);
+    triggerDownload(blob, ((m.title || 'process').replace(/[^\w\-]+/g,'_')) + '.docx');
+    return;
+  }
+
+  const para = (text, opts={}) => new Paragraph({
+    children: [new TextRun({ text: String(text||''), bold: !!opts.bold, italics: !!opts.italic })],
+    heading: opts.heading,
+    spacing: opts.spacing || { after: 120 }
+  });
+
+  const children = [];
+  children.push(new Paragraph({
+    children: [new TextRun({ text: m.title || 'Untitled process', bold: true, size: 32, color: 'E61E2A' })],
+    spacing: { after: 200 }
+  }));
+  if (m.version) children.push(para(m.version, { italic: true }));
+  if (m.objective) { children.push(para('Objective', { heading: HeadingLevel.HEADING_2 })); children.push(para(m.objective)); }
+  if (m.background) { children.push(para('Background', { heading: HeadingLevel.HEADING_2 })); children.push(para(m.background)); }
+  // Helper: render a labelled field. If the value contains '; ' separators,
+  // emit the label then a bulleted list. Otherwise inline.
+  const labelledField = (label, value) => {
+    const v = (value || '').trim();
+    if (!v) {
+      children.push(para(`${label}: —`));
+      return;
+    }
+    const parts = v.split(/\s*;\s*/).filter(Boolean);
+    if (parts.length > 1) {
+      children.push(new Paragraph({
+        children: [new TextRun({ text: `${label}:`, bold: true })],
+        spacing: { after: 40 }
+      }));
+      parts.forEach(p => children.push(new Paragraph({
+        children: [new TextRun({ text: '• ' + p })],
+        indent: { left: 360 }, spacing: { after: 30 }
+      })));
+    } else {
+      children.push(para(`${label}: ${v}`));
+    }
+  };
+  children.push(para(`Generated: ${formatAusDate(new Date())}`, { italic: true }));
+  children.push(para(`Owner: ${m.owner || '—'}`));
+  children.push(para(`Expert: ${m.expert || '—'}`));
+  labelledField('Trigger', m.trigger);
+  labelledField('Inputs', m.inputs);
+  labelledField('Outputs', m.outputs);
+  children.push(para('Procedure', { heading: HeadingLevel.HEADING_1 }));
+  m.activities.forEach(a => {
+    children.push(new Paragraph({
+      children: [new TextRun({ text: `${a.number} `, bold: true, color: 'E61E2A' }),
+                 new TextRun({ text: a.title, bold: true })],
+      spacing: { before: 200, after: 60 }
+    }));
+    if (a.role) children.push(para(a.role, { italic: true }));
+    a.tasks.forEach(t => children.push(new Paragraph({
+      children: [new TextRun({ text: `${t.letter}. `, bold: true }), new TextRun({ text: t.text })],
+      indent: { left: 360 }, spacing: { after: 40 }
+    })));
+    a.notes.forEach(n => {
+      children.push(new Paragraph({
+        children: [new TextRun({ text: 'NOTE: ', bold: true, color: 'C77700' }),
+                   new TextRun({ text: n.title, bold: true })],
+        indent: { left: 360 }, spacing: { before: 80, after: 20 }
+      }));
+      if (n.body) children.push(new Paragraph({
+        children: [new TextRun({ text: n.body })],
+        indent: { left: 360 }, spacing: { after: 60 }
+      }));
+    });
+    a.links.forEach(l => children.push(new Paragraph({
+      children: [new TextRun({ text: `↳ Linked process: ${l.name}`, italics: true, color: '666666' })],
+      indent: { left: 360 }, spacing: { after: 60 }
+    })));
+  });
+
+  const doc = new Document({ sections: [{ properties: {}, children }] });
+  const blob = await Packer.toBlob(doc);
+  triggerDownload(blob, (m.title || 'process').replace(/[^\w\-]+/g,'_') + '.docx');
+}
+
+function triggerDownload(blob, filename) {
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url; a.download = filename; document.body.appendChild(a); a.click();
+  setTimeout(() => { URL.revokeObjectURL(url); a.remove(); }, 200);
+}
+
+/* ============================================================
+   HTML -> docx Paragraph walker
+   Walks the contenteditable doc preview and converts to docx
+   Paragraph/TextRun objects so the user's edits are captured.
+   Handles: h1, h2, h3, h4, p, div, ul/ol > li, strong/b, em/i.
+   ============================================================ */
+function htmlToDocxParagraphs(rootEl, D) {
+  const { Paragraph, TextRun, HeadingLevel } = D;
+  const out = [];
+
+  const collectRuns = (el, baseStyle = {}) => {
+    const runs = [];
+    const walk = (node, style) => {
+      if (node.nodeType === 3) {
+        const text = node.nodeValue;
+        if (text) runs.push(new TextRun({ text, ...style }));
+        return;
+      }
+      if (node.nodeType !== 1) return;
+      const tag = node.tagName.toLowerCase();
+      let s = { ...style };
+      if (tag === 'strong' || tag === 'b') s.bold = true;
+      if (tag === 'em' || tag === 'i') s.italics = true;
+      if (tag === 'br') { runs.push(new TextRun({ break: 1 })); return; }
+      node.childNodes.forEach(child => walk(child, s));
+    };
+    el.childNodes.forEach(child => walk(child, baseStyle));
+    return runs.length ? runs : [new TextRun({ text: '' })];
+  };
+
+  const emitBlock = (el) => {
+    const tag = el.tagName ? el.tagName.toLowerCase() : '';
+    if (!tag) return;
+    if (tag === 'h1') {
+      out.push(new Paragraph({ children: collectRuns(el, { bold: true, size: 32, color: 'E61E2A' }), spacing: { before: 240, after: 120 } }));
+    } else if (tag === 'h2') {
+      out.push(new Paragraph({ children: collectRuns(el, { bold: true, size: 26, color: '1D1D1D' }), heading: HeadingLevel.HEADING_2, spacing: { before: 200, after: 100 } }));
+    } else if (tag === 'h3') {
+      out.push(new Paragraph({ children: collectRuns(el, { bold: true, size: 22 }), heading: HeadingLevel.HEADING_3, spacing: { before: 160, after: 80 } }));
+    } else if (tag === 'h4') {
+      out.push(new Paragraph({ children: collectRuns(el, { bold: true, size: 20 }), heading: HeadingLevel.HEADING_4, spacing: { before: 120, after: 60 } }));
+    } else if (tag === 'ul' || tag === 'ol') {
+      el.querySelectorAll(':scope > li').forEach(li => {
+        out.push(new Paragraph({
+          children: [new TextRun({ text: (tag === 'ol' ? '1. ' : '• ') }), ...collectRuns(li)],
+          indent: { left: 360 }, spacing: { after: 60 }
+        }));
+      });
+    } else if (tag === 'p' || tag === 'div') {
+      // If the block contains its own block children, recurse.
+      const blockChildren = Array.from(el.children).filter(c =>
+        ['h1','h2','h3','h4','p','div','ul','ol'].includes(c.tagName.toLowerCase())
+      );
+      if (blockChildren.length) {
+        Array.from(el.children).forEach(c => emitBlock(c));
+      } else {
+        const text = el.textContent.trim();
+        if (text || el.querySelector('br')) {
+          out.push(new Paragraph({ children: collectRuns(el), spacing: { after: 100 } }));
+        }
+      }
+    } else {
+      const text = el.textContent.trim();
+      if (text) out.push(new Paragraph({ children: collectRuns(el), spacing: { after: 100 } }));
+    }
+  };
+
+  Array.from(rootEl.children).forEach(el => emitBlock(el));
+  return out.length ? out : [new Paragraph({ children: [new TextRun({ text: '' })] })];
+}
+
+/* ============================================================
+   PDF EXPORT
+   ============================================================ */
+async function downloadAsPdf() {
+  if (!currentModel) return;
+  const wrap = document.createElement('div');
+  wrap.style.padding = '24px';
+  wrap.style.fontFamily = 'Segoe UI, Arial, sans-serif';
+  wrap.style.color = '#1D1D1D';
+  // Use LIVE doc preview HTML (so user edits are included).
+  wrap.innerHTML = document.getElementById('docPreview').innerHTML;
+  // append the rendered SVG
+  const wf = document.getElementById('workflowRender').innerHTML;
+  if (wf) {
+    const wfWrap = document.createElement('div');
+    wfWrap.style.marginTop = '24px';
+    wfWrap.style.borderTop = '2px solid #E61E2A';
+    wfWrap.style.paddingTop = '16px';
+    wfWrap.innerHTML = '<h2 style="color:#E61E2A;font-family:Segoe UI,Arial,sans-serif;">Visual workflow</h2>' + wf;
+    wrap.appendChild(wfWrap);
+  }
+  const opt = {
+    margin: 12,
+    filename: ((currentModel.title || 'process').replace(/[^\w\-]+/g,'_')) + '.pdf',
+    image: { type: 'jpeg', quality: 0.95 },
+    html2canvas: { scale: 2 },
+    jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' },
+    pagebreak: { mode: ['avoid-all','css','legacy'] }
+  };
+  await html2pdf().set(opt).from(wrap).save();
+}
+
+/* ============================================================
+   SVG / PNG EXPORT
+   ============================================================ */
+async function downloadSvg() {
+  let svgString = '';
+  if (bpmnViewer) {
+    try { svgString = (await bpmnViewer.saveSVG()).svg; } catch (e) { console.warn('saveSVG failed', e); }
+  }
+  if (!svgString) {
+    const svg = document.querySelector('#workflowRender svg');
+    if (!svg) { alert('No diagram to download.'); return; }
+    svgString = new XMLSerializer().serializeToString(svg);
+  }
+  const fname = ((currentModel && currentModel.title) || 'workflow').replace(/[^A-Za-z0-9_\-]+/g, '_');
+  const blob = new Blob([svgString], { type: 'image/svg+xml' });
+  triggerDownload(blob, fname + '.svg');
+}
+
+async function downloadPng() {
+  let xml = '';
+  if (bpmnViewer) {
+    try { xml = (await bpmnViewer.saveSVG()).svg; } catch (e) {}
+  }
+  if (!xml) {
+    const svg = document.querySelector('#workflowRender svg');
+    if (!svg) { alert('No diagram to download.'); return; }
+    xml = new XMLSerializer().serializeToString(svg);
+  }
+  const fname = ((currentModel && currentModel.title) || 'workflow').replace(/[^A-Za-z0-9_\-]+/g, '_');
+  const img = new Image();
+  const blob = new Blob([xml], { type: 'image/svg+xml;charset=utf-8' });
+  const url = URL.createObjectURL(blob);
+  img.onload = () => {
+    const canvas = document.createElement('canvas');
+    canvas.width = img.naturalWidth || 1400;
+    canvas.height = img.naturalHeight || 900;
+    const ctx = canvas.getContext('2d');
+    ctx.fillStyle = '#FFFFFF'; ctx.fillRect(0, 0, canvas.width, canvas.height);
+    ctx.drawImage(img, 0, 0);
+    canvas.toBlob(b => triggerDownload(b, fname + '.png'), 'image/png');
+    URL.revokeObjectURL(url);
+  };
+  img.src = url;
+}
+
+/* ============================================================
+   BPMN XML EXPORT (.bpmn)
+   ============================================================ */
+function downloadBpmn() {
+  if (!currentBpmnXml) { alert('No BPMN diagram to export. Run Analyse first.'); return; }
+  const fname = ((currentModel && currentModel.title) || 'process').replace(/[^A-Za-z0-9_\-]+/g, '_');
+  const blob = new Blob([currentBpmnXml], { type: 'application/bpmn+xml' });
+  triggerDownload(blob, fname + '.bpmn');
+}
+
+/* ============================================================
+   BLANK WORD TEMPLATE GENERATOR
+   ============================================================ */
+async function generateBlankTemplate() {
+  const D = window.docx;
+  if (!D) { alert('Word library not loaded.'); return; }
+  const { Document, Packer, Paragraph, TextRun, HeadingLevel } = D;
+  const para = (text, opts={}) => new Paragraph({
+    children: [new TextRun({ text: String(text||''), bold: !!opts.bold, italics: !!opts.italic, color: opts.color, size: opts.size })],
+    heading: opts.heading, spacing: opts.spacing || { after: 120 }
+  });
+  const c = [];
+
+  c.push(new Paragraph({
+    children: [new TextRun({ text: 'CoVE process \u2014 input template', bold: true, size: 32, color: 'E61E2A' })]
+  }));
+  c.push(para('How to use this template', { heading: HeadingLevel.HEADING_2 }));
+  c.push(para('1. Replace every bracketed placeholder [like this] with your own content.', { italic: true }));
+  c.push(para('2. Keep all the bold headings exactly as they appear \u2014 the Process Writing Assistant uses them to read your file.', { italic: true }));
+  c.push(para('3. Add or remove activity blocks as needed (aim for 3 to 10 activities).', { italic: true }));
+  c.push(para('4. Save and upload this file back into the Process Writing Assistant.', { italic: true }));
+
+  c.push(para('Process metadata', { heading: HeadingLevel.HEADING_1 }));
+  c.push(para('Process name: [CoVE - <Department> - Verb-first title]'));
+  c.push(para('Owner: [Single name]'));
+  c.push(para('Expert: [Single name \u2014 must be different from Owner]'));
+  c.push(para('Trigger: [What starts the process]'));
+  c.push(para('Inputs: [Forms, data, materials needed \u2014 or "None"]'));
+  c.push(para('Outputs: [What the process produces]'));
+  c.push(para('Objective: [One-sentence statement of what the process achieves]'));
+  c.push(para('Background: [Brief context \u2014 why this process exists]'));
+
+  c.push(para('Activities', { heading: HeadingLevel.HEADING_1 }));
+  c.push(para('Each activity title starts with a verb (2 to 7 words). Each activity has one responsible role. Each task starts with a verb.', { italic: true }));
+
+  for (let i = 1; i <= 5; i++) {
+    c.push(para(i + '.0 [Verb-first activity title]', { heading: HeadingLevel.HEADING_2 }));
+    c.push(para('Role: [Single role name]'));
+    c.push(para('a [Task \u2014 verb first]'));
+    c.push(para('b [Task \u2014 verb first]'));
+    c.push(para('c [Task \u2014 verb first]'));
+    if (i === 1) {
+      c.push(para('NOTE [What if ...?]', { italic: true, color: 'C77700' }));
+      c.push(para('[Answer to the question. Notes must always be a question and an answer.]', { italic: true }));
+    }
+  }
+
+  c.push(para('Add more activities below (up to 10). If you need more, look for a logical break and split into sub-processes.', { italic: true }));
+
+  c.push(para('Quick reminders', { heading: HeadingLevel.HEADING_1 }));
+  const reminders = [
+    'Define your Trigger, Inputs and Outputs (CoVE Rule 1).',
+    'Map high-level activities first, then add tasks (CoVE Rule 2, Nintex Technique 3).',
+    'One responsible role per activity (CoVE Rule 3).',
+    'Map what happens 80% of the time. Use NOTEs (Q&A) for exceptions (CoVE Rule 4, Nintex Technique 1).',
+    'Keep language concise (CoVE Rule 5).',
+    'Start every activity and task with a verb (CoVE Rule 6, Nintex Technique 5).',
+    'Use decision boxes for Yes/No questions, with both branches clear (CoVE Rule 7).',
+    'Attach guides or links for transactional detail (CoVE Rule 8, Nintex Technique 7).',
+    'Define clear handover points where roles change (CoVE Rule 11).',
+    'Owner and Expert must be different people (RMIT).',
+    'Avoid "ALL STAFF". Use Users (system context), Employees (any staff), Requestor (service requests).'
+  ];
+  reminders.forEach(r => c.push(new Paragraph({
+    children: [new TextRun({ text: '\u2022 ' + r })],
+    indent: { left: 360 }, spacing: { after: 60 }
+  })));
+
+  const doc = new Document({ sections: [{ properties: {}, children: c }] });
+  const blob = await Packer.toBlob(doc);
+  triggerDownload(blob, 'CoVE-Process-Writing-Template.docx');
+}
+
+/* ============================================================
+   Wire up download buttons
+   ============================================================ */
+document.getElementById('downloadDocxBtn').addEventListener('click', downloadAsDocx);
+document.getElementById('downloadPdfBtn').addEventListener('click', downloadAsPdf);
+document.getElementById('downloadSvgBtn').addEventListener('click', downloadSvg);
+document.getElementById('downloadPngBtn').addEventListener('click', downloadPng);
+document.getElementById('downloadBpmnBtn').addEventListener('click', downloadBpmn);
+document.getElementById('zoomInBtn').addEventListener('click', () => {
+  if (!bpmnViewer) return;
+  const c = bpmnViewer.get('canvas');
+  c.zoom(c.zoom() * 1.2);
+});
+document.getElementById('zoomOutBtn').addEventListener('click', () => {
+  if (!bpmnViewer) return;
+  const c = bpmnViewer.get('canvas');
+  c.zoom(c.zoom() / 1.2);
+});
+document.getElementById('zoomFitBtn').addEventListener('click', () => {
+  if (!bpmnViewer) return;
+  try { bpmnViewer.get('canvas').zoom('fit-viewport', 'auto'); } catch (e) {}
+});
+document.querySelectorAll('#themeToggle button').forEach(btn => {
+  btn.addEventListener('click', () => {
+    document.querySelectorAll('#themeToggle button').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+    applyBpmnTheme(btn.dataset.theme);
+  });
+});
+document.getElementById('resetEditsBtn').addEventListener('click', () => {
+  if (originalDocHtml) document.getElementById('docPreview').innerHTML = originalDocHtml;
+});
+
+</script>
+</body>
+</html>
