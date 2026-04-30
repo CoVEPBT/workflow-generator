@@ -177,7 +177,11 @@
   .file-drop.dragging { border-color: var(--rmit-red); background: #FFF5F5; }
   .file-drop input[type="file"] { display: none; }
   .file-drop-label { color: var(--rmit-red); font-weight: 600; cursor: pointer; text-decoration: underline; }
-  .file-name { margin-top: 10px; font-size: 13px; color: var(--rmit-text); }
+  .file-name { margin-top: 10px; font-size: 13px; color: var(--rmit-text); display: inline-flex; align-items: center; gap: 6px; padding: 6px 10px; border-radius: 4px; }
+  .file-name:empty { display: none; }
+  .file-name.success { background: #E8F5E9; color: #2E7D32; font-weight: 500; }
+  .file-name.error { background: #FFEBEE; color: #C62828; font-weight: 500; }
+  .file-name svg { flex-shrink: 0; }
 
   .form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
   .form-grid .full { grid-column: 1 / -1; }
@@ -196,22 +200,164 @@
 
   /* Results */
   .results-tabs .tab.active { color: var(--rmit-red); border-bottom-color: var(--rmit-red); }
-  .summary-bar {
-    display: flex; gap: 20px; flex-wrap: wrap; padding: 14px;
-    background: var(--rmit-grey); border-radius: 4px; margin-bottom: 16px;
-    justify-content: center;
+  .summary-groups {
+    display: flex; gap: 16px; flex-wrap: wrap; margin-bottom: 16px;
+    align-items: stretch; justify-content: center;
   }
-  .summary-stat { display: flex; flex-direction: column; }
-  .summary-stat .num { font-size: 24px; font-weight: 700; }
-  .summary-stat .lbl { font-size: 12px; text-transform: uppercase; letter-spacing: 0.5px; }
-  .summary-stat.error .num { color: var(--severity-error); }
-  .summary-stat.warning .num { color: var(--severity-warning); }
-  .summary-stat.info .num { color: var(--severity-info); }
-  .summary-stat.pass .num { color: var(--severity-pass); }
+  .summary-group {
+    flex: 1 1 320px; padding: 14px 16px; border-radius: 6px;
+    border: 1px solid #E2E8F0;
+  }
+  .summary-group.process-shape { background: #F8FAFC; }
+  .summary-group.findings { background: #FFFCF5; border-color: #F1E5C8; }
+  .summary-group-title {
+    font-size: 11px; text-transform: uppercase; letter-spacing: 0.8px;
+    color: #475569; font-weight: 600; margin: 0 0 10px;
+  }
+  .summary-stats-row {
+    display: flex; gap: 14px; flex-wrap: wrap;
+  }
+  .summary-stat {
+    display: flex; align-items: center; gap: 8px;
+    padding: 8px 12px; border-radius: 6px;
+    background: #FFFFFF; border: 1px solid transparent;
+  }
+  .summary-stat .num { font-size: 22px; font-weight: 700; color: #0F172A; line-height: 1; }
+  .summary-stat .lbl { font-size: 12px; color: #475569; text-transform: uppercase; letter-spacing: 0.4px; font-weight: 600; }
+  .summary-stat.findings-stat { cursor: pointer; transition: all 0.15s ease; min-height: 44px; }
+  .summary-stat.findings-stat:hover { background: #F8FAFC; border-color: #CBD5E1; transform: translateY(-1px); }
+  .summary-stat.findings-stat:focus-visible { outline: 2px solid var(--rmit-red); outline-offset: 2px; }
+  .summary-stat.findings-stat.error { background: #FFF5F5; border-color: #FED7D7; }
+  .summary-stat.findings-stat.warning { background: #FFF8E6; border-color: #FAE0A2; }
+  .summary-stat.findings-stat.info { background: #EFF6FF; border-color: #C7DBF2; }
+  .summary-stat.findings-stat.error:hover { background: #FFE3E3; border-color: #FCA5A5; }
+  .summary-stat.findings-stat.warning:hover { background: #FFEFC7; border-color: #F4CD7B; }
+  .summary-stat.findings-stat.info:hover { background: #DBEAFE; border-color: #93C5FD; }
+  .summary-stat.findings-stat .num { font-size: 20px; }
 
   /* Severity icons in issues + summary */
   .severity-icon { display: inline-block; width: 14px; height: 14px; vertical-align: middle; margin-right: 4px; }
-  .summary-stat .severity-icon { width: 18px; height: 18px; margin-right: 6px; vertical-align: -3px; }
+  .summary-stat .severity-icon { width: 18px; height: 18px; margin: 0; }
+
+  /* Auto-correct banner (e.g. AU spelling fixes applied before analysis) */
+  .auto-fix-banner {
+    display: flex; gap: 12px; align-items: flex-start;
+    background: #E8F5E9; border: 1px solid #BFDFC1; border-radius: 6px;
+    padding: 12px 14px; margin: 0 0 14px;
+    font-size: 13.5px; line-height: 1.5; color: #1B5E20;
+  }
+  .auto-fix-banner .auto-fix-icon {
+    flex-shrink: 0; width: 22px; height: 22px;
+    display: flex; align-items: center; justify-content: center;
+    background: #2E7D32; color: #FFFFFF; border-radius: 50%;
+    font-weight: 700; font-size: 14px;
+  }
+  .auto-fix-banner .auto-fix-text { flex: 1; }
+  .auto-fix-banner .auto-fix-text strong { color: #14532D; }
+  .auto-fix-banner details { margin-top: 6px; }
+  .auto-fix-banner details summary {
+    cursor: pointer; font-weight: 600; font-size: 12.5px;
+    color: #14532D; padding: 2px 0; list-style: revert;
+  }
+  .auto-fix-banner details summary:hover { text-decoration: underline; }
+  .auto-fix-banner details ul {
+    margin: 8px 0 0; padding-left: 20px; font-size: 12.5px;
+    max-height: 180px; overflow-y: auto;
+  }
+  .auto-fix-banner details ul li { margin-bottom: 3px; }
+  .auto-fix-banner details ul li code {
+    font-family: 'Courier New', monospace; background: #FFFFFF;
+    padding: 1px 5px; border-radius: 3px; border: 1px solid #BFDFC1;
+  }
+  .auto-fix-banner-dismiss {
+    flex-shrink: 0; background: none; border: 1px solid #BFDFC1;
+    color: #1B5E20; border-radius: 4px; cursor: pointer;
+    width: 28px; height: 28px; font-size: 16px; line-height: 1;
+  }
+  .auto-fix-banner-dismiss:hover { background: #C8E6C9; }
+  .auto-fix-banner.hidden { display: none; }
+  .auto-fix-banner.manual {
+    background: #EFF6FF; border-color: #C7DBF2; color: #1E3A5F;
+  }
+  .auto-fix-banner.manual .auto-fix-icon { background: #1F6FB5; }
+  .auto-fix-banner.manual .auto-fix-text strong { color: #0F2A47; }
+  .auto-fix-banner.manual details summary { color: #0F2A47; }
+  .auto-fix-banner.manual details ul li code {
+    background: #FFFFFF; border-color: #C7DBF2;
+  }
+  .auto-fix-banner.manual .auto-fix-banner-dismiss {
+    border-color: #C7DBF2; color: #1E3A5F;
+  }
+  .auto-fix-banner.manual .auto-fix-banner-dismiss:hover { background: #DBEAFE; }
+
+  /* Issues panel scroll container (used inside the sidebar) */
+  .issues-scroll {
+    max-height: 60vh; overflow-y: auto; padding-right: 4px;
+    border: 1px solid var(--rmit-grey-mid); border-radius: 6px; padding: 14px;
+    background: #FFFFFF;
+  }
+  .issues-scroll::-webkit-scrollbar { width: 8px; }
+  .issues-scroll::-webkit-scrollbar-track { background: #F4F4F4; border-radius: 4px; }
+  .issues-scroll::-webkit-scrollbar-thumb { background: #CBD5E1; border-radius: 4px; }
+
+  /* Document + Issues side-by-side layout */
+  .doc-with-issues {
+    display: flex; gap: 18px; align-items: flex-start;
+  }
+  .doc-with-issues > .doc-main { flex: 1 1 auto; min-width: 0; }
+  .doc-with-issues > .doc-sidebar {
+    flex: 0 0 360px;
+    position: sticky; top: 12px;
+    max-height: calc(100vh - 80px);
+    overflow-y: auto;
+    border: 1px solid var(--rmit-grey-mid);
+    border-radius: 6px;
+    padding: 14px;
+    background: #FAFBFD;
+  }
+  .doc-sidebar .sidebar-heading {
+    margin: 0 0 10px; font-size: 14px; font-weight: 700; color: var(--rmit-text);
+    text-transform: uppercase; letter-spacing: 0.5px;
+    padding-bottom: 8px; border-bottom: 1px solid var(--rmit-grey-mid);
+  }
+  .doc-sidebar #issuesOut .issues-scroll {
+    max-height: none; border: none; padding: 0; background: transparent;
+  }
+  .doc-sidebar #issuesOut h3 {
+    font-size: 13px; text-transform: uppercase; letter-spacing: 0.5px;
+    margin-top: 14px; padding-bottom: 4px;
+  }
+  .doc-sidebar #issuesOut h3:first-of-type { margin-top: 0; }
+  .doc-sidebar .autofix-bar { padding: 10px; font-size: 12.5px; }
+  .doc-sidebar .autofix-bar .hint { font-size: 11.5px; }
+  .doc-sidebar .issue { padding: 10px; font-size: 13px; margin-bottom: 8px; }
+
+  @media (max-width: 980px) {
+    .doc-with-issues { flex-direction: column; }
+    .doc-with-issues > .doc-sidebar {
+      flex: 1 1 auto; max-height: none; position: static; width: 100%;
+    }
+  }
+
+  /* Issue context banner (shown on document tab when an issue was clicked) */
+  .issue-context-banner {
+    position: sticky; top: 0; z-index: 5;
+    display: flex; gap: 12px; align-items: flex-start;
+    background: #FFF8E1; border: 1px solid #F1D788; border-radius: 6px;
+    padding: 12px 14px; margin: 0 0 14px;
+    font-size: 13.5px; line-height: 1.5;
+  }
+  .issue-context-banner .issue-context-text { flex: 1; color: #1F2937; }
+  .issue-context-banner .issue-context-text strong { color: #0F172A; }
+  .issue-context-banner .issue-context-actions { display: flex; gap: 8px; align-items: center; flex-shrink: 0; }
+  .issue-context-banner .issue-context-back, .issue-context-banner .issue-context-dismiss {
+    background: none; border: 1px solid #C2A35A; color: #6B5117; border-radius: 4px;
+    padding: 4px 10px; font-size: 12.5px; cursor: pointer; min-height: 32px;
+  }
+  .issue-context-banner .issue-context-back:hover, .issue-context-banner .issue-context-dismiss:hover {
+    background: #F1E5C8;
+  }
+  .issue-context-banner.hidden { display: none; }
 
   /* Auto-fix bar at top of issues panel */
   .autofix-bar {
@@ -364,7 +510,7 @@
   /* Workflow render area */
   #workflowRender {
     border: 1px solid var(--rmit-grey-mid);
-    background: #FFFFFF; min-height: 600px; height: 600px;
+    background: #FFFFFF; min-height: 480px; height: 480px; max-height: 70vh;
     overflow: hidden; border-radius: 4px; position: relative;
     cursor: grab;
   }
@@ -517,16 +663,17 @@
     .tabs { flex-wrap: wrap; }
     .tab { flex: 1 1 auto; padding: 10px 12px; font-size: 13px; }
     #workflowRender { min-height: 60vh; height: 60vh; }
-    .summary-bar { gap: 10px; }
-    .summary-stat .num { font-size: 20px; }
+    .summary-groups { gap: 10px; }
+    .summary-stat .num { font-size: 18px; }
     .doc-preview { padding: 18px; }
     .starter-buttons { flex-direction: column; }
     .starter-buttons .starter-btn { width: 100%; text-align: center; }
     .theme-toggle { flex-wrap: wrap; }
   }
   @media (max-width: 480px) {
-    .summary-bar { flex-direction: column; }
-    .summary-stat { flex-direction: row; align-items: center; gap: 8px; }
+    .summary-groups { flex-direction: column; }
+    .summary-group { flex: 1 1 100%; }
+    .summary-stat { gap: 8px; }
     .activity-block .activity-header { flex-wrap: wrap; }
   }
 
@@ -587,6 +734,11 @@
     background: #FFFFFF; border-radius: 8px; max-width: 600px; width: 92%;
     max-height: 80vh; overflow-y: auto; padding: 24px;
     box-shadow: 0 8px 32px rgba(0,0,0,0.25);
+    position: relative;
+  }
+  .modal-footer {
+    margin-top: 20px; padding-top: 16px; border-top: 1px solid var(--rmit-grey-mid);
+    display: flex; justify-content: flex-end;
   }
   .modal h2 { color: var(--rmit-red); border-bottom: 2px solid var(--rmit-grey-mid); padding-bottom: 8px; margin-top: 0; }
   .modal-wide { max-width: 760px; }
@@ -611,11 +763,14 @@
   .standards-panel .std-source { font-size: 12px; color: #6B7280; font-style: italic; margin-top: 18px; padding-top: 10px; border-top: 1px solid var(--rmit-grey-mid); }
 
   .modal-close {
-    position: absolute; top: 16px; right: 20px;
-    background: none; border: none; font-size: 24px; cursor: pointer;
-    color: var(--rmit-text); padding: 4px 8px; min-height: 44px; min-width: 44px;
+    position: absolute; top: 12px; right: 12px;
+    background: var(--rmit-grey); border: 1px solid var(--rmit-grey-mid);
+    border-radius: 50%; font-size: 20px; line-height: 1; cursor: pointer;
+    color: var(--rmit-text); width: 36px; height: 36px;
+    display: flex; align-items: center; justify-content: center;
+    transition: all 0.15s ease;
   }
-  .modal-close:hover { color: var(--rmit-red); }
+  .modal-close:hover, .modal-close:focus-visible { background: var(--rmit-red); color: #FFFFFF; border-color: var(--rmit-red); }
   .help-btn {
     background: rgba(255,255,255,0.2); border: 1px solid rgba(255,255,255,0.5);
     color: #FFFFFF; width: 36px; height: 36px; border-radius: 50%;
@@ -761,6 +916,9 @@
       </ul>
       <p class="std-source">Source: Nintex Process Writing Techniques, Nintex Community.</p>
     </div>
+    <div class="modal-footer">
+      <button class="btn btn-primary" id="standardsModalCloseFooter" type="button">Close</button>
+    </div>
   </div>
 </div>
 
@@ -776,6 +934,9 @@
       <li><strong>Nintex Process Writing Techniques</strong> <span class="pill nintex">Nintex</span> &mdash; the eight Nintex techniques covering 80/20 normal vs exception, sub-process triggers, decisions vs notes, and verb-first naming.</li>
     </ul>
     <p>The review runs entirely in your browser using rule-based logic &mdash; no data leaves your device.</p>
+    <div class="modal-footer">
+      <button class="btn btn-primary" id="aboutModalCloseFooter" type="button">Close</button>
+    </div>
   </div>
 </div>
 
@@ -868,7 +1029,7 @@
     </div>
 
     <div class="button-row">
-      <button class="btn btn-primary" id="analyseBtn">Analyse process</button>
+      <button class="btn btn-primary" id="analyseBtn">Analyse content</button>
     </div>
     </div><!-- /#inputWorkArea -->
   </section>
@@ -877,21 +1038,31 @@
   <section class="card hidden" id="resultsCard">
     <h2>Here's what we found</h2>
 
-    <div class="summary-bar" id="summaryBar"></div>
-
-    <div class="tabs results-tabs" role="tablist">
-      <button class="tab active" data-rtab="recommendation">What to make</button>
-      <button class="tab" data-rtab="issues">Issues &amp; gaps</button>
-      <button class="tab" data-rtab="workflow">Visual workflow</button>
-      <button class="tab" data-rtab="document">Generated document</button>
+    <div class="auto-fix-banner hidden" id="autoSpellingBanner" role="status" aria-live="polite">
+      <div class="auto-fix-icon" aria-hidden="true">&#10003;</div>
+      <div class="auto-fix-text" id="autoSpellingBannerText"></div>
+      <button class="auto-fix-banner-dismiss" type="button" id="autoSpellingBannerDismiss" aria-label="Dismiss">&times;</button>
     </div>
 
-    <div class="tab-panel active" data-rtab="recommendation"><div id="recommendationOut"></div></div>
-    <div class="tab-panel" data-rtab="issues"><div id="issuesOut"></div></div>
+    <div class="auto-fix-banner manual hidden" id="manualFixBanner" role="status" aria-live="polite">
+      <div class="auto-fix-icon" aria-hidden="true">&#10003;</div>
+      <div class="auto-fix-text" id="manualFixBannerText"></div>
+      <button class="auto-fix-banner-dismiss" type="button" id="manualFixBannerDismiss" aria-label="Dismiss">&times;</button>
+    </div>
+
+    <div class="summary-groups" id="summaryGroups"></div>
+
+    <div class="tabs results-tabs" role="tablist">
+      <button class="tab active" data-rtab="document">Generated document &amp; issues</button>
+      <button class="tab" data-rtab="workflow">Visual workflow</button>
+      <button class="tab" data-rtab="recommendation">What to make</button>
+    </div>
+
+    <div class="tab-panel" data-rtab="recommendation"><div id="recommendationOut"></div></div>
     <div class="tab-panel" data-rtab="workflow">
       <h3 id="workflowTitle" style="margin:0 0 4px;color:var(--rmit-red);font-size:16px;"></h3>
       <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;">
-        <span class="hint" style="margin:0;"><strong>Drag</strong> to pan &middot; <strong>Scroll</strong> to zoom</span>
+        <span class="hint" style="margin:0;"><strong>Drag</strong> to pan &middot; <strong>Ctrl + scroll</strong> or use the buttons to zoom</span>
         <div class="theme-toggle" id="themeToggle">
           <button data-theme="nintex" class="active">Nintex palette</button>
           <button data-theme="rmit">RMIT palette</button>
@@ -911,14 +1082,29 @@
         </div>
       </div>
     </div>
-    <div class="tab-panel" data-rtab="document">
-      <p class="hint" style="margin-bottom:6px;"><strong>Tip:</strong> click to edit. Edits flow into the Word and PDF download.</p>
-      <div class="doc-preview" id="docPreview" contenteditable="true" spellcheck="true" lang="en-AU" aria-label="Editable process document"></div>
-      <div id="docLiveRegion" aria-live="polite" aria-atomic="true" style="position:absolute;left:-9999px;width:1px;height:1px;overflow:hidden;"></div>
-      <div class="button-row">
-        <button class="btn btn-primary" id="downloadDocxBtn">Download Word doc</button>
-        <button class="btn btn-primary" id="downloadPdfBtn">Download PDF</button>
-        <button class="btn btn-secondary" id="resetEditsBtn">Reset edits</button>
+    <div class="tab-panel active" data-rtab="document">
+      <div class="issue-context-banner hidden" id="issueContextBanner" role="status" aria-live="polite">
+        <span class="severity-icon-wrap" aria-hidden="true"></span>
+        <div class="issue-context-text"></div>
+        <div class="issue-context-actions">
+          <button class="issue-context-dismiss" type="button" id="issueContextDismissBtn" aria-label="Dismiss">&times;</button>
+        </div>
+      </div>
+      <div class="doc-with-issues">
+        <div class="doc-main">
+          <p class="hint" style="margin-bottom:6px;"><strong>Tip:</strong> click to edit. Edits flow into the Word and PDF download.</p>
+          <div class="doc-preview" id="docPreview" contenteditable="true" spellcheck="true" lang="en-AU" aria-label="Editable process document"></div>
+          <div id="docLiveRegion" aria-live="polite" aria-atomic="true" style="position:absolute;left:-9999px;width:1px;height:1px;overflow:hidden;"></div>
+          <div class="button-row">
+            <button class="btn btn-primary" id="downloadDocxBtn">Download Word doc</button>
+            <button class="btn btn-primary" id="downloadPdfBtn">Download PDF</button>
+            <button class="btn btn-secondary" id="resetEditsBtn">Reset edits</button>
+          </div>
+        </div>
+        <aside class="doc-sidebar" aria-labelledby="issuesSidebarHeading">
+          <h4 class="sidebar-heading" id="issuesSidebarHeading">Issues &amp; gaps</h4>
+          <div id="issuesOut"></div>
+        </aside>
       </div>
     </div>
   
@@ -1055,6 +1241,21 @@ let currentBpmnXml = '';
 let bpmnViewer = null;
 let originalDocHtml = '';   // initial generated HTML, used by Reset edits
 
+// Prevent BPMN canvas from trapping plain wheel events.
+// Without this, scrolling over the diagram zooms the canvas instead of scrolling
+// the page, making it hard to reach content below. Hold Ctrl/Cmd to zoom.
+(function attachWheelGuard() {
+  const wf = document.getElementById('workflowRender');
+  if (!wf) return;
+  wf.addEventListener('wheel', (e) => {
+    if (!e.ctrlKey && !e.metaKey) {
+      // Stop bpmn-js zoom-scroll handlers from firing on plain wheel.
+      e.stopImmediatePropagation();
+      // Don't preventDefault — the browser will scroll the page normally.
+    }
+  }, { capture: true, passive: true });
+})();
+
 // Severity icons (inline SVG strings)
 const SEVERITY_ICONS = {
   error:   '<svg class="severity-icon" viewBox="0 0 16 16" fill="none" stroke="#C0223D" stroke-width="2" aria-hidden="true"><circle cx="8" cy="8" r="7"/><path d="M5 5l6 6M11 5l-6 6"/></svg>',
@@ -1120,6 +1321,36 @@ const fileInput = document.getElementById('fileInput');
 const fileNameEl = document.getElementById('fileName');
 let uploadedFile = null;
 
+const ACCEPTED_EXTENSIONS = ['pdf', 'docx', 'txt'];
+const TICK_SVG  = '<svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="#2E7D32" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="8" cy="8" r="7" fill="#FFFFFF"/><path d="M5 8.5l2 2 4-5"/></svg>';
+const CROSS_SVG = '<svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="#C62828" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="8" cy="8" r="7" fill="#FFFFFF"/><path d="M5 5l6 6M11 5l-6 6"/></svg>';
+
+function handleFile(file) {
+  if (!file) {
+    uploadedFile = null;
+    fileNameEl.className = 'file-name';
+    fileNameEl.innerHTML = '';
+    return;
+  }
+  const ext = file.name.toLowerCase().split('.').pop();
+  if (!ACCEPTED_EXTENSIONS.includes(ext)) {
+    uploadedFile = null;
+    fileNameEl.className = 'file-name error';
+    fileNameEl.innerHTML = `${CROSS_SVG}<span>Unsupported file type: <strong>.${ext}</strong>. Use .pdf, .docx or .txt.</span>`;
+    if (typeof showToast === 'function') showToast(`Unsupported file type: .${ext}`, 'error');
+    return;
+  }
+  if (file.size === 0) {
+    uploadedFile = null;
+    fileNameEl.className = 'file-name error';
+    fileNameEl.innerHTML = `${CROSS_SVG}<span>File appears empty. Please try a different file.</span>`;
+    return;
+  }
+  uploadedFile = file;
+  fileNameEl.className = 'file-name success';
+  fileNameEl.innerHTML = `${TICK_SVG}<span>Ready to analyse: <strong>${file.name}</strong></span>`;
+}
+
 ['dragenter','dragover'].forEach(ev => fileDrop.addEventListener(ev, e => {
   e.preventDefault(); fileDrop.classList.add('dragging');
 }));
@@ -1127,16 +1358,10 @@ let uploadedFile = null;
   e.preventDefault(); fileDrop.classList.remove('dragging');
 }));
 fileDrop.addEventListener('drop', e => {
-  if (e.dataTransfer.files.length) {
-    uploadedFile = e.dataTransfer.files[0];
-    fileNameEl.textContent = `Selected: ${uploadedFile.name}`;
-  }
+  if (e.dataTransfer.files.length) handleFile(e.dataTransfer.files[0]);
 });
 fileInput.addEventListener('change', () => {
-  if (fileInput.files.length) {
-    uploadedFile = fileInput.files[0];
-    fileNameEl.textContent = `Selected: ${uploadedFile.name}`;
-  }
+  if (fileInput.files.length) handleFile(fileInput.files[0]);
 });
 
 /* ============================================================
@@ -1226,6 +1451,12 @@ document.getElementById('analyseBtn').addEventListener('click', async () => {
     return;
   }
 
+  // Auto-correct American → Australian spellings BEFORE the rules engine so
+  // that verbs like 'authorize' don't get flagged as not-an-approved-verb just
+  // because the verb list is Australian. The user is told via a banner.
+  const spellingLog = applyAuSpellingOnly(model);
+  model._autoSpellingFixes = spellingLog;
+
   currentModel = model;
   currentIssues = runRulesEngine(model);
   currentRecommendation = recommendArtefactType(model);
@@ -1261,11 +1492,16 @@ async function parseUploadedFile(file) {
   const ext = file.name.toLowerCase().split('.').pop();
   if (ext === 'pdf') {
     const arrayBuf = await file.arrayBuffer();
-    const text = await extractPdfText(arrayBuf);
-    if (looksLikeNintexExport(text)) {
-      return parseNintexPdf(text);
+    const lines = await extractPdfText(arrayBuf);
+    if (looksLikeNintexExport(lines)) {
+      return parseNintexPdf(lines);
     }
-    return parseStructuredText(text);
+    // Generic / non-Nintex PDF: flatten the line objects into a plain string
+    // so parseStructuredText (which expects text) can split it into lines.
+    const flat = Array.isArray(lines)
+      ? lines.map(l => (l && typeof l === 'object' ? l.text : l)).filter(Boolean).join('\n')
+      : String(lines || '');
+    return parseStructuredText(flat);
   } else if (ext === 'docx') {
     const arrayBuf = await file.arrayBuffer();
     const result = await mammoth.extractRawText({ arrayBuffer: arrayBuf });
@@ -1672,6 +1908,12 @@ function parseProcedureBlock(block) {
      ...
    ============================================================ */
 function parseStructuredText(text) {
+  // Defensive: accept either a string, or an array of line objects/strings.
+  if (Array.isArray(text)) {
+    text = text.map(l => (l && typeof l === 'object' ? l.text : l)).filter(Boolean).join('\n');
+  } else if (typeof text !== 'string') {
+    text = String(text || '');
+  }
   const lines = text.split(/\r?\n/).map(l => l.trim());
   const model = {
     title: '', version: '',
@@ -1937,12 +2179,14 @@ function findUsSpellings(text) {
   return found;
 }
 
+// scope: 'role' = only flag when used as the assigned role for an activity
+//        'any'  = flag wherever it appears (title, role, task text)
 const BANNED_TERMS = [
-  { phrase: 'all staff', message: '"ALL STAFF" should not be used. The process will appear on every Promapp dashboard.' },
-  { phrase: 'tbd', message: '"TBD" leaves the reader without an answer.' },
-  { phrase: 'tba', message: '"TBA" leaves the reader without an answer.' },
-  { phrase: 'etc', message: '"etc." is vague; list the items or remove.' },
-  { phrase: 'etc.', message: '"etc." is vague; list the items or remove.' }
+  { phrase: 'all staff', scope: 'role', message: '"ALL STAFF" should not be used as the assigned role. The process will appear on every Promapp dashboard.' },
+  { phrase: 'tbd', scope: 'any', message: '"TBD" leaves the reader without an answer.' },
+  { phrase: 'tba', scope: 'any', message: '"TBA" leaves the reader without an answer.' },
+  { phrase: 'etc', scope: 'any', message: '"etc." is vague; list the items or remove.' },
+  { phrase: 'etc.', scope: 'any', message: '"etc." is vague; list the items or remove.' }
 ];
 
 // Words that signal passive voice / hedging the activity verb-first rule
@@ -2092,6 +2336,52 @@ function applyAutoFixes(model) {
   return log;
 }
 
+// AU spelling auto-correct only — runs automatically before the rules engine
+// so verbs like 'authorize' aren't flagged as 'not an approved verb' simply
+// because the verb list is Australian. Returns a log of changes.
+function applyAuSpellingOnly(model) {
+  const log = [];
+  const matchCase = (sample, replacement) => {
+    if (!sample || !replacement) return replacement;
+    if (sample === sample.toUpperCase()) return replacement.toUpperCase();
+    if (sample[0] === sample[0].toUpperCase()) return replacement[0].toUpperCase() + replacement.slice(1);
+    return replacement;
+  };
+  const fixSpelling = (text, location) => {
+    if (!text) return text;
+    let t = text;
+    Object.keys(US_TO_AU_SPELLINGS).forEach(us => {
+      const re = new RegExp('\\b' + us + '\\b', 'gi');
+      t = t.replace(re, (match) => {
+        const au = matchCase(match, US_TO_AU_SPELLINGS[us]);
+        log.push({ location, before: match, after: au });
+        return au;
+      });
+    });
+    return t;
+  };
+  if (model.title)      model.title      = fixSpelling(model.title, 'Process title');
+  if (model.objective)  model.objective  = fixSpelling(model.objective, 'Objective');
+  if (model.background) model.background = fixSpelling(model.background, 'Background');
+  if (model.trigger)    model.trigger    = fixSpelling(model.trigger, 'Trigger');
+  if (model.inputs)     model.inputs     = fixSpelling(model.inputs, 'Inputs');
+  if (model.outputs)    model.outputs    = fixSpelling(model.outputs, 'Outputs');
+  (model.activities || []).forEach(a => {
+    const actLoc = 'Activity ' + a.number + ' – ' + (a.title || '');
+    a.title = fixSpelling(a.title, actLoc);
+    if (a.role) a.role = fixSpelling(a.role, actLoc + ' (role)');
+    (a.tasks || []).forEach(t => {
+      t.text = fixSpelling(t.text, 'Task ' + a.number + t.letter);
+    });
+    (a.notes || []).forEach((n, ni) => {
+      const noteLoc = actLoc + ' NOTE ' + (ni + 1);
+      n.title = fixSpelling(n.title, noteLoc);
+      if (n.body) n.body = fixSpelling(n.body, noteLoc + ' body');
+    });
+  });
+  return log;
+}
+
 let modelBeforeAutoFix = null;
 
 async function autoFixAndRefresh() {
@@ -2101,8 +2391,11 @@ async function autoFixAndRefresh() {
   if (log.length === 0) {
     showToast('No safe auto-fixes apply to this content.', 'info');
     modelBeforeAutoFix = null;
+    currentModel._manualAutoFixLog = null;
     return;
   }
+  // Stash the log so renderResults can display the 'What changed' banner
+  currentModel._manualAutoFixLog = log;
   // Group by category
   const counts = {};
   log.forEach(l => counts[l.category] = (counts[l.category] || 0) + 1);
@@ -2123,6 +2416,7 @@ function undoAutoFix() {
   }
   currentModel = modelBeforeAutoFix;
   modelBeforeAutoFix = null;
+  if (currentModel) currentModel._manualAutoFixLog = null;
   currentIssues = runRulesEngine(currentModel);
   currentRecommendation = recommendArtefactType(currentModel);
   currentBpmnXml = buildBpmnXml(currentModel);
@@ -2250,9 +2544,20 @@ function runRulesEngine(model) {
       }
     }
 
-    // Banned audience term "ALL STAFF" (RMIT)
+    // Banned terms (RMIT). Scope controls where the rule fires:
+    //  - 'role': only flag when the term is the assigned role for the activity
+    //  - 'any' : flag wherever it appears (title, role, task text)
     BANNED_TERMS.forEach(b => {
       const re = new RegExp('\\b' + b.phrase.replace(/[.\\]/g,'\\$&') + '\\b','i');
+      if (b.scope === 'role') {
+        if (re.test(a.role || '')) {
+          push({ id:`banned-${b.phrase}-role-${idx}`, source:'RMIT', severity:'warning',
+            message: b.message + ` (Activity ${a.number})`,
+            location: loc });
+        }
+        return; // don't check title or tasks for role-scoped terms
+      }
+      // scope === 'any'
       if (re.test(a.title) || re.test(a.role || '') ) {
         push({ id:`banned-${b.phrase}-${idx}`, source:'RMIT', severity:'warning',
           message: b.message + ` (Activity ${a.number})`,
@@ -2949,10 +3254,45 @@ function buildMermaid(model) {
 /* ============================================================
    RESULTS RENDERING
    ============================================================ */
+function showIssueContextBanner(issue) {
+  const banner = document.getElementById('issueContextBanner');
+  if (!banner) return;
+  const iconWrap = banner.querySelector('.severity-icon-wrap');
+  const textEl = banner.querySelector('.issue-context-text');
+  if (iconWrap) iconWrap.innerHTML = SEVERITY_ICONS[issue.severity] || '';
+  textEl.innerHTML =
+    '<strong>' + (issue.severity[0].toUpperCase() + issue.severity.slice(1)) + ':</strong> ' + issue.message +
+    (issue.suggestion ? ' <em>Try:</em> ' + issue.suggestion : '');
+  banner.classList.remove('hidden');
+}
+function hideIssueContextBanner() {
+  const banner = document.getElementById('issueContextBanner');
+  if (banner) banner.classList.add('hidden');
+}
+// Wire banner dismiss button once on load
+(function wireBannerButtons() {
+  const dismiss = document.getElementById('issueContextDismissBtn');
+  if (dismiss) dismiss.addEventListener('click', hideIssueContextBanner);
+  const sDismiss = document.getElementById('autoSpellingBannerDismiss');
+  if (sDismiss) sDismiss.addEventListener('click', () => {
+    const b = document.getElementById('autoSpellingBanner');
+    if (b) b.classList.add('hidden');
+  });
+  const mDismiss = document.getElementById('manualFixBannerDismiss');
+  if (mDismiss) mDismiss.addEventListener('click', () => {
+    const b = document.getElementById('manualFixBanner');
+    if (b) b.classList.add('hidden');
+  });
+})();
+
 function attachIssueNav() {
   document.querySelectorAll('.issue.issue-clickable').forEach(el => {
     const target = el.dataset.targetActivity;
+    const idx = parseInt(el.dataset.issueIdx, 10);
     const handler = () => {
+      // Show the issue context banner so the user retains context after navigating
+      const issue = currentIssues[idx];
+      if (issue) showIssueContextBanner(issue);
       // Switch to Generated document tab
       const docTab = document.querySelector('.results-tabs .tab[data-rtab="document"]');
       if (docTab) docTab.click();
@@ -2979,16 +3319,115 @@ function attachIssueNav() {
 async function renderResults() {
   document.getElementById('resultsCard').classList.remove('hidden');
   document.getElementById('resultsCard').scrollIntoView({ behavior: 'smooth' });
+  // Clear any previous issue-context banner from a prior run
+  hideIssueContextBanner();
+  // Default-land users on the Generated document tab so they see the deliverable first
+  const docTabBtn = document.querySelector('.results-tabs .tab[data-rtab="document"]');
+  if (docTabBtn) docTabBtn.click();
 
-  // Summary bar
+  // AU spelling auto-correct banner — show what was changed before analysis
+  const sBanner = document.getElementById('autoSpellingBanner');
+  const sText = document.getElementById('autoSpellingBannerText');
+  const fixes = (currentModel && currentModel._autoSpellingFixes) || [];
+  if (sBanner && sText) {
+    if (fixes.length > 0) {
+      // Group identical before→after pairs and count them
+      const byPair = {};
+      fixes.forEach(f => {
+        const key = f.before.toLowerCase() + '→' + f.after.toLowerCase();
+        if (!byPair[key]) byPair[key] = { before: f.before, after: f.after, count: 0 };
+        byPair[key].count += 1;
+      });
+      const pairs = Object.values(byPair).sort((a,b) => b.count - a.count);
+      const pairList = pairs.map(p =>
+        '<li><code>' + p.before + '</code> &rarr; <code>' + p.after + '</code>' +
+        (p.count > 1 ? ' <span style="color:#475569;">(×' + p.count + ')</span>' : '') + '</li>'
+      ).join('');
+      const totalWord = fixes.length === 1 ? 'spelling' : 'spellings';
+      sText.innerHTML =
+        '<strong>Australian English applied.</strong> We auto-corrected ' + fixes.length + ' American ' + totalWord +
+        ' before reviewing your content, so they wouldn\'t be flagged as unapproved verbs.' +
+        '<details><summary>What changed</summary><ul>' + pairList + '</ul></details>';
+      sBanner.classList.remove('hidden');
+    } else {
+      sBanner.classList.add('hidden');
+    }
+  }
+
+  // Manual auto-fix banner — show what was changed when 'Apply safe auto-fixes' was clicked
+  const mBanner = document.getElementById('manualFixBanner');
+  const mText = document.getElementById('manualFixBannerText');
+  const mLog = (currentModel && currentModel._manualAutoFixLog) || null;
+  if (mBanner && mText) {
+    if (mLog && mLog.length > 0) {
+      // Group by category, then by before->after pair within each category
+      const byCat = {};
+      mLog.forEach(f => {
+        if (!byCat[f.category]) byCat[f.category] = {};
+        const key = (f.before || '').toLowerCase() + '->' + (f.after || '').toLowerCase();
+        if (!byCat[f.category][key]) byCat[f.category][key] = { before: f.before, after: f.after, count: 0 };
+        byCat[f.category][key].count += 1;
+      });
+      const sections = Object.keys(byCat).sort().map(cat => {
+        const items = Object.values(byCat[cat]).sort((a,b) => b.count - a.count);
+        const list = items.map(i => {
+          const before = i.before || '(empty)';
+          const after = i.after || '(removed)';
+          return '<li><code>' + before + '</code> &rarr; <code>' + after + '</code>' +
+            (i.count > 1 ? ' <span style="color:#475569;">(×' + i.count + ')</span>' : '') + '</li>';
+        }).join('');
+        return '<li><strong>' + cat + '</strong> &mdash; ' + items.reduce((s,i)=>s+i.count,0) + ' change' + (items.length===1?'':'s') + '<ul>' + list + '</ul></li>';
+      }).join('');
+      const totalCount = mLog.length;
+      mText.innerHTML =
+        '<strong>Auto-fixes applied.</strong> We made ' + totalCount + ' mechanical change' + (totalCount===1?'':'s') +
+        ' to your content. Click <em>Undo auto-fixes</em> in the sidebar to revert.' +
+        '<details><summary>What changed</summary><ul>' + sections + '</ul></details>';
+      mBanner.classList.remove('hidden');
+    } else {
+      mBanner.classList.add('hidden');
+    }
+  }
+
+  // Summary — split into Process shape (neutral) + Findings (clickable severity buttons)
   const counts = currentIssues.reduce((acc, i) => { acc[i.severity] = (acc[i.severity]||0)+1; return acc; }, {});
-  const sb = document.getElementById('summaryBar');
+  const sb = document.getElementById('summaryGroups');
+  const taskTotal = currentModel.activities.reduce(function(s,a){return s+a.tasks.length;},0);
+  const findingsBtn = (severity, label) =>
+    '<button class="summary-stat findings-stat ' + severity + '" type="button" data-jump-severity="' + severity + '" aria-label="Show ' + (counts[severity]||0) + ' ' + label.toLowerCase() + '">' +
+      SEVERITY_ICONS[severity] +
+      '<span class="num">' + (counts[severity]||0) + '</span>' +
+      '<span class="lbl">' + label + '</span>' +
+    '</button>';
   sb.innerHTML =
-    '<div class="summary-stat error">' + SEVERITY_ICONS.error + '<span class="num">' + (counts.error||0) + '</span><span class="lbl">Errors</span></div>' +
-    '<div class="summary-stat warning">' + SEVERITY_ICONS.warning + '<span class="num">' + (counts.warning||0) + '</span><span class="lbl">Warnings</span></div>' +
-    '<div class="summary-stat info">' + SEVERITY_ICONS.info + '<span class="num">' + (counts.info||0) + '</span><span class="lbl">Suggestions</span></div>' +
-    '<div class="summary-stat pass">' + SEVERITY_ICONS.pass + '<span class="num">' + currentModel.activities.length + '</span><span class="lbl">Activities</span></div>' +
-    '<div class="summary-stat"><span class="num">' + currentModel.activities.reduce(function(s,a){return s+a.tasks.length;},0) + '</span><span class="lbl">Tasks</span></div>';
+    '<div class="summary-group process-shape">' +
+      '<div class="summary-group-title">Process shape</div>' +
+      '<div class="summary-stats-row">' +
+        '<div class="summary-stat"><span class="num">' + currentModel.activities.length + '</span><span class="lbl">Activities</span></div>' +
+        '<div class="summary-stat"><span class="num">' + taskTotal + '</span><span class="lbl">Tasks</span></div>' +
+      '</div>' +
+    '</div>' +
+    '<div class="summary-group findings">' +
+      '<div class="summary-group-title">Findings &mdash; click to view</div>' +
+      '<div class="summary-stats-row">' +
+        findingsBtn('error', 'Errors') +
+        findingsBtn('warning', 'Warnings') +
+        findingsBtn('info', 'Suggestions') +
+      '</div>' +
+    '</div>';
+  // Wire up click-to-jump on findings stats — scroll the issues sidebar to that severity
+  sb.querySelectorAll('.findings-stat').forEach(btn => {
+    btn.addEventListener('click', () => {
+      const sev = btn.dataset.jumpSeverity;
+      // Make sure we're on the Document tab (which contains the sidebar)
+      const docTab = document.querySelector('.results-tabs .tab[data-rtab="document"]');
+      if (docTab && !docTab.classList.contains('active')) docTab.click();
+      setTimeout(() => {
+        const heading = document.querySelector('.doc-sidebar #issuesOut h3[data-severity="' + sev + '"]');
+        if (heading) heading.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      }, 80);
+    });
+  });
 
   // Recommendation
   const r = currentRecommendation;
@@ -3004,13 +3443,13 @@ async function renderResults() {
 
   // Issues
   const grouped = { error: [], warning: [], info: [] };
-  currentIssues.forEach(i => grouped[i.severity]?.push(i));
+  currentIssues.forEach((i, idx) => { i._idx = idx; grouped[i.severity]?.push(i); });
   const renderIssue = (i) => {
     // Try to extract an activity number from the location for click-to-navigate.
     const numMatch = (i.location || '').match(/(\d+\.\d+)/);
     const targetActivity = numMatch ? numMatch[1] : '';
     const cls = 'issue ' + i.severity + (targetActivity ? ' issue-clickable' : '');
-    const tabAttr = targetActivity ? ' role="button" tabindex="0" data-target-activity="' + targetActivity + '" aria-label="Jump to activity ' + targetActivity + '"' : '';
+    const tabAttr = targetActivity ? ' role="button" tabindex="0" data-target-activity="' + targetActivity + '" data-issue-idx="' + i._idx + '" aria-label="Jump to activity ' + targetActivity + '"' : '';
     return '<div class="' + cls + '"' + tabAttr + '>' +
       '<div class="row1">' +
         '<span class="severity">' + (SEVERITY_ICONS[i.severity] || '') + ' ' + i.severity + '</span>' +
@@ -3031,11 +3470,11 @@ async function renderResults() {
   // Wire up click-to-navigate for issue cards (added later via attachIssueNav)
   document.getElementById('issuesOut').innerHTML = currentIssues.length === 0
     ? '<p>No issues found — your process meets the encoded rules.</p>'
-    : autofixHtml + (
-        (grouped.error.length ? `<h3>Errors</h3>${grouped.error.map(renderIssue).join('')}` : '') +
-        (grouped.warning.length ? `<h3>Warnings</h3>${grouped.warning.map(renderIssue).join('')}` : '') +
-        (grouped.info.length ? `<h3>Suggestions</h3>${grouped.info.map(renderIssue).join('')}` : '')
-      );
+    : autofixHtml + '<div class="issues-scroll">' + (
+        (grouped.error.length ? `<h3 data-severity="error">Errors</h3>${grouped.error.map(renderIssue).join('')}` : '') +
+        (grouped.warning.length ? `<h3 data-severity="warning">Warnings</h3>${grouped.warning.map(renderIssue).join('')}` : '') +
+        (grouped.info.length ? `<h3 data-severity="info">Suggestions</h3>${grouped.info.map(renderIssue).join('')}` : '')
+      ) + '</div>';
   // Wire auto-fix buttons if present
   const afBtn = document.getElementById('autofixBtn');
   if (afBtn) afBtn.addEventListener('click', autoFixAndRefresh);
@@ -3578,7 +4017,7 @@ const TOUR_STEPS = [
   },
   {
     title: 'Step 3 \u2014 click Analyse',
-    body: 'When you\'re ready, click <strong>Analyse process</strong>. We\'ll do it for you now to show the results.',
+    body: 'When you\'re ready, click <strong>Analyse content</strong>. We\'ll do it for you now to show the results.',
     target: '#analyseBtn',
     before: () => {
       const ta = document.getElementById('pasteArea');
@@ -3597,11 +4036,11 @@ const TOUR_STEPS = [
   },
   {
     title: 'Step 5 \u2014 issues and gaps',
-    body: 'Click the <strong>Issues &amp; gaps</strong> tab to see anything that breaks the CoVE Golden Rules, RMIT Tips or Nintex Techniques. Click any issue card to jump to where it occurs.',
-    target: '.results-tabs .tab[data-rtab="issues"]',
+    body: 'The <strong>Issues &amp; gaps</strong> sidebar sits beside your document so you can read both at once. Click any issue card to jump to where it occurs in the document.',
+    target: '.doc-sidebar',
     before: () => {
-      const t = document.querySelector('.results-tabs .tab[data-rtab="issues"]');
-      if (t) t.click();
+      const t = document.querySelector('.results-tabs .tab[data-rtab="document"]');
+      if (t && !t.classList.contains('active')) t.click();
     }
   },
   {
@@ -3743,6 +4182,8 @@ function openStandards() { standardsModal.setAttribute('aria-hidden', 'false'); 
 function closeStandards() { standardsModal.setAttribute('aria-hidden', 'true'); standardsBtn.focus(); }
 if (standardsBtn) standardsBtn.addEventListener('click', openStandards);
 if (standardsClose) standardsClose.addEventListener('click', closeStandards);
+const standardsCloseFooter = document.getElementById('standardsModalCloseFooter');
+if (standardsCloseFooter) standardsCloseFooter.addEventListener('click', closeStandards);
 if (standardsModal) standardsModal.addEventListener('click', e => { if (e.target === standardsModal) closeStandards(); });
 document.addEventListener('keydown', e => {
   if (e.key === 'Escape' && standardsModal && standardsModal.getAttribute('aria-hidden') === 'false') closeStandards();
@@ -3757,6 +4198,8 @@ document.querySelectorAll('.standards-tab').forEach(btn => {
   });
 });
 if (closeBtn) closeBtn.addEventListener('click', closeAbout);
+const aboutCloseFooter = document.getElementById('aboutModalCloseFooter');
+if (aboutCloseFooter) aboutCloseFooter.addEventListener('click', closeAbout);
 if (aboutModal) aboutModal.addEventListener('click', e => { if (e.target === aboutModal) closeAbout(); });
 document.addEventListener('keydown', e => {
   if (e.key === 'Escape' && aboutModal && aboutModal.getAttribute('aria-hidden') === 'false') closeAbout();

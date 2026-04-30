@@ -1,2 +1,4 @@
 Document Folder/
 *.txt
+.~lock.*#
+*.tmp
