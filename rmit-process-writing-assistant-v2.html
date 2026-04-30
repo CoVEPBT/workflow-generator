@@ -38,21 +38,92 @@
     line-height: 1.5;
   }
   header.app-header {
-    background: var(--rmit-red);
-    color: #FFFFFF;
-    padding: 18px 28px;
-    position: relative;
-    text-align: center;
+    background: var(--rmit-red); color: #FFFFFF;
+    padding: 14px 28px;
+    display: flex; align-items: center; justify-content: space-between;
+    gap: 16px; flex-wrap: wrap;
   }
-  header.app-header .brand { font-weight: 700; font-size: 22px; letter-spacing: 0.3px; }
-  header.app-header .sub { font-size: 13px; opacity: 0.9; margin-top: 2px; }
-  header.app-header .help-btn {
-    position: absolute; right: 20px; top: 50%; transform: translateY(-50%);
-    margin-left: 0;
+  header.app-header .header-brand-link {
+    display: flex; align-items: center; gap: 14px;
+    text-decoration: none; color: inherit;
+  }
+  header.app-header .header-logo {
+    width: 48px; height: 48px; border-radius: 6px;
+    background: #FFFFFF; color: var(--rmit-red);
+    display: flex; align-items: center; justify-content: center;
+    font-weight: 800; font-size: 26px; letter-spacing: -0.5px;
+    flex-shrink: 0;
+  }
+  header.app-header .brand { font-weight: 700; font-size: 22px; letter-spacing: 0.2px; line-height: 1.1; }
+  header.app-header .sub { font-size: 11px; opacity: 0.85; margin-top: 4px; text-transform: uppercase; letter-spacing: 1.2px; }
+  header.app-header .header-nav {
+    display: flex; align-items: center; gap: 6px;
+  }
+  header.app-header .header-link {
+    background: transparent; border: 1px solid transparent;
+    color: #FFFFFF; padding: 10px 16px; border-radius: 6px;
+    cursor: pointer; font-size: 14px; font-weight: 500; min-height: 40px;
+    transition: background 0.15s ease, border-color 0.15s ease;
+  }
+  header.app-header .header-link:hover {
+    background: rgba(255,255,255,0.12);
+  }
+  header.app-header .header-link:focus-visible {
+    outline: 2px solid #FFFFFF; outline-offset: 2px;
+  }
+  @media (max-width: 768px) {
+    header.app-header { flex-direction: column; align-items: flex-start; padding: 14px 16px; }
+    header.app-header .header-nav { width: 100%; }
+    header.app-header .header-link { flex: 1 1 auto; text-align: center; }
   }
   main { max-width: 1200px; margin: 0 auto; padding: 24px; }
+  .hero {
+    background: #F4F7FB;
+    margin: -24px -24px 24px;
+    padding: 64px 24px 56px;
+    text-align: center;
+    border-bottom: 1px solid #E2E8F0;
+  }
+  .hero h1 {
+    margin: 0 0 14px;
+    font-size: clamp(32px, 5vw, 52px);
+    font-weight: 600;
+    color: #0F172A;
+    line-height: 1.1;
+    letter-spacing: -0.015em;
+  }
+  .hero p {
+    margin: 0 auto;
+    max-width: 720px;
+    font-size: clamp(15px, 1.4vw, 18px);
+    line-height: 1.55;
+    color: #475569;
+  }
+  @media (max-width: 600px) {
+    .hero { padding: 40px 16px 32px; margin: -12px -12px 16px; }
+  }
   h1, h2, h3, h4 { font-weight: 600; }
   h2 { color: var(--rmit-red); border-bottom: 2px solid var(--rmit-grey-mid); padding-bottom: 6px; margin-top: 32px; text-align: center; }
+  .section-heading-bar {
+    position: sticky; top: 0; z-index: 20;
+    background: #FFFFFF;
+    display: flex; align-items: center; justify-content: center;
+    gap: 16px; padding: 14px 0 8px;
+    margin: -20px -20px 16px;
+    padding-left: 20px; padding-right: 20px;
+    border-bottom: 2px solid var(--rmit-grey-mid);
+  }
+  .section-heading-bar h2 {
+    margin: 0; padding: 0; border: none;
+    flex: 1; text-align: center;
+  }
+  .section-heading-bar #resetBtn {
+    flex-shrink: 0;
+  }
+  @media (max-width: 768px) {
+    .section-heading-bar { flex-direction: row; padding: 12px 16px; margin: -16px -16px 12px; }
+    .section-heading-bar h2 { font-size: 18px; }
+  }
   h3 { color: var(--rmit-black); margin-top: 20px; }
 
   .card {
@@ -180,11 +251,6 @@
   #toast.toast-success { border-left-color: var(--severity-pass); }
 
   /* Intro card + starter buttons */
-  .starter-section {
-    background: #FFFFFF; padding: 24px 0 12px;
-    margin-bottom: 16px; text-align: center;
-  }
-  .starter-section p { margin: 14px 0 0; font-size: 13px; }
   .intro-heading { margin: 0 0 12px; color: var(--rmit-red); font-size: 16px; }
   .intro-template-link { margin: 12px 0 0; font-size: 12px; color: #666; }
   .intro-template-link a { color: var(--rmit-red); font-weight: 600; }
@@ -192,38 +258,73 @@
   .starter-grid {
     display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px;
   }
+  .starter-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 18px;
+    margin: 24px 0 24px;
+  }
   .starter-card {
-    display: flex; flex-direction: column; align-items: center; text-align: center;
-    padding: 22px 26px; border: 1px solid #E5E7EB;
-    border-radius: 8px; background: #FFFFFF; cursor: pointer;
+    display: flex; flex-direction: column; text-align: left;
+    padding: 24px 24px 22px; border: 1px solid #E5E7EB;
+    border-radius: 12px; background: #FFFFFF; cursor: pointer;
     transition: border-color 0.18s ease, box-shadow 0.18s ease, transform 0.18s ease;
-    min-height: 88px;
+    min-height: 200px;
   }
   .starter-card:hover {
-    border-color: var(--rmit-red);
-    box-shadow: 0 6px 18px rgba(0, 52, 120, 0.10);
-    transform: translateY(-1px);
+    box-shadow: 0 8px 24px rgba(15, 23, 42, 0.10);
+    transform: translateY(-2px);
   }
-  .starter-card strong {
-    font-size: 16px; color: var(--rmit-red); margin-bottom: 6px;
-    font-weight: 600;
+  .starter-card-tour:hover { border-color: var(--rmit-red); }
+  .starter-card-import:hover { border-color: #2E7D32; }
+  .starter-card-build:hover { border-color: #C0223D; }
+  .starter-card h3 {
+    margin: 0 0 8px; font-size: 18px; font-weight: 700; color: #0F172A;
   }
-  .starter-card span { font-size: 13.5px; color: #555; line-height: 1.5; }
-  .starter-card-solo {
-    max-width: 520px; margin: 0 auto;
+  .starter-card p {
+    margin: 0 0 16px; font-size: 14px; color: #475569; line-height: 1.5;
+    flex-grow: 1;
   }
-  .intro-orientation {
-    margin: 18px 0 0; font-size: 13.5px; color: #6B7280;
-    text-align: center; font-style: normal;
+  .starter-card-cta {
+    font-size: 14px; font-weight: 600; letter-spacing: 0.1px;
   }
-  .intro-template-link {
-    margin: 6px 0 0; text-align: center; font-size: 12.5px;
+  .starter-card-tour .starter-card-cta { color: var(--rmit-red); }
+  .starter-card-import .starter-card-cta { color: #2E7D32; }
+  .starter-card-build .starter-card-cta { color: #1F2937; }
+
+  .starter-card-icon {
+    width: 48px; height: 48px; border-radius: 12px;
+    display: flex; align-items: center; justify-content: center;
+    margin-bottom: 18px;
   }
-  .intro-template-link a {
-    color: var(--rmit-red); font-weight: 500; text-decoration: none;
-    border-bottom: 1px solid currentColor; padding-bottom: 1px;
+  .starter-card-icon svg { width: 26px; height: 26px; }
+  .icon-navy  { background: #E6EEF8; color: var(--rmit-red); }
+  .icon-green { background: #E5F3E8; color: #2E7D32; }
+  .icon-red   { background: #FBE7EB; color: #C0223D; }
+
+  .starter-template-row {
+    display: flex; flex-direction: column; align-items: center;
+    gap: 12px; margin: 8px 0 4px; padding-top: 8px;
   }
-  .intro-template-link a:hover { color: var(--rmit-red-dark); }
+  .starter-template-label {
+    font-size: 13px; color: #6B7280;
+  }
+  .starter-template-pill {
+    display: inline-flex; align-items: center; gap: 10px;
+    padding: 10px 18px; border: 1px solid var(--rmit-grey-mid);
+    border-radius: 999px; background: #FFFFFF; color: #1F2937;
+    font-size: 14px; font-weight: 600; text-decoration: none;
+    transition: all 0.15s ease;
+  }
+  .starter-template-pill:hover {
+    border-color: var(--rmit-red); color: var(--rmit-red);
+    background: #F8FAFC;
+  }
+  .starter-template-pill svg { width: 18px; height: 18px; }
+
+  @media (max-width: 768px) {
+    .starter-grid { grid-template-columns: 1fr; }
+  }
   .starter-card:focus-visible {
     outline: 2px solid var(--rmit-red); outline-offset: 2px;
   }
@@ -488,6 +589,27 @@
     box-shadow: 0 8px 32px rgba(0,0,0,0.25);
   }
   .modal h2 { color: var(--rmit-red); border-bottom: 2px solid var(--rmit-grey-mid); padding-bottom: 8px; margin-top: 0; }
+  .modal-wide { max-width: 760px; }
+  .standards-tabs {
+    display: flex; gap: 4px; border-bottom: 2px solid var(--rmit-grey-mid);
+    margin: 16px 0 18px;
+  }
+  .standards-tab {
+    background: none; border: none; padding: 10px 14px; cursor: pointer;
+    font-size: 14px; font-weight: 500; color: #475569;
+    border-bottom: 3px solid transparent; margin-bottom: -2px;
+    min-height: 40px;
+  }
+  .standards-tab.active { color: var(--rmit-red); border-bottom-color: var(--rmit-red); }
+  .standards-panel { display: none; font-size: 14px; line-height: 1.6; color: #1F2937; }
+  .standards-panel.active { display: block; }
+  .standards-panel h3 { color: var(--rmit-red); margin: 0 0 6px; font-size: 18px; }
+  .standards-panel h4 { margin: 18px 0 6px; font-size: 14px; color: #0F172A; font-weight: 700; }
+  .standards-panel .std-intro { color: #475569; margin: 0 0 12px; }
+  .standards-panel .std-list { padding-left: 22px; }
+  .standards-panel .std-list li { margin-bottom: 8px; }
+  .standards-panel .std-source { font-size: 12px; color: #6B7280; font-style: italic; margin-top: 18px; padding-top: 10px; border-top: 1px solid var(--rmit-grey-mid); }
+
   .modal-close {
     position: absolute; top: 16px; right: 20px;
     background: none; border: none; font-size: 24px; cursor: pointer;
@@ -506,11 +628,19 @@
 <body>
 
 <header class="app-header">
-  <div>
-    <div class="brand">CoVE Process Writing Assistant</div>
-    <div class="sub">Reviews process content against CoVE writing standards</div>
-  </div>
-  <button class="help-btn" id="helpBtn" type="button" aria-label="About this tool" title="About this tool">?</button>
+  <a href="#" class="header-brand-link" aria-label="CoVE Process Assistant home">
+    <div class="header-logo" aria-hidden="true">
+      <span>R</span>
+    </div>
+    <div class="header-text">
+      <div class="brand">CoVE Process Assistant</div>
+      <div class="sub">RMIT University &middot; Vocational Education</div>
+    </div>
+  </a>
+  <nav class="header-nav" aria-label="Main">
+    <button class="header-link" id="standardsBtn" type="button">Standards guide</button>
+    <button class="header-link" id="helpBtn" type="button">About this tool</button>
+  </nav>
 </header>
 
 <!-- Guided tour overlay -->
@@ -526,6 +656,110 @@
         <button type="button" id="tourPrevBtn">Back</button>
         <button type="button" class="tour-primary" id="tourNextBtn">Next</button>
       </div>
+    </div>
+  </div>
+</div>
+
+<!-- Standards Guide modal -->
+<div class="modal-backdrop" id="standardsModal" aria-hidden="true" role="dialog" aria-modal="true" aria-labelledby="standardsModalTitle">
+  <div class="modal modal-wide">
+    <button class="modal-close" id="standardsModalClose" type="button" aria-label="Close">&times;</button>
+    <h2 id="standardsModalTitle">Standards guide</h2>
+    <p style="font-size:14px;color:#475569;margin:0 0 16px;">The CoVE Process Writing Assistant reviews your process content against three published standards. Each is summarised below.</p>
+    <div class="standards-tabs" role="tablist">
+      <button class="standards-tab active" role="tab" data-stab="cove">CoVE Golden Rules</button>
+      <button class="standards-tab" role="tab" data-stab="rmit">RMIT Tips</button>
+      <button class="standards-tab" role="tab" data-stab="nintex">Nintex Techniques</button>
+    </div>
+    <div class="standards-panel active" data-stab="cove">
+      <h3>CoVE Process Writing &mdash; Golden Rules</h3>
+      <p class="std-intro">Eleven rules from the College of Vocational Education Projects and Business Transformation team for clear, consistent process maps.</p>
+      <ol class="std-list">
+        <li><strong>Define your trigger, inputs, and outputs.</strong> Clarifies when the process starts, what is needed, and what the end result looks like. Example: Trigger: Staff member requests a new laptop via ServiceNow. Input: Completed Facilities Request Form. Output: Laptop provided to staff member.</li>
+        <li><strong>Map high-level activities before adding detailed steps.</strong> See the overall flow start to finish before diving into details, to prevent overcomplicating the process and ensure logical sequence.</li>
+        <li><strong>Assign one responsible role per activity.</strong> Ensures clear ownership. Each activity should have one accountable role even if others contribute. Example: The Program Manager is responsible while the Quality Lead may support.</li>
+        <li><strong>Map what happens most of the time (the 80%).</strong> Keeps the process simple and relevant. Use NOTEs for the 20% of variations or exceptions.</li>
+        <li><strong>Keep language concise and to the point.</strong> Easy to read, fewer misunderstandings. Avoid filler words, long sentences, and unnecessary acronyms.</li>
+        <li><strong>Start each activity with a verb.</strong> Makes actions easy to identify and follow. Example: Receive request &rarr; Review request &rarr; Approve request &rarr; Notify staff &rarr; Close request.</li>
+        <li><strong>Use decision boxes for Yes/No questions.</strong> Decision boxes show where a process branches. The "No" path should lead to one follow-up action before ending. Example: "Has approval been granted?" Yes &rarr; Action request. No &rarr; Notify requester &rarr; End.</li>
+        <li><strong>Attach supporting guides or links.</strong> Helps users access additional information without cluttering the main process. Use "web link" only for internal systems or external websites.</li>
+        <li><strong>Done is better than perfect.</strong> Capture 80% of a process now and refine through feedback later, rather than delaying for perfection.</li>
+        <li><strong>Request a peer review.</strong> A fresh perspective helps identify gaps or assumptions you may have missed. Ask a colleague from another team to walk through the process map.</li>
+        <li><strong>Define clear handover points.</strong> Clear start and end points for each activity ensure smooth transitions between roles. Example: Activity ends when the "Request approved" email is sent; the next activity begins when the Facilities team receives that notification.</li>
+      </ol>
+      <p class="std-source">Source: CoVE Process Writing &mdash; Golden Rules (CoVE Projects and Business Transformation, November 2025).</p>
+    </div>
+    <div class="standards-panel" data-stab="rmit">
+      <h3>RMIT Tips for Process Editors &amp; Champions</h3>
+      <p class="std-intro">RMIT&rsquo;s practical guidance on how to write processes consistently across the University.</p>
+      <h4>Writing style</h4>
+      <ul class="std-list">
+        <li>Aim for clear, concise language at an acceptable standard for internal RMIT communications.</li>
+        <li>Use the RMIT Writing Style Guide as a reference.</li>
+        <li>Use verbs from the categorised verb list for tasks, activities and titles.</li>
+      </ul>
+      <h4>Process titles</h4>
+      <ul class="std-list">
+        <li>Process titles should start with a verb.</li>
+        <li>In large organisations, name titles consistently &mdash; especially when there are several sub-processes within a life cycle.</li>
+      </ul>
+      <h4>Right-sizing your process</h4>
+      <ul class="std-list">
+        <li>If you end up with more than ten activities, you may have two or more separate processes.</li>
+        <li>Look for a logical break or grouping to divide the larger process into sub-processes.</li>
+      </ul>
+      <h4>Activities</h4>
+      <ul class="std-list">
+        <li>Aim for no more than 10 activities per process.</li>
+        <li>Aim for 2&ndash;7 words in an activity title.</li>
+        <li>Activities are the high-level steps &mdash; the &ldquo;what&rdquo;.</li>
+        <li>Activities must always start with a verb.</li>
+      </ul>
+      <h4>Tasks</h4>
+      <ul class="std-list">
+        <li>Tasks must always start with a verb.</li>
+        <li>Avoid pitching at a work-instruction level &mdash; use attached guides instead.</li>
+      </ul>
+      <h4>NOTEs</h4>
+      <ul class="std-list">
+        <li>Use NOTEs for the 20% of cases that differ from the normal flow (the 80/20 rule).</li>
+        <li>A NOTE is always a question and an answer. Title a NOTE as a question so the reader can skip if they know the answer.</li>
+        <li>NOTEs can also explain business rules, what-ifs, or background.</li>
+      </ul>
+      <h4>Owner and Expert</h4>
+      <ul class="std-list">
+        <li>The Process Owner and Process Expert must be different people, so the correct approval chain applies.</li>
+      </ul>
+      <h4>Audience terminology</h4>
+      <ul class="std-list">
+        <li>Use <strong>Users</strong> when referring to people interacting with a system (e.g. SAP).</li>
+        <li>Use <strong>Employees</strong> when an activity could be performed by any RMIT staff (e.g. report a Health &amp; Safety incident).</li>
+        <li>Use <strong>Requestor</strong> for anyone requesting a service.</li>
+        <li>Avoid <strong>ALL STAFF</strong> &mdash; the process will appear on every Promapp dashboard.</li>
+      </ul>
+      <p class="std-source">Source: Tips for Process Editors &amp; Champions, RMIT &mdash; Nintex Process Manager guidance.</p>
+    </div>
+    <div class="standards-panel" data-stab="nintex">
+      <h3>Nintex Process Writing Techniques</h3>
+      <p class="std-intro">Eight techniques from Nintex for writing clear, useful processes in Nintex Process Manager.</p>
+      <ol class="std-list">
+        <li><strong>Distinguish the normal process from exceptions.</strong> Document the steps that normally occur (typically 80% of the time). Use NOTEs to describe variations or exceptions. NOTE titles should always be a question.</li>
+        <li><strong>Recognise when multiple normal processes exist.</strong> Create separate processes when you have multiple ways of performing the same process. Example: split &ldquo;Recruit Staff&rdquo; into Hire Temps, Hire Contractors, Hire Full-Time Staff.</li>
+        <li><strong>Group common tasks into activities.</strong> Group tasks to identify the major activities. Limit to 10 activities per process. Tasks performed at the same time or by the same role can be grouped.</li>
+        <li><strong>Break large processes into sub-processes.</strong> Break long processes into smaller, more manageable sub-processes. Example: split &ldquo;Recruit New Staff Member&rdquo; into Obtain Approval to Recruit, Advertise Position, Select Candidate.</li>
+        <li><strong>Apply the verb-first rule.</strong> Start all process names, activity and task descriptions with a verb. Test by asking: &ldquo;What is the person expected to do?&rdquo;</li>
+        <li><strong>Use &lsquo;if statements&rsquo; for conditional steps.</strong> Use &ldquo;if required&rdquo;, &ldquo;if needed&rdquo;, &ldquo;if appropriate&rdquo; to identify activities or tasks not always performed. Supplement with a NOTE explaining when.</li>
+        <li><strong>Use guides to capture transactional detail.</strong> Use documents/guides to reduce complexity. Detailed how-to-use-an-application instructions are useful when learning the job but rarely referred to once learnt. Attach the guide to the relevant activity step.</li>
+        <li><strong>Give the right content the right prominence.</strong> Promote a task to an activity if it is important and not currently being done correctly. Promote a business rule within a guide to a NOTE or task if it deserves more visibility.</li>
+      </ol>
+      <h4>Common questions</h4>
+      <ul class="std-list">
+        <li><strong>When to use a decision in a process flow?</strong> Reserve decision diamonds for critical decision points that impact the overall flow. The decision can lead to another process or a single alternate activity that terminates the process. For low-level decisions, use NOTEs or matrices instead.</li>
+        <li><strong>How much detail to include?</strong> Consider audience, purpose, and don&rsquo;t document everything. Document only details that add value. Assume the reader has the competency expected in that role.</li>
+        <li><strong>Recommended maximum?</strong> Maximum 10 activities per process map; around 10 tasks or NOTEs per activity.</li>
+        <li><strong>Note vs parallel activities?</strong> Use NOTEs for exceptions or variations (under 20% of the time). Use parallel activities for either/or conditions or simultaneous scenarios (50:50).</li>
+      </ul>
+      <p class="std-source">Source: Nintex Process Writing Techniques, Nintex Community.</p>
     </div>
   </div>
 </div>
@@ -547,18 +781,53 @@
 
 <main>
 
+  <!-- ==================== HERO ==================== -->
+  <section class="hero" aria-labelledby="heroTitle">
+    <h1 id="heroTitle">Enhance your process documentation.</h1>
+    <p>Align your writing with RMIT CoVE and Nintex Process Manager standards for clarity, compliance and excellence.</p>
+  </section>
+
   <!-- ==================== INPUT ==================== -->
   <section class="card" id="inputCard">
-    <h2>Add your process</h2>
-    <div class="starter-section">
-      <button class="starter-card starter-card-solo" id="starterSampleBtn" type="button">
-        <strong>I'm new here</strong>
-        <span>Take a 60-second guided tour with a sample CoVE process loaded for you.</span>
-      </button>
-      <p class="intro-orientation">Already familiar? Pick an input below or <a href="#" id="starterTemplateBtn">download the blank Word template</a>.</p>
+    <div class="section-heading-bar">
+      <h2>How do you want to start?</h2>
+      <button class="btn btn-secondary" id="resetBtn" type="button" hidden>Reset</button>
     </div>
-    
+    <div class="starter-grid">
+      <button class="starter-card starter-card-tour" id="starterSampleBtn" type="button">
+        <div class="starter-card-icon icon-navy" aria-hidden="true">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>
+        </div>
+        <h3>I'm new here</h3>
+        <p>Take a 60-second guided tour with a sample process loaded to learn the tool.</p>
+        <span class="starter-card-cta">Start tour &rarr;</span>
+      </button>
+      <button class="starter-card starter-card-import" id="starterUploadBtn" type="button">
+        <div class="starter-card-icon icon-green" aria-hidden="true">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M12 4v12"/><polyline points="6 10 12 4 18 10"/><path d="M4 20h16"/></svg>
+        </div>
+        <h3>Import draft</h3>
+        <p>Upload a .docx, .pdf, or .txt file to begin standard alignment checks.</p>
+        <span class="starter-card-cta">Select file &rarr;</span>
+      </button>
+      <button class="starter-card starter-card-build" id="starterBuildBtn" type="button">
+        <div class="starter-card-icon icon-red" aria-hidden="true">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M4 20h4l10-10-4-4L4 16v4z"/><path d="M14 6l4 4"/></svg>
+        </div>
+        <h3>Manual build</h3>
+        <p>Build your process from scratch using the structured guidance assistant.</p>
+        <span class="starter-card-cta">Create new &rarr;</span>
+      </button>
+    </div>
+    <div class="starter-template-row">
+      <span class="starter-template-label">Or use a starting point:</span>
+      <a href="#" id="starterTemplateBtn" class="starter-template-pill">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><circle cx="12" cy="16" r="0.5" fill="currentColor"/></svg>
+        Download RMIT Writing Template (DOCX)
+      </a>
+    </div>
 
+    <div id="inputWorkArea" hidden>
     <div class="tabs" role="tablist">
       <button class="tab active" data-tab="upload">Upload file</button>
       <button class="tab" data-tab="paste">Paste / type</button>
@@ -572,9 +841,6 @@
         <div>Drop a file or <label class="file-drop-label" for="fileInput">browse to upload</label></div>
         <div class="hint">Accepted: .pdf, .docx, .txt</div>
         <div class="file-name" id="fileName"></div>
-      </div>
-      <div class="button-row">
-        <button class="btn btn-secondary" id="downloadTemplateBtn">Download blank Word template</button>
       </div>
     </div>
 
@@ -603,8 +869,8 @@
 
     <div class="button-row">
       <button class="btn btn-primary" id="analyseBtn">Analyse process</button>
-      <button class="btn btn-secondary" id="resetBtn">Reset</button>
     </div>
+    </div><!-- /#inputWorkArea -->
   </section>
 
   <!-- ==================== RESULTS ==================== -->
@@ -820,9 +1086,10 @@ function showToast(message, severity, duration) {
 document.querySelectorAll('#inputCard .tabs .tab').forEach(btn => {
   btn.addEventListener('click', () => {
     document.querySelectorAll('#inputCard .tabs .tab').forEach(b => b.classList.remove('active'));
-    document.querySelectorAll('#inputCard > .tab-panel').forEach(p => p.classList.remove('active'));
+    document.querySelectorAll('#inputCard .tab-panel').forEach(p => p.classList.remove('active'));
     btn.classList.add('active');
-    document.querySelector(`#inputCard > .tab-panel[data-tab="${btn.dataset.tab}"]`).classList.add('active');
+    const panel = document.querySelector(`#inputCard .tab-panel[data-tab="${btn.dataset.tab}"]`);
+    if (panel) panel.classList.add('active');
   });
 });
 document.querySelectorAll('.results-tabs .tab').forEach(btn => {
@@ -930,6 +1197,10 @@ document.getElementById('resetBtn').addEventListener('click', () => {
   addActivityRow();
   document.getElementById('resultsCard').classList.add('hidden');
   currentModel = null; currentIssues = []; currentRecommendation = null; currentMermaid = '';
+  // Send the user back to the home view: hide the work area and the Reset button
+  if (inputWorkArea) inputWorkArea.hidden = true;
+  document.getElementById('resetBtn').hidden = true;
+  document.getElementById('inputCard').scrollIntoView({ behavior: 'smooth', block: 'start' });
 });
 
 /* ============================================================
@@ -2889,21 +3160,24 @@ async function downloadAsDocx() {
   const userHasEdited = liveHtml && liveHtml !== originalDocHtml.trim();
   if (userHasEdited) {
     const children = htmlToDocxParagraphs(docPreviewEl, D);
-    const doc = new Document({ sections: [{ properties: {}, children }] });
+    const doc = new Document({
+    styles: { default: { document: { run: { font: 'Segoe UI', size: 22 } } } },
+    sections: [{ properties: {}, children }]
+  });
     const blob = await Packer.toBlob(doc);
     triggerDownload(blob, ((m.title || 'process').replace(/[^\w\-]+/g,'_')) + '.docx');
     return;
   }
 
   const para = (text, opts={}) => new Paragraph({
-    children: [new TextRun({ text: String(text||''), bold: !!opts.bold, italics: !!opts.italic })],
+    children: [new TextRun({ text: String(text||''), bold: !!opts.bold, italics: !!opts.italic, font: 'Segoe UI' })],
     heading: opts.heading,
     spacing: opts.spacing || { after: 120 }
   });
 
   const children = [];
   children.push(new Paragraph({
-    children: [new TextRun({ text: m.title || 'Untitled process', bold: true, size: 32, color: '003478' })],
+    children: [new TextRun({ text: m.title || 'Untitled process', bold: true, size: 32, color: '003478', font: 'Segoe UI' })],
     spacing: { after: 200 }
   }));
   if (m.version) children.push(para(m.version, { italic: true }));
@@ -2920,11 +3194,11 @@ async function downloadAsDocx() {
     const parts = v.split(/\s*;\s*/).filter(Boolean);
     if (parts.length > 1) {
       children.push(new Paragraph({
-        children: [new TextRun({ text: `${label}:`, bold: true })],
+        children: [new TextRun({ text: `${label}:`, bold: true, font: 'Segoe UI' })],
         spacing: { after: 40 }
       }));
       parts.forEach(p => children.push(new Paragraph({
-        children: [new TextRun({ text: '• ' + p })],
+        children: [new TextRun({ text: '• ' + p, font: 'Segoe UI' })],
         indent: { left: 360 }, spacing: { after: 30 }
       })));
     } else {
@@ -2962,26 +3236,57 @@ async function downloadAsDocx() {
       children.push(new Paragraph({ children: [new TextRun({ text: '' })], spacing: { before: 240, after: 120 } }));
     }
     const activityPara = [];
+    // Activity title row: number badge + title
     activityPara.push(new Paragraph({
-      children: [new TextRun({ text: a.number + '  ', bold: true, color: 'FFFFFF', highlight: 'red', size: 24 }),
-                 new TextRun({ text: '  ' }),
-                 new TextRun({ text: a.title, bold: true, size: 26, color: '1D1D1D' })],
+      children: [new TextRun({ text: a.number + '  ', bold: true, color: 'FFFFFF', highlight: 'darkBlue', size: 24, font: 'Segoe UI' }),
+                 new TextRun({ text: '  ', font: 'Segoe UI' }),
+                 new TextRun({ text: a.title, bold: true, size: 26, color: '1D1D1D', font: 'Segoe UI' })],
       spacing: { after: 100 }
     }));
     if (a.role) activityPara.push(new Paragraph({
-      children: [new TextRun({ text: 'Role: ', bold: true, color: '666666', size: 18 }),
-                 new TextRun({ text: a.role, italics: true, color: '666666', size: 18 })],
+      children: [new TextRun({ text: 'Role: ', bold: true, color: '666666', size: 18, font: 'Segoe UI' }),
+                 new TextRun({ text: a.role, italics: true, color: '666666', size: 18, font: 'Segoe UI' })],
       spacing: { after: 140 }
     }));
+    // Tasks
     a.tasks.forEach(t => activityPara.push(new Paragraph({
-      children: [new TextRun({ text: t.letter + '. ', bold: true, color: '003478' }),
-                 new TextRun({ text: t.text })],
+      children: [new TextRun({ text: t.letter + '. ', bold: true, color: '003478', font: 'Segoe UI' }),
+                 new TextRun({ text: t.text, font: 'Segoe UI' })],
       indent: { left: 280 }, spacing: { after: 80 }
     })));
+    // Linked processes
     a.links.forEach(l => activityPara.push(new Paragraph({
-      children: [new TextRun({ text: '> Linked process: ' + l.name, italics: true, color: '888888', size: 18 })],
+      children: [new TextRun({ text: '> Linked process: ' + l.name, italics: true, color: '888888', size: 18, font: 'Segoe UI' })],
       indent: { left: 280 }, spacing: { after: 60 }
     })));
+    // NOTES — emitted as a nested table inside the activity cell so they align
+    // with the activity content rather than floating at a different indent.
+    a.notes.forEach(n => {
+      const notePara = [];
+      notePara.push(new Paragraph({
+        children: [new TextRun({ text: 'NOTE  ', bold: true, color: 'FFFFFF', highlight: 'darkYellow', size: 18, font: 'Segoe UI' }),
+                   new TextRun({ text: '  ', font: 'Segoe UI' }),
+                   new TextRun({ text: n.title, bold: true, color: '1D1D1D', size: 20, font: 'Segoe UI' })],
+        spacing: { after: 60 }
+      }));
+      if (n.body) notePara.push(new Paragraph({
+        children: [new TextRun({ text: n.body, size: 20, font: 'Segoe UI' })],
+        spacing: { after: 0 }
+      }));
+      activityPara.push(new Table({
+        width: { size: 100, type: WidthType.PERCENTAGE },
+        rows: [new TableRow({
+          children: [new TableCell({
+            shading: cellShading('FFF8E1'),
+            borders: noteBorders(),
+            margins: { top: 140, bottom: 140, left: 200, right: 200 },
+            children: notePara
+          })]
+        })]
+      }));
+      // small spacer paragraph after note
+      activityPara.push(new Paragraph({ children: [new TextRun({ text: '', font: 'Segoe UI' })], spacing: { after: 60 } }));
+    });
     children.push(new Table({
       width: { size: 100, type: WidthType.PERCENTAGE },
       rows: [new TableRow({
@@ -2993,32 +3298,6 @@ async function downloadAsDocx() {
         })]
       })]
     }));
-    a.notes.forEach(n => {
-      const notePara = [];
-      notePara.push(new Paragraph({
-        children: [new TextRun({ text: 'NOTE  ', bold: true, color: 'FFFFFF', highlight: 'darkYellow', size: 18 }),
-                   new TextRun({ text: '  ' }),
-                   new TextRun({ text: n.title, bold: true, color: '1D1D1D', size: 20 })],
-        spacing: { after: 60 }
-      }));
-      if (n.body) notePara.push(new Paragraph({
-        children: [new TextRun({ text: n.body, size: 20 })],
-        spacing: { after: 60 }
-      }));
-      children.push(new Table({
-        width: { size: 92, type: WidthType.PERCENTAGE },
-        indent: { size: 360, type: WidthType.DXA },
-        rows: [new TableRow({
-          children: [new TableCell({
-            shading: cellShading('FFF8E1'),
-            borders: noteBorders(),
-            margins: { top: 160, bottom: 160, left: 200, right: 200 },
-            children: notePara
-          })]
-        })]
-      }));
-      children.push(new Paragraph({ children: [new TextRun({ text: '' })], spacing: { after: 80 } }));
-    });
   });
 
   const doc = new Document({ sections: [{ properties: {}, children }] });
@@ -3456,6 +3735,27 @@ function closeAbout() {
   helpBtn.focus();
 }
 if (helpBtn) helpBtn.addEventListener('click', openAbout);
+// Standards Guide modal
+const standardsModal = document.getElementById('standardsModal');
+const standardsBtn = document.getElementById('standardsBtn');
+const standardsClose = document.getElementById('standardsModalClose');
+function openStandards() { standardsModal.setAttribute('aria-hidden', 'false'); standardsClose.focus(); }
+function closeStandards() { standardsModal.setAttribute('aria-hidden', 'true'); standardsBtn.focus(); }
+if (standardsBtn) standardsBtn.addEventListener('click', openStandards);
+if (standardsClose) standardsClose.addEventListener('click', closeStandards);
+if (standardsModal) standardsModal.addEventListener('click', e => { if (e.target === standardsModal) closeStandards(); });
+document.addEventListener('keydown', e => {
+  if (e.key === 'Escape' && standardsModal && standardsModal.getAttribute('aria-hidden') === 'false') closeStandards();
+});
+// Standards tab switching
+document.querySelectorAll('.standards-tab').forEach(btn => {
+  btn.addEventListener('click', () => {
+    document.querySelectorAll('.standards-tab').forEach(b => b.classList.remove('active'));
+    document.querySelectorAll('.standards-panel').forEach(p => p.classList.remove('active'));
+    btn.classList.add('active');
+    document.querySelector('.standards-panel[data-stab="' + btn.dataset.stab + '"]').classList.add('active');
+  });
+});
 if (closeBtn) closeBtn.addEventListener('click', closeAbout);
 if (aboutModal) aboutModal.addEventListener('click', e => { if (e.target === aboutModal) closeAbout(); });
 document.addEventListener('keydown', e => {
@@ -3463,6 +3763,23 @@ document.addEventListener('keydown', e => {
 });
 
 // Starter buttons (item 1)
+const inputWorkArea = document.getElementById('inputWorkArea');
+function revealInputArea(tabName) {
+  if (inputWorkArea) inputWorkArea.hidden = false;
+  // Surface the Reset button in the sticky heading when the work area is in use
+  const rb = document.getElementById('resetBtn');
+  if (rb) rb.hidden = false;
+  if (tabName) {
+    const tab = document.querySelector('#inputCard .tabs .tab[data-tab="' + tabName + '"]');
+    if (tab) tab.click();
+  }
+  // Smoothly scroll to it so the user sees what just appeared
+  setTimeout(() => {
+    const tabsEl = document.querySelector('#inputWorkArea .tabs');
+    if (tabsEl) tabsEl.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  }, 80);
+}
+
 const SAMPLE_PROCESS = [
   'Process name: CoVE - PBT - Create new TeachVE Hub Site Page',
   'Owner: Deanne Roze',
@@ -3497,7 +3814,8 @@ const SAMPLE_PROCESS = [
 
 const starterSample = document.getElementById('starterSampleBtn');
 if (starterSample) starterSample.addEventListener('click', () => {
-  // 'I\'m new here' launches the guided walkthrough. The tour itself loads the sample at step 2.
+  // 'I\'m new here' launches the guided walkthrough. Reveal the input area first so the tour has somewhere to land.
+  revealInputArea('paste');
   startTour();
 });
 const starterTemplate = document.getElementById('starterTemplateBtn');
@@ -3510,15 +3828,17 @@ if (starterTemplate) starterTemplate.addEventListener('click', (e) => {
 // "I'm building from scratch" — jumps to the guided form tab
 const starterBuild = document.getElementById('starterBuildBtn');
 if (starterBuild) starterBuild.addEventListener('click', () => {
-  document.querySelector('#inputCard .tabs .tab[data-tab="form"]').click();
-  const firstField = document.getElementById('formTitle');
-  if (firstField) firstField.focus();
+  revealInputArea('form');
+  setTimeout(() => {
+    const firstField = document.getElementById('formTitle');
+    if (firstField) firstField.focus();
+  }, 250);
   showToast('Fill in each section, then click Analyse.', 'info');
 });
 const starterUpload = document.getElementById('starterUploadBtn');
 if (starterUpload) starterUpload.addEventListener('click', () => {
-  document.querySelector('#inputCard .tabs .tab[data-tab="upload"]').click();
-  document.getElementById('fileInput').click();
+  revealInputArea('upload');
+  setTimeout(() => document.getElementById('fileInput').click(), 200);
 });
 document.getElementById('zoomInBtn').addEventListener('click', () => {
   if (!bpmnViewer) return;
@@ -3595,6 +3915,31 @@ if (restoreBtn) {
     }
   });
 }
+
+// Iframe auto-resize: post our content height to the parent (e.g. SharePoint)
+// so it can size the iframe to fit. Pairs with a tiny listener on the host page.
+(function setupAutoResize() {
+  if (window.parent === window) return; // not in an iframe
+  let lastHeight = 0;
+  function postHeight() {
+    const h = Math.max(
+      document.body.scrollHeight,
+      document.documentElement.scrollHeight,
+      document.body.offsetHeight,
+      document.documentElement.offsetHeight
+    );
+    if (Math.abs(h - lastHeight) > 8) {
+      lastHeight = h;
+      try { window.parent.postMessage({ type: 'cove-tool-resize', height: h }, '*'); } catch (e) {}
+    }
+  }
+  window.addEventListener('load', postHeight);
+  if (window.ResizeObserver) {
+    const ro = new ResizeObserver(postHeight);
+    ro.observe(document.body);
+  }
+  setInterval(postHeight, 1000);
+})();
 
 </script>
 </body>
