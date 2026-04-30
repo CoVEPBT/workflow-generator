@@ -48,12 +48,22 @@
     text-decoration: none; color: inherit;
   }
   header.app-header .header-logo {
-    width: 48px; height: 48px; border-radius: 6px;
-    background: #FFFFFF; color: var(--rmit-red);
+    width: auto; height: 48px; border-radius: 6px;
+    background: #FFFFFF;
     display: flex; align-items: center; justify-content: center;
-    font-weight: 800; font-size: 26px; letter-spacing: -0.5px;
-    flex-shrink: 0;
+    flex-shrink: 0; padding: 4px 10px;
+    min-width: 48px;
   }
+  header.app-header .header-logo img {
+    height: 40px; width: auto; display: block;
+  }
+  /* Fallback "R" badge shown when the logo image fails to load or is missing */
+  header.app-header .header-logo .header-logo-fallback {
+    color: var(--rmit-red); font-weight: 800; font-size: 22px; letter-spacing: 0;
+    display: none;
+  }
+  header.app-header .header-logo.no-image .header-logo-fallback { display: block; }
+  header.app-header .header-logo.no-image img { display: none; }
   header.app-header .brand { font-weight: 700; font-size: 22px; letter-spacing: 0.2px; line-height: 1.1; }
   header.app-header .sub { font-size: 11px; opacity: 0.85; margin-top: 4px; text-transform: uppercase; letter-spacing: 1.2px; }
   header.app-header .header-nav {
@@ -762,7 +772,35 @@
   .standards-panel .std-list li { margin-bottom: 8px; }
   .standards-panel .std-source { font-size: 12px; color: #6B7280; font-style: italic; margin-top: 18px; padding-top: 10px; border-top: 1px solid var(--rmit-grey-mid); }
 
-  .modal-close {
+  /* Get help dropdown */
+  .header-link.has-menu { position: relative; }
+  .help-menu {
+    position: absolute; top: calc(100% + 4px); right: 0;
+    background: #FFFFFF; color: var(--rmit-text);
+    border: 1px solid var(--rmit-grey-mid); border-radius: 6px;
+    box-shadow: 0 6px 20px rgba(0,0,0,0.15);
+    min-width: 240px; padding: 6px;
+    z-index: 9999;
+    display: none;
+  }
+  .help-menu[aria-hidden="false"] { display: block; }
+  .help-menu a {
+    display: flex; align-items: center; gap: 10px;
+    padding: 10px 12px; border-radius: 4px;
+    color: var(--rmit-text); text-decoration: none;
+    font-size: 14px; font-weight: 500; min-height: 40px;
+  }
+  .help-menu a:hover { background: var(--rmit-grey); }
+  .help-menu a:focus-visible { outline: 2px solid var(--rmit-red); outline-offset: -2px; }
+  .help-menu a svg {
+    flex-shrink: 0; width: 18px; height: 18px; color: var(--rmit-red);
+  }
+  .help-menu .help-menu-hint {
+    font-size: 11.5px; color: #6B7280; padding: 8px 12px 4px;
+    text-transform: uppercase; letter-spacing: 0.5px; font-weight: 600;
+  }
+
+    .modal-close {
     position: absolute; top: 12px; right: 12px;
     background: var(--rmit-grey); border: 1px solid var(--rmit-grey-mid);
     border-radius: 50%; font-size: 20px; line-height: 1; cursor: pointer;
@@ -784,8 +822,10 @@
 
 <header class="app-header">
   <a href="#" class="header-brand-link" aria-label="CoVE Process Assistant home">
-    <div class="header-logo" aria-hidden="true">
-      <span>R</span>
+    <div class="header-logo" id="brandLogoWrap" aria-hidden="true">
+      <img id="brandLogoImg" src="rmit-logo.svg" alt=""
+           onerror="document.getElementById('brandLogoWrap').classList.add('no-image');">
+      <span class="header-logo-fallback">VE</span>
     </div>
     <div class="header-text">
       <div class="brand">CoVE Process Assistant</div>
@@ -793,8 +833,23 @@
     </div>
   </a>
   <nav class="header-nav" aria-label="Main">
+    <button class="header-link" id="writingGuideBtn" type="button">Writing guide</button>
     <button class="header-link" id="standardsBtn" type="button">Standards guide</button>
     <button class="header-link" id="helpBtn" type="button">About this tool</button>
+    <div class="header-link has-menu" id="getHelpWrap">
+      <button class="header-link" id="getHelpBtn" type="button" aria-haspopup="menu" aria-expanded="false">Get help &#9662;</button>
+      <div class="help-menu" id="getHelpMenu" role="menu" aria-hidden="true">
+        <div class="help-menu-hint">Need a hand?</div>
+        <a href="https://forms.office.com/r/PBT-SUPPORT" target="_blank" rel="noopener" role="menuitem">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z"/></svg>
+          Ask PBT a question
+        </a>
+        <a href="https://forms.office.com/r/PBT-BUGS" target="_blank" rel="noopener" role="menuitem">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M10.29 3.86 1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+          Log a technical issue
+        </a>
+      </div>
+    </div>
   </nav>
 </header>
 
@@ -918,6 +973,107 @@
     </div>
     <div class="modal-footer">
       <button class="btn btn-primary" id="standardsModalCloseFooter" type="button">Close</button>
+    </div>
+  </div>
+</div>
+
+<!-- Writing Guide modal (Phase 4 #8) -->
+<div class="modal-backdrop" id="writingGuideModal" aria-hidden="true" role="dialog" aria-modal="true" aria-labelledby="writingGuideTitle">
+  <div class="modal modal-wide">
+    <button class="modal-close" id="writingGuideClose" type="button" aria-label="Close">&times;</button>
+    <h2 id="writingGuideTitle">How to write a process</h2>
+    <p style="font-size:14px;color:#475569;margin:0 0 12px;">A step-by-step guide to writing a process in line with CoVE Golden Rules, RMIT Tips and Nintex Techniques. Use it as a reference while you build your process in this tool, in Word, or in Nintex Process Manager.</p>
+    <div class="button-row" style="margin:0 0 16px;">
+      <button class="btn btn-secondary" id="downloadWritingGuideBtn" type="button">Download as Word doc</button>
+    </div>
+    <div class="standards-panel active" style="display:block;">
+      <h3>Step 1 &mdash; Define the basics</h3>
+      <p class="std-intro">Every process needs a clear identity before you start writing the steps. Capture these six fields first.</p>
+      <ul class="std-list">
+        <li><strong>Process name</strong> &mdash; verb-first, 4-7 words. Example: "Create new TeachVE Hub site page".</li>
+        <li><strong>Owner</strong> &mdash; the person accountable for the process. One named individual.</li>
+        <li><strong>Expert</strong> &mdash; the subject-matter expert who can answer questions. Must differ from the owner.</li>
+        <li><strong>Trigger</strong> &mdash; the event that starts the process. Example: "Staff member requests a new laptop via ServiceNow".</li>
+        <li><strong>Inputs</strong> &mdash; what is needed to begin. Example: "Completed Facilities Request Form".</li>
+        <li><strong>Outputs</strong> &mdash; what the process produces. Example: "Laptop provided to staff member".</li>
+      </ul>
+
+      <h3>Step 2 &mdash; Map your high-level activities first</h3>
+      <p class="std-intro">CoVE Golden Rule 2: see the overall flow before adding detail. Most processes have 3-7 activities.</p>
+      <ul class="std-list">
+        <li><strong>Number activities</strong> 1.0, 2.0, 3.0 &hellip; in the order they happen.</li>
+        <li><strong>Start each activity title with a verb</strong> &mdash; "Receive", "Review", "Approve", "Notify", "Close".</li>
+        <li><strong>Keep titles short</strong> &mdash; aim for 2-7 words. If a title is long, the activity is probably doing too much.</li>
+        <li><strong>Don't pre-write the tasks</strong> &mdash; write the activity titles first to confirm the shape of the process.</li>
+      </ul>
+
+      <h3>Step 3 &mdash; Assign one role per activity</h3>
+      <p class="std-intro">CoVE Golden Rule 3: one accountable role per activity. Other roles can contribute, but only one is accountable.</p>
+      <ul class="std-list">
+        <li>Use specific role titles, not "ALL STAFF" (which would put the process on every Promapp dashboard).</li>
+        <li>Use job titles or team names &mdash; not individual people's names.</li>
+        <li>If the role changes between two activities, plan an explicit handover (CoVE Rule 11): a "Notify&hellip;" or "Send&hellip;" task at the end of the previous activity.</li>
+      </ul>
+
+      <h3>Step 4 &mdash; Add the tasks under each activity</h3>
+      <p class="std-intro">Tasks are the lettered steps a, b, c &hellip; under each activity. Keep them simple.</p>
+      <ul class="std-list">
+        <li><strong>1-10 tasks per activity</strong> is the sweet spot. More than 10 means the activity is too big.</li>
+        <li><strong>Start each task with a verb.</strong> Examples: "Verify the request", "Create the user account", "Send the welcome email".</li>
+        <li><strong>Use approved verbs.</strong> The tool checks against a list of around 250 approved verbs &mdash; if a verb is flagged, swap to a clearer alternative.</li>
+        <li><strong>Keep tasks under 25 words</strong> &mdash; if longer, split into two tasks.</li>
+        <li><strong>Australian English</strong> &mdash; the tool auto-corrects common American spellings (organize &rarr; organise, color &rarr; colour, authorize &rarr; authorise).</li>
+      </ul>
+
+      <h3>Step 5 &mdash; Cover the 80%, use NOTEs for the 20%</h3>
+      <p class="std-intro">CoVE Golden Rule 4: write the process for what happens most of the time. Use NOTEs for the rare exceptions.</p>
+      <ul class="std-list">
+        <li><strong>Map the most common path first</strong> &mdash; the "happy path".</li>
+        <li>For exceptions, errors, or rare scenarios &mdash; add a <strong>NOTE</strong> attached to the relevant activity.</li>
+        <li>NOTE titles should be questions: "What if the form is incomplete?", "How do I escalate?".</li>
+        <li>Use <strong>parallel activities</strong> instead of NOTEs only when there's a genuine 50:50 split, not for exceptions.</li>
+      </ul>
+
+      <h3>Step 6 &mdash; Decisions: Yes/No questions</h3>
+      <p class="std-intro">Decisions are where the process branches. Keep them simple.</p>
+      <ul class="std-list">
+        <li>Phrase decisions as a <strong>Yes/No question</strong>: "Has approval been granted?", "Is the form complete?".</li>
+        <li>The <strong>"No" path</strong> should usually lead to one follow-up action and then end (e.g. "Notify the requester &rarr; End"). Don't over-complicate the unhappy path.</li>
+        <li>Avoid more than two decisions in a row &mdash; if you have a tree of decisions, the process is probably better as a knowledge article.</li>
+      </ul>
+
+      <h3>Step 7 &mdash; Review against the standards</h3>
+      <p class="std-intro">Before publishing, run your process through this tool to check it against:</p>
+      <ul class="std-list">
+        <li><strong>CoVE Process Writing Golden Rules</strong> (11 rules)</li>
+        <li><strong>RMIT Tips for Process Editors &amp; Champions</strong> (activity title length, owner/expert separation, audience terms, verb usage)</li>
+        <li><strong>Nintex Process Writing Techniques</strong> (80/20, sub-process triggers, decisions vs notes, verb-first naming)</li>
+      </ul>
+      <p class="std-intro">The tool will flag anything that breaks the rules. Fix the errors, review the warnings, and consider the suggestions.</p>
+
+      <h3>Quick example</h3>
+      <p style="background:#F4F7FB;padding:12px;border-radius:6px;font-family:'Courier New',monospace;font-size:13px;line-height:1.6;color:#1F2937;">Process name: Onboard new staff member<br>
+Owner: HR Manager<br>
+Expert: HR Business Partner<br>
+Trigger: New starter contract signed<br>
+Inputs: Signed contract, role description<br>
+Outputs: Staff member fully onboarded<br><br>
+1.0 Receive new starter notification<br>
+Role: HR Manager<br>
+a. Receive notification from recruitment system<br>
+b. Verify start date and role<br>
+c. Create onboarding ticket in ServiceNow<br><br>
+2.0 Setup access and accounts<br>
+Role: IT Support Officer<br>
+a. Create user account<br>
+b. Configure permissions for their role<br>
+c. Notify the manager when access is ready<br>
+NOTE: What if access is delayed? Escalate to the IT lead and update the new starter.</p>
+
+      <p class="std-source">Drawn from CoVE Golden Rules, RMIT Tips for Process Editors, and Nintex Process Writing Techniques.</p>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-primary" id="writingGuideCloseFooter" type="button">Close</button>
     </div>
   </div>
 </div>
@@ -1162,7 +1318,8 @@ const APPROVED_VERBS = {
     'demonstrate','discuss','explain','feedback','follow up','greet','host','instruct',
     'introduce','invite','join','mediate','meet','mention','message','post','present',
     'propose','question','raise','reach out','refer','reply','report','request','share',
-    'speak','suggest','talk','thank','welcome','write'
+    'speak','suggest','talk','thank','welcome','write',
+    'answer','comment','reassure','remind','update'
   ],
   'Implementation & Execution': [
     // Original list
@@ -1175,6 +1332,8 @@ const APPROVED_VERBS = {
     'support','train','transition','update','upload','use','work',
     // Added (task-level work + UI/system actions)
     'access','accept','activate','add','align','analyse','analyze','assemble','assess',
+    'authorise','authorize','collate','compile','enforce','enrol','escalate','flag','grade',
+    'log','navigate','pause','process','progress','rate','read','research','resume','screen',
     'assign','attach','calculate','capture','change','check','choose','clean','click',
     'close','compare','compose','conclude','connect','copy','deactivate','define',
     'delete','determine','disable','disconnect','dispatch','draft','edit','embed',
@@ -2648,7 +2807,7 @@ function runRulesEngine(model) {
       const handoverWords = /(send|notify|forward|email|escalate|hand over|notification)/i;
       const prevTaskTexts = prevAct.tasks.map(t => t.text).join(' ');
       if (!handoverWords.test(prevTaskTexts)) {
-        push({ id:`handover-${i}`, source:'CoVE', severity:'info',
+        push({ id:`handover-${i}`, source:'CoVE', severity:'warning',
           message:`Role change between ${prevAct.number} (${roleSequence[i-1]}) and ${model.activities[i].number} (${roleSequence[i]}) — handover may be unclear.`,
           location: `${prevAct.number} → ${model.activities[i].number}`,
           suggestion:'Make the handover explicit, e.g. a "Notify..." or "Send..." task at the end of the previous activity (CoVE Rule 11).' });
@@ -4358,6 +4517,197 @@ if (restoreBtn) {
     }
   });
 }
+
+
+// Get help dropdown menu (Phase 3 #6 + #7)
+(function wireGetHelpMenu() {
+  const btn = document.getElementById('getHelpBtn');
+  const menu = document.getElementById('getHelpMenu');
+  const wrap = document.getElementById('getHelpWrap');
+  if (!btn || !menu || !wrap) return;
+  function open() {
+    menu.setAttribute('aria-hidden', 'false');
+    btn.setAttribute('aria-expanded', 'true');
+  }
+  function close() {
+    menu.setAttribute('aria-hidden', 'true');
+    btn.setAttribute('aria-expanded', 'false');
+  }
+  btn.addEventListener('click', (e) => {
+    e.stopPropagation();
+    if (menu.getAttribute('aria-hidden') === 'false') close(); else open();
+  });
+  document.addEventListener('click', (e) => {
+    if (!wrap.contains(e.target)) close();
+  });
+  document.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape' && menu.getAttribute('aria-hidden') === 'false') {
+      close();
+      btn.focus();
+    }
+  });
+})();
+
+
+// Writing Guide modal (Phase 4 #8)
+(function wireWritingGuideModal() {
+  const modal = document.getElementById('writingGuideModal');
+  const openers = [document.getElementById('writingGuideBtn')];
+  const closeBtn = document.getElementById('writingGuideClose');
+  const closeFooter = document.getElementById('writingGuideCloseFooter');
+  if (!modal) return;
+  function open() { modal.setAttribute('aria-hidden', 'false'); if (closeBtn) closeBtn.focus(); }
+  function close() { modal.setAttribute('aria-hidden', 'true'); }
+  openers.forEach(b => { if (b) b.addEventListener('click', open); });
+  if (closeBtn) closeBtn.addEventListener('click', close);
+  if (closeFooter) closeFooter.addEventListener('click', close);
+  modal.addEventListener('click', e => { if (e.target === modal) close(); });
+  document.addEventListener('keydown', e => {
+    if (e.key === 'Escape' && modal.getAttribute('aria-hidden') === 'false') close();
+  });
+})();
+
+// Generate the 'How to write a process' Word doc on demand
+(function wireWritingGuideDownload() {
+  const btn = document.getElementById('downloadWritingGuideBtn');
+  if (!btn) return;
+  btn.addEventListener('click', async () => {
+    if (typeof docx === 'undefined') {
+      showToast('Document library still loading. Please try again in a moment.', 'error');
+      return;
+    }
+    const { Document, Packer, Paragraph, TextRun, HeadingLevel, AlignmentType } = docx;
+    const FONT = 'Segoe UI';
+    const NAVY = '003478';
+    const GREY = '475569';
+    const para = (text, opts = {}) => new Paragraph({
+      children: [new TextRun({
+        text: String(text || ''),
+        bold: !!opts.bold, italics: !!opts.italic,
+        color: opts.color || '1D1D1D', size: opts.size || 22, font: FONT
+      })],
+      heading: opts.heading,
+      spacing: opts.spacing || { after: 100 }
+    });
+    const bullet = (text) => new Paragraph({
+      children: [new TextRun({ text: '\u2022  ' + text, font: FONT, size: 22, color: '1D1D1D' })],
+      indent: { left: 360 },
+      spacing: { after: 80 }
+    });
+    const sectionHeading = (text) => new Paragraph({
+      children: [new TextRun({ text, bold: true, color: NAVY, size: 28, font: FONT })],
+      spacing: { before: 280, after: 120 },
+      heading: HeadingLevel.HEADING_1
+    });
+
+    const c = [];
+    c.push(new Paragraph({
+      children: [new TextRun({ text: 'How to write a process', bold: true, size: 36, color: NAVY, font: FONT })],
+      spacing: { after: 200 }
+    }));
+    c.push(para('A step-by-step guide aligned with CoVE Golden Rules, RMIT Tips and Nintex Techniques. Use it as a reference while you build your process in the CoVE Process Writing Assistant, in Word, or in Nintex Process Manager.', { italic: true, color: GREY }));
+    c.push(para('Generated ' + new Date().toLocaleDateString('en-AU', { year:'numeric', month:'long', day:'numeric' }), { italic: true, color: GREY, size: 18 }));
+
+    c.push(sectionHeading('Step 1 \u2014 Define the basics'));
+    c.push(para('Every process needs a clear identity before you start writing the steps. Capture these six fields first.'));
+    [
+      'Process name \u2014 verb-first, 4-7 words. Example: "Create new TeachVE Hub site page".',
+      'Owner \u2014 the person accountable for the process. One named individual.',
+      'Expert \u2014 the subject-matter expert who can answer questions. Must differ from the owner.',
+      'Trigger \u2014 the event that starts the process. Example: "Staff member requests a new laptop via ServiceNow".',
+      'Inputs \u2014 what is needed to begin. Example: "Completed Facilities Request Form".',
+      'Outputs \u2014 what the process produces. Example: "Laptop provided to staff member".'
+    ].forEach(t => c.push(bullet(t)));
+
+    c.push(sectionHeading('Step 2 \u2014 Map your high-level activities first'));
+    c.push(para('CoVE Golden Rule 2: see the overall flow before adding detail. Most processes have 3-7 activities.'));
+    [
+      'Number activities 1.0, 2.0, 3.0 \u2026 in the order they happen.',
+      'Start each activity title with a verb \u2014 "Receive", "Review", "Approve", "Notify", "Close".',
+      'Keep titles short \u2014 aim for 2-7 words. If a title is long, the activity is probably doing too much.',
+      "Don't pre-write the tasks \u2014 write the activity titles first to confirm the shape of the process."
+    ].forEach(t => c.push(bullet(t)));
+
+    c.push(sectionHeading('Step 3 \u2014 Assign one role per activity'));
+    c.push(para('CoVE Golden Rule 3: one accountable role per activity. Other roles can contribute, but only one is accountable.'));
+    [
+      'Use specific role titles, not "ALL STAFF" (which would put the process on every Promapp dashboard).',
+      "Use job titles or team names \u2014 not individual people's names.",
+      'If the role changes between two activities, plan an explicit handover (CoVE Rule 11): a "Notify\u2026" or "Send\u2026" task at the end of the previous activity.'
+    ].forEach(t => c.push(bullet(t)));
+
+    c.push(sectionHeading('Step 4 \u2014 Add the tasks under each activity'));
+    c.push(para('Tasks are the lettered steps a, b, c \u2026 under each activity. Keep them simple.'));
+    [
+      '1-10 tasks per activity is the sweet spot. More than 10 means the activity is too big.',
+      'Start each task with a verb. Examples: "Verify the request", "Create the user account", "Send the welcome email".',
+      'Use approved verbs. The tool checks against around 250 approved verbs \u2014 if a verb is flagged, swap to a clearer alternative.',
+      'Keep tasks under 25 words \u2014 if longer, split into two tasks.',
+      'Australian English \u2014 the tool auto-corrects common American spellings (organize to organise, color to colour, authorize to authorise).'
+    ].forEach(t => c.push(bullet(t)));
+
+    c.push(sectionHeading('Step 5 \u2014 Cover the 80%, use NOTEs for the 20%'));
+    c.push(para('CoVE Golden Rule 4: write the process for what happens most of the time. Use NOTEs for the rare exceptions.'));
+    [
+      'Map the most common path first \u2014 the "happy path".',
+      'For exceptions, errors, or rare scenarios \u2014 add a NOTE attached to the relevant activity.',
+      'NOTE titles should be questions: "What if the form is incomplete?", "How do I escalate?".',
+      "Use parallel activities instead of NOTEs only when there's a genuine 50:50 split, not for exceptions."
+    ].forEach(t => c.push(bullet(t)));
+
+    c.push(sectionHeading('Step 6 \u2014 Decisions: Yes/No questions'));
+    c.push(para('Decisions are where the process branches. Keep them simple.'));
+    [
+      'Phrase decisions as a Yes/No question: "Has approval been granted?", "Is the form complete?".',
+      'The "No" path should usually lead to one follow-up action and then end (e.g. "Notify the requester then End"). Do not over-complicate the unhappy path.',
+      'Avoid more than two decisions in a row \u2014 if you have a tree of decisions, the process is probably better as a knowledge article.'
+    ].forEach(t => c.push(bullet(t)));
+
+    c.push(sectionHeading('Step 7 \u2014 Review against the standards'));
+    c.push(para('Before publishing, run your process through the tool to check it against:'));
+    [
+      'CoVE Process Writing Golden Rules (11 rules)',
+      'RMIT Tips for Process Editors & Champions (activity title length, owner/expert separation, audience terms, verb usage)',
+      'Nintex Process Writing Techniques (80/20, sub-process triggers, decisions vs notes, verb-first naming)'
+    ].forEach(t => c.push(bullet(t)));
+    c.push(para('The tool will flag anything that breaks the rules. Fix the errors, review the warnings, and consider the suggestions.'));
+
+    c.push(sectionHeading('Quick example'));
+    [
+      'Process name: Onboard new staff member',
+      'Owner: HR Manager',
+      'Expert: HR Business Partner',
+      'Trigger: New starter contract signed',
+      'Inputs: Signed contract, role description',
+      'Outputs: Staff member fully onboarded'
+    ].forEach(t => c.push(para(t)));
+    c.push(para('1.0 Receive new starter notification', { bold: true, color: NAVY, spacing: { before: 160, after: 80 } }));
+    c.push(para('Role: HR Manager', { italic: true, color: GREY }));
+    ['a. Receive notification from recruitment system', 'b. Verify start date and role', 'c. Create onboarding ticket in ServiceNow'].forEach(t => c.push(bullet(t)));
+    c.push(para('2.0 Setup access and accounts', { bold: true, color: NAVY, spacing: { before: 160, after: 80 } }));
+    c.push(para('Role: IT Support Officer', { italic: true, color: GREY }));
+    ['a. Create user account', 'b. Configure permissions for their role', 'c. Notify the manager when access is ready'].forEach(t => c.push(bullet(t)));
+    c.push(para('NOTE: What if access is delayed? Escalate to the IT lead and update the new starter.', { italic: true, color: 'C77700' }));
+
+    c.push(para('Drawn from CoVE Golden Rules, RMIT Tips for Process Editors, and Nintex Process Writing Techniques.', { italic: true, color: GREY, size: 18, spacing: { before: 240 } }));
+
+    const doc = new Document({
+      styles: { default: { document: { run: { font: FONT, size: 22 } } } },
+      sections: [{
+        properties: { page: { margin: { top: 1080, right: 1080, bottom: 1080, left: 1080 } } },
+        children: c
+      }]
+    });
+    const blob = await Packer.toBlob(doc);
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = 'How-to-write-a-process.docx';
+    document.body.appendChild(a); a.click(); a.remove();
+    setTimeout(() => URL.revokeObjectURL(url), 1000);
+    showToast('Writing guide downloaded.', 'success');
+  });
+})();
 
 // Iframe auto-resize: post our content height to the parent (e.g. SharePoint)
 // so it can size the iframe to fit. Pairs with a tiny listener on the host page.
