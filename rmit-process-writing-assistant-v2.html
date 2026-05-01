@@ -558,7 +558,7 @@
   .doc-preview h2 {
     font-size: 15px; color: var(--rmit-black); border: none;
     margin: 22px 0 8px; text-transform: uppercase; letter-spacing: 0.6px;
-    color: var(--rmit-red);
+    color: var(--rmit-red); text-align: left;
   }
   .doc-preview p { margin: 6px 0; }
   .doc-preview .meta { background: #FAFAFA; border-left: 3px solid var(--rmit-grey-mid); padding: 10px 14px; margin: 10px 0 18px; font-size: 13px; }
@@ -800,6 +800,42 @@
     text-transform: uppercase; letter-spacing: 0.5px; font-weight: 600;
   }
 
+    /* Burger menu (consolidated header nav) */
+  .burger-btn {
+    display: flex; align-items: center; gap: 10px;
+    background: rgba(255,255,255,0.12); color: #FFFFFF;
+    border: 1px solid rgba(255,255,255,0.25); border-radius: 6px;
+    padding: 8px 14px; cursor: pointer; min-height: 40px;
+    font-size: 14px; font-weight: 500; transition: all 0.15s ease;
+  }
+  .burger-btn:hover, .burger-btn[aria-expanded="true"] {
+    background: rgba(255,255,255,0.22); border-color: rgba(255,255,255,0.5);
+  }
+  .burger-btn:focus-visible {
+    outline: 2px solid #FFFFFF; outline-offset: 2px;
+  }
+  .burger-icon {
+    display: inline-flex; flex-direction: column; gap: 4px;
+    width: 18px; height: 14px; justify-content: center;
+  }
+  .burger-icon span {
+    display: block; height: 2px; background: #FFFFFF; border-radius: 1px;
+  }
+  .burger-menu {
+    min-width: 260px;
+  }
+  .burger-item {
+    display: flex; align-items: center; gap: 10px;
+    width: 100%; text-align: left;
+    padding: 10px 12px; border-radius: 4px; border: none; background: transparent;
+    color: var(--rmit-text); text-decoration: none; cursor: pointer;
+    font-size: 14px; font-weight: 500; min-height: 40px;
+    font-family: inherit;
+  }
+  .burger-item:hover { background: var(--rmit-grey); }
+  .burger-item:focus-visible { outline: 2px solid var(--rmit-red); outline-offset: -2px; }
+  .burger-item svg { flex-shrink: 0; width: 18px; height: 18px; color: var(--rmit-red); }
+
     .modal-close {
     position: absolute; top: 12px; right: 12px;
     background: var(--rmit-grey); border: 1px solid var(--rmit-grey-mid);
@@ -833,18 +869,33 @@
     </div>
   </a>
   <nav class="header-nav" aria-label="Main">
-    <button class="header-link" id="writingGuideBtn" type="button">Writing guide</button>
-    <button class="header-link" id="standardsBtn" type="button">Standards guide</button>
-    <button class="header-link" id="helpBtn" type="button">About this tool</button>
-    <div class="header-link has-menu" id="getHelpWrap">
-      <button class="header-link" id="getHelpBtn" type="button" aria-haspopup="menu" aria-expanded="false">Get help &#9662;</button>
-      <div class="help-menu" id="getHelpMenu" role="menu" aria-hidden="true">
+    <div class="header-link has-menu" id="burgerWrap">
+      <button class="burger-btn" id="burgerBtn" type="button" aria-haspopup="menu" aria-expanded="false" aria-label="Menu">
+        <span class="burger-icon" aria-hidden="true">
+          <span></span><span></span><span></span>
+        </span>
+        <span class="burger-label">Menu</span>
+      </button>
+      <div class="help-menu burger-menu" id="burgerMenu" role="menu" aria-hidden="true">
+        <div class="help-menu-hint">Guides</div>
+        <button type="button" class="burger-item" id="writingGuideBtn" role="menuitem">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/></svg>
+          Writing guide
+        </button>
+        <button type="button" class="burger-item" id="standardsBtn" role="menuitem">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg>
+          Standards guide
+        </button>
+        <button type="button" class="burger-item" id="helpBtn" role="menuitem">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="10"/><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+          About this tool
+        </button>
         <div class="help-menu-hint">Need a hand?</div>
-        <a href="https://forms.office.com/r/PBT-SUPPORT" target="_blank" rel="noopener" role="menuitem">
+        <a class="burger-item" href="https://forms.office.com/r/PBT-SUPPORT" target="_blank" rel="noopener" role="menuitem">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z"/></svg>
           Ask PBT a question
         </a>
-        <a href="https://forms.office.com/r/PBT-BUGS" target="_blank" rel="noopener" role="menuitem">
+        <a class="burger-item" href="https://forms.office.com/r/PBT-BUGS" target="_blank" rel="noopener" role="menuitem">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M10.29 3.86 1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
           Log a technical issue
         </a>
@@ -1101,14 +1152,14 @@ NOTE: What if access is delayed? Escalate to the IT lead and update the new star
   <!-- ==================== HERO ==================== -->
   <section class="hero" aria-labelledby="heroTitle">
     <h1 id="heroTitle">Enhance your process documentation.</h1>
-    <p>Align your writing with RMIT CoVE and Nintex Process Manager standards for clarity, compliance and excellence.</p>
+    <p>Provide your draft process. The tool reviews it against RMIT CoVE and Nintex standards, flags improvements, and generates a polished document and visual workflow.</p>
   </section>
 
   <!-- ==================== INPUT ==================== -->
   <section class="card" id="inputCard">
     <div class="section-heading-bar">
       <h2>How do you want to start?</h2>
-      <button class="btn btn-secondary" id="resetBtn" type="button" hidden>Reset</button>
+      <button class="btn btn-secondary" id="resetBtn" type="button">Reset</button>
     </div>
     <div class="starter-grid">
       <button class="starter-card starter-card-tour" id="starterSampleBtn" type="button">
@@ -1219,10 +1270,7 @@ NOTE: What if access is delayed? Escalate to the IT lead and update the new star
       <h3 id="workflowTitle" style="margin:0 0 4px;color:var(--rmit-red);font-size:16px;"></h3>
       <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;">
         <span class="hint" style="margin:0;"><strong>Drag</strong> to pan &middot; <strong>Ctrl + scroll</strong> or use the buttons to zoom</span>
-        <div class="theme-toggle" id="themeToggle">
-          <button data-theme="nintex" class="active">Nintex palette</button>
-          <button data-theme="rmit">RMIT palette</button>
-        </div>
+
       </div>
       <div id="workflowRender" class="theme-nintex"></div>
       <div class="button-row" style="justify-content:space-between;">
@@ -1234,7 +1282,6 @@ NOTE: What if access is delayed? Escalate to the IT lead and update the new star
         <div style="display:flex;gap:12px;flex-wrap:wrap;">
           <button class="btn btn-secondary" id="downloadSvgBtn">Download SVG</button>
           <button class="btn btn-secondary" id="downloadPngBtn">Download PNG</button>
-          <button class="btn btn-secondary" id="downloadBpmnBtn">Download .bpmn (XML)</button>
         </div>
       </div>
     </div>
@@ -1583,7 +1630,7 @@ document.getElementById('resetBtn').addEventListener('click', () => {
   currentModel = null; currentIssues = []; currentRecommendation = null; currentMermaid = '';
   // Send the user back to the home view: hide the work area and the Reset button
   if (inputWorkArea) inputWorkArea.hidden = true;
-  document.getElementById('resetBtn').hidden = true;
+  // Reset button stays visible at all times now
   document.getElementById('inputCard').scrollIntoView({ behavior: 'smooth', block: 'start' });
 });
 
@@ -4148,26 +4195,40 @@ document.getElementById('downloadDocxBtn').addEventListener('click', downloadAsD
 document.getElementById('downloadPdfBtn').addEventListener('click', downloadAsPdf);
 document.getElementById('downloadSvgBtn').addEventListener('click', downloadSvg);
 document.getElementById('downloadPngBtn').addEventListener('click', downloadPng);
-document.getElementById('downloadBpmnBtn').addEventListener('click', downloadBpmn);
+// downloadBpmn button removed (was too technical for users)
 
 // Guided tour ('I'm new here' walkthrough)
 const TOUR_STEPS = [
   {
-    title: 'Welcome to the Process Writing Assistant',
-    body: 'This 60-second tour shows what the tool does. Use <strong>Next</strong> to advance, or <strong>Skip</strong> to jump straight in.',
+    title: 'Welcome to the CoVE Process Writing Assistant',
+    body: 'A 60-second walkthrough. Use <strong>Next</strong> to advance, or <strong>Skip</strong> to jump straight in.',
     target: null
   },
   {
-    title: 'Step 1 \u2014 your starting point',
-    body: 'Three paths sit at the top of the page. You picked <strong>I\'m new here</strong>, so we\'ve loaded a sample CoVE process for you.',
-    target: '.intro-card'
+    title: 'Your starting point',
+    body: 'Three ways to start: <strong>I\'m new here</strong>, <strong>Import draft</strong>, or <strong>Manual build</strong>. We\'ll walk through each.',
+    target: '.starter-grid'
   },
   {
-    title: 'Step 2 \u2014 the input',
-    body: 'Here\'s your sample loaded into the <strong>Paste / type</strong> tab. Notice the headings: <em>Process name, Owner, Trigger, Activities, Roles, Tasks, NOTEs</em>. This is the format the tool reads.',
+    title: 'I\'m new here',
+    body: 'You picked this path. A sample CoVE process is loaded so you can see how the tool works. Best for first-timers.',
+    target: '#starterSampleBtn'
+  },
+  {
+    title: 'Import draft',
+    body: 'Upload an existing process as <strong>.docx</strong>, <strong>.pdf</strong>, or <strong>.txt</strong>. The tool parses it, reviews it against the standards, and generates a polished version. Best for cleaning up a draft.',
+    target: '#starterUploadBtn'
+  },
+  {
+    title: 'Manual build',
+    body: 'Opens a guided form: name, owner, trigger, then activities and tasks. Best for writing from scratch.',
+    target: '#starterBuildBtn'
+  },
+  {
+    title: 'The input',
+    body: 'The sample is loaded in <strong>Paste / type</strong>. Notice the structure: process name, owner, trigger, activities, roles, tasks, NOTEs \u2014 this is the format the tool reads.',
     target: '#pasteArea',
     before: () => {
-      // Switch to paste tab + load sample if not already loaded
       const pasteTab = document.querySelector('#inputCard .tabs .tab[data-tab="paste"]');
       if (pasteTab) pasteTab.click();
       const ta = document.getElementById('pasteArea');
@@ -4175,8 +4236,8 @@ const TOUR_STEPS = [
     }
   },
   {
-    title: 'Step 3 \u2014 click Analyse',
-    body: 'When you\'re ready, click <strong>Analyse content</strong>. We\'ll do it for you now to show the results.',
+    title: 'Click Analyse',
+    body: 'Click <strong>Analyse content</strong>. We\'ll run it now to show the results.',
     target: '#analyseBtn',
     before: () => {
       const ta = document.getElementById('pasteArea');
@@ -4184,18 +4245,19 @@ const TOUR_STEPS = [
     }
   },
   {
-    title: 'Step 4 \u2014 what to make',
-    body: 'The first results tab tells you what kind of artefact suits your content best \u2014 a process map, a guide, or both \u2014 with reasoning.',
-    target: '.results-tabs',
+    title: 'The generated document',
+    body: 'A polished version of your process. <strong>Click to edit</strong>; download as Word or PDF.',
+    target: '#docPreview',
     before: () => {
-      // Trigger Analyse if not yet done
       if (!currentModel) document.getElementById('analyseBtn').click();
+      const t = document.querySelector('.results-tabs .tab[data-rtab="document"]');
+      if (t) t.click();
     },
     waitMs: 600
   },
   {
-    title: 'Step 5 \u2014 issues and gaps',
-    body: 'The <strong>Issues &amp; gaps</strong> sidebar sits beside your document so you can read both at once. Click any issue card to jump to where it occurs in the document.',
+    title: 'Issues and gaps',
+    body: 'Issues sit alongside your document. Click any issue to jump to where it occurs.',
     target: '.doc-sidebar',
     before: () => {
       const t = document.querySelector('.results-tabs .tab[data-rtab="document"]');
@@ -4203,8 +4265,8 @@ const TOUR_STEPS = [
     }
   },
   {
-    title: 'Step 6 \u2014 the visual workflow',
-    body: 'Your process renders as a BPMN 2.0 diagram, with horizontal lanes per role. <strong>Drag</strong> to pan, <strong>scroll</strong> to zoom. Switch palette to suit your audience.',
+    title: 'The visual workflow',
+    body: 'A swimlane diagram with one lane per role. Drag to pan, <strong>Ctrl + scroll</strong> to zoom. Download as SVG or PNG.',
     target: '.results-tabs .tab[data-rtab="workflow"]',
     before: () => {
       const t = document.querySelector('.results-tabs .tab[data-rtab="workflow"]');
@@ -4212,18 +4274,23 @@ const TOUR_STEPS = [
     }
   },
   {
-    title: 'Step 7 \u2014 the generated document',
-    body: 'A polished version of your process, ready to download as Word, PDF, or BPMN XML. <strong>Click anywhere</strong> in the document to edit before downloading.',
-    target: '.results-tabs .tab[data-rtab="document"]',
+    title: 'Decide what to make',
+    body: 'Tells you whether your content suits a <strong>process map</strong>, a <strong>guide</strong>, or both \u2014 with reasoning from the standards.',
+    target: '.results-tabs .tab[data-rtab="recommendation"]',
     before: () => {
-      const t = document.querySelector('.results-tabs .tab[data-rtab="document"]');
+      const t = document.querySelector('.results-tabs .tab[data-rtab="recommendation"]');
       if (t) t.click();
     }
   },
   {
+    title: 'The menu',
+    body: 'The <strong>Menu</strong> (top right) holds the writing guide, standards reference, About, and links to ask PBT for help or log an issue.',
+    target: '#burgerBtn'
+  },
+  {
     title: 'You\'re ready',
-    body: 'That\'s the whole tool. Replace the sample with your own content, or click <strong>?</strong> in the header any time to read the writing standards reference.',
-    target: '#helpBtn'
+    body: 'That\'s it. Replace the sample with your own content and Analyse \u2014 or open the Menu any time for help.',
+    target: null
   }
 ];
 
@@ -4254,7 +4321,7 @@ function showTourStep(i) {
   if (typeof step.before === 'function') step.before();
   const wait = step.waitMs || 0;
   setTimeout(() => {
-    tourCounterEl.textContent = 'Step ' + (i + 1) + ' of ' + TOUR_STEPS.length;
+    tourCounterEl.textContent = (i === 0) ? 'Intro' : ('Step ' + i + ' of ' + (TOUR_STEPS.length - 1));
     tourTitleEl.textContent = step.title;
     tourBodyEl.innerHTML = step.body;
     tourPrevBtn.disabled = (i === 0);
@@ -4280,7 +4347,9 @@ function positionTour(targetSelector) {
     tourTooltipEl.style.transform = 'translate(-50%, -50%)';
     return;
   }
-  el.scrollIntoView({ behavior: 'smooth', block: 'center' });
+  // Scroll target nicely into view, biased towards the top so the tooltip
+  // (which we place below) has room. For very tall targets, just pin to top.
+  el.scrollIntoView({ behavior: 'smooth', block: 'start', inline: 'nearest' });
   setTimeout(() => {
     const r = el.getBoundingClientRect();
     const pad = 8;
@@ -4289,20 +4358,31 @@ function positionTour(targetSelector) {
     tourSpotlightEl.style.left = (r.left - pad) + 'px';
     tourSpotlightEl.style.width = (r.width + pad * 2) + 'px';
     tourSpotlightEl.style.height = (r.height + pad * 2) + 'px';
-    // Position tooltip below the target if room, else above
     const tipW = tourTooltipEl.offsetWidth;
     const tipH = tourTooltipEl.offsetHeight;
     const vw = window.innerWidth, vh = window.innerHeight;
     let left = r.left + (r.width / 2) - (tipW / 2);
     if (left < 12) left = 12;
     if (left + tipW > vw - 12) left = vw - tipW - 12;
-    let top = r.bottom + 16;
-    if (top + tipH > vh - 12) top = r.top - tipH - 16;
+    // Try below first, then above, then beside, then pin to viewport bottom
+    let top;
+    const spaceBelow = vh - r.bottom;
+    const spaceAbove = r.top;
+    if (spaceBelow >= tipH + 24) {
+      top = r.bottom + 16;
+    } else if (spaceAbove >= tipH + 24) {
+      top = r.top - tipH - 16;
+    } else {
+      // No room above OR below — pin tooltip to a safe spot near the
+      // bottom of the viewport so it never disappears off-screen.
+      top = Math.max(12, vh - tipH - 16);
+    }
     if (top < 12) top = 12;
+    if (top + tipH > vh - 12) top = vh - tipH - 12;
     tourTooltipEl.style.transform = 'none';
     tourTooltipEl.style.left = left + 'px';
     tourTooltipEl.style.top = top + 'px';
-  }, 350);
+  }, 400);
 }
 if (tourPrevBtn) tourPrevBtn.addEventListener('click', () => {
   if (tourIndex > 0) showTourStep(--tourIndex);
@@ -4368,9 +4448,7 @@ document.addEventListener('keydown', e => {
 const inputWorkArea = document.getElementById('inputWorkArea');
 function revealInputArea(tabName) {
   if (inputWorkArea) inputWorkArea.hidden = false;
-  // Surface the Reset button in the sticky heading when the work area is in use
-  const rb = document.getElementById('resetBtn');
-  if (rb) rb.hidden = false;
+  // Reset button is always visible; nothing extra to do here
   if (tabName) {
     const tab = document.querySelector('#inputCard .tabs .tab[data-tab="' + tabName + '"]');
     if (tab) tab.click();
@@ -4456,13 +4534,7 @@ document.getElementById('zoomFitBtn').addEventListener('click', () => {
   if (!bpmnViewer) return;
   try { bpmnViewer.get('canvas').zoom('fit-viewport', 'auto'); } catch (e) {}
 });
-document.querySelectorAll('#themeToggle button').forEach(btn => {
-  btn.addEventListener('click', () => {
-    document.querySelectorAll('#themeToggle button').forEach(b => b.classList.remove('active'));
-    btn.classList.add('active');
-    applyBpmnTheme(btn.dataset.theme);
-  });
-});
+// Palette toggle removed; Nintex theme is the only theme
 // P3 #12: 'Analyse another process' CTA — scroll back to input
 const analyseAnotherBtn = document.getElementById('analyseAnotherBtn');
 if (analyseAnotherBtn) {
@@ -4519,11 +4591,11 @@ if (restoreBtn) {
 }
 
 
-// Get help dropdown menu (Phase 3 #6 + #7)
-(function wireGetHelpMenu() {
-  const btn = document.getElementById('getHelpBtn');
-  const menu = document.getElementById('getHelpMenu');
-  const wrap = document.getElementById('getHelpWrap');
+// Burger menu — consolidated header nav (Writing guide, Standards, About, Get help)
+(function wireBurgerMenu() {
+  const btn = document.getElementById('burgerBtn');
+  const menu = document.getElementById('burgerMenu');
+  const wrap = document.getElementById('burgerWrap');
   if (!btn || !menu || !wrap) return;
   function open() {
     menu.setAttribute('aria-hidden', 'false');
@@ -4536,6 +4608,10 @@ if (restoreBtn) {
   btn.addEventListener('click', (e) => {
     e.stopPropagation();
     if (menu.getAttribute('aria-hidden') === 'false') close(); else open();
+  });
+  // Close menu when a menu item is clicked (so the chosen modal/link can take over)
+  menu.querySelectorAll('.burger-item').forEach(item => {
+    item.addEventListener('click', () => setTimeout(close, 50));
   });
   document.addEventListener('click', (e) => {
     if (!wrap.contains(e.target)) close();
