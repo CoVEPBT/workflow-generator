@@ -42,6 +42,24 @@
     padding: 14px 28px;
     display: flex; align-items: center; justify-content: space-between;
     gap: 16px; flex-wrap: wrap;
+    position: sticky; top: 0; z-index: 100;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.12);
+  }
+  header.app-header .header-actions {
+    display: flex; align-items: center; gap: 10px; flex-wrap: wrap;
+  }
+  header.app-header .header-reset-btn {
+    background: rgba(255,255,255,0.12); color: #FFFFFF;
+    border: 1px solid rgba(255,255,255,0.35); border-radius: 6px;
+    padding: 8px 14px; cursor: pointer; min-height: 40px;
+    font-size: 14px; font-weight: 500;
+    transition: all 0.15s ease;
+  }
+  header.app-header .header-reset-btn:hover {
+    background: rgba(255,255,255,0.22); border-color: rgba(255,255,255,0.55);
+  }
+  header.app-header .header-reset-btn:focus-visible {
+    outline: 2px solid #FFFFFF; outline-offset: 2px;
   }
   header.app-header .header-brand-link {
     display: flex; align-items: center; gap: 14px;
@@ -740,6 +758,16 @@
     display: none; align-items: center; justify-content: center;
   }
   .modal-backdrop[aria-hidden="false"] { display: flex; }
+  /* When iframed, switch to absolute positioning so the modal sits in the
+     user's visible window, not at the iframe's geometric centre. */
+  body.in-iframe .modal-backdrop[aria-hidden="false"] {
+    position: absolute;
+    top: var(--host-modal-top, 0px);
+    left: 0;
+    width: 100%;
+    height: var(--host-modal-height, 100vh);
+    inset: auto;
+  }
   .modal {
     background: #FFFFFF; border-radius: 8px; max-width: 600px; width: 92%;
     max-height: 80vh; overflow-y: auto; padding: 24px;
@@ -868,7 +896,9 @@
       <div class="sub">RMIT University &middot; Vocational Education</div>
     </div>
   </a>
-  <nav class="header-nav" aria-label="Main">
+  <div class="header-actions">
+    <button class="header-reset-btn" id="headerResetBtn" type="button" aria-label="Reset and start over">Reset</button>
+    <nav class="header-nav" aria-label="Main">
     <div class="header-link has-menu" id="burgerWrap">
       <button class="burger-btn" id="burgerBtn" type="button" aria-haspopup="menu" aria-expanded="false" aria-label="Menu">
         <span class="burger-icon" aria-hidden="true">
@@ -877,6 +907,10 @@
         <span class="burger-label">Menu</span>
       </button>
       <div class="help-menu burger-menu" id="burgerMenu" role="menu" aria-hidden="true">
+        <button type="button" class="burger-item" id="helpBtn" role="menuitem">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="10"/><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+          About this tool
+        </button>
         <div class="help-menu-hint">Guides</div>
         <button type="button" class="burger-item" id="writingGuideBtn" role="menuitem">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/></svg>
@@ -885,10 +919,6 @@
         <button type="button" class="burger-item" id="standardsBtn" role="menuitem">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg>
           Standards guide
-        </button>
-        <button type="button" class="burger-item" id="helpBtn" role="menuitem">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="10"/><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
-          About this tool
         </button>
         <div class="help-menu-hint">Need a hand?</div>
         <a class="burger-item" href="https://forms.office.com/r/PBT-SUPPORT" target="_blank" rel="noopener" role="menuitem">
@@ -902,6 +932,7 @@
       </div>
     </div>
   </nav>
+  </div>
 </header>
 
 <!-- Guided tour overlay -->
@@ -1157,10 +1188,7 @@ NOTE: What if access is delayed? Escalate to the IT lead and update the new star
 
   <!-- ==================== INPUT ==================== -->
   <section class="card" id="inputCard">
-    <div class="section-heading-bar">
-      <h2>How do you want to start?</h2>
-      <button class="btn btn-secondary" id="resetBtn" type="button">Reset</button>
-    </div>
+    <h2 class="how-start-heading" style="margin: 0 0 16px;">How do you want to start?</h2>
     <div class="starter-grid">
       <button class="starter-card starter-card-tour" id="starterSampleBtn" type="button">
         <div class="starter-card-icon icon-navy" aria-hidden="true">
@@ -1612,7 +1640,7 @@ addActivityRow(); // start with one empty activity
 /* ============================================================
    RESET
    ============================================================ */
-document.getElementById('resetBtn').addEventListener('click', () => {
+document.getElementById('headerResetBtn').addEventListener('click', () => {
   uploadedFile = null;
   fileInput.value = '';
   fileNameEl.textContent = '';
@@ -4789,6 +4817,7 @@ if (restoreBtn) {
 // so it can size the iframe to fit. Pairs with a tiny listener on the host page.
 (function setupAutoResize() {
   if (window.parent === window) return; // not in an iframe
+  document.body.classList.add('in-iframe');
   let lastHeight = 0;
   function postHeight() {
     const h = Math.max(
@@ -4808,6 +4837,18 @@ if (restoreBtn) {
     ro.observe(document.body);
   }
   setInterval(postHeight, 1000);
+
+  // Listen for host-viewport messages from the SharePoint embed snippet so we
+  // can position modals where the user is actually looking, not at the
+  // geometric centre of a tall iframe.
+  window.addEventListener('message', (event) => {
+    if (!event.data || event.data.type !== 'cove-host-viewport') return;
+    const visibleTop = Math.max(0, event.data.visibleTop || 0);
+    const visibleHeight = event.data.visibleHeight || window.innerHeight;
+    document.documentElement.style.setProperty('--host-modal-top', visibleTop + 'px');
+    document.documentElement.style.setProperty('--host-modal-height', visibleHeight + 'px');
+  });
+  try { window.parent.postMessage({ type: 'cove-tool-request-viewport' }, '*'); } catch (e) {}
 })();
 
 </script>
