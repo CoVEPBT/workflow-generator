@@ -104,7 +104,7 @@
     header.app-header .header-nav { width: 100%; }
     header.app-header .header-link { flex: 1 1 auto; text-align: center; }
   }
-  main { max-width: 1200px; margin: 0 auto; padding: 24px; }
+  main { max-width: 1200px; margin: 0 auto; padding: 28px 24px; }
   .hero {
     background: #F4F7FB;
     margin: -24px -24px 24px;
@@ -189,6 +189,28 @@
   button.btn-warning:hover { background: #B86600 !important; }
 
   .button-row { display: flex; gap: 12px; flex-wrap: wrap; align-items: center; justify-content: center; margin-top: 16px; }
+  /* 'Next step' row sitting under the generated document — Reset edits on the left,
+     Analyse another + Export on the right. Stacks on narrow widths. */
+  .doc-next-step-row {
+    display: flex; align-items: center; justify-content: space-between;
+    gap: 12px; flex-wrap: wrap; margin-top: 18px;
+    padding-top: 16px; border-top: 1px solid var(--rmit-grey-mid);
+  }
+  .doc-next-step-secondary, .doc-next-step-primary {
+    display: flex; align-items: center; gap: 8px; flex-wrap: wrap;
+  }
+  .doc-next-step-primary .btn-primary { position: relative; }
+  .doc-next-step-primary .action-card-error-badge {
+    position: static; margin-left: 8px; padding: 1px 7px;
+    font-size: 11px; line-height: 1.4;
+  }
+  @media (max-width: 640px) {
+    .doc-next-step-row { flex-direction: column; align-items: stretch; }
+    .doc-next-step-secondary, .doc-next-step-primary {
+      width: 100%; justify-content: stretch;
+    }
+    .doc-next-step-secondary .btn, .doc-next-step-primary .btn { flex: 1; }
+  }
 
   textarea, input[type="text"], input[type="email"], select {
     width: 100%; padding: 10px; border: 1px solid var(--rmit-grey-mid);
@@ -367,25 +389,15 @@
     }
   }
 
-  /* Issue context banner (shown on document tab when an issue was clicked) */
-  .issue-context-banner {
-    position: sticky; top: 0; z-index: 5;
-    display: flex; gap: 12px; align-items: flex-start;
-    background: #FFF8E1; border: 1px solid #F1D788; border-radius: 6px;
-    padding: 12px 14px; margin: 0 0 14px;
-    font-size: 13.5px; line-height: 1.5;
+  /* Active-flag highlight — shows which sidebar flag the user just clicked */
+  .issue.issue-active {
+    background: #FFF5F5 !important;
+    border-color: var(--rmit-red);
+    box-shadow: 0 0 0 2px rgba(230,30,42,0.18);
   }
-  .issue-context-banner .issue-context-text { flex: 1; color: #1F2937; }
-  .issue-context-banner .issue-context-text strong { color: #0F172A; }
-  .issue-context-banner .issue-context-actions { display: flex; gap: 8px; align-items: center; flex-shrink: 0; }
-  .issue-context-banner .issue-context-back, .issue-context-banner .issue-context-dismiss {
-    background: none; border: 1px solid #C2A35A; color: #6B5117; border-radius: 4px;
-    padding: 4px 10px; font-size: 12.5px; cursor: pointer; min-height: 32px;
+  .issue.issue-active .issue-jump-hint {
+    background: var(--rmit-red); color: #fff; border-color: var(--rmit-red);
   }
-  .issue-context-banner .issue-context-back:hover, .issue-context-banner .issue-context-dismiss:hover {
-    background: #F1E5C8;
-  }
-  .issue-context-banner.hidden { display: none; }
 
   /* Auto-fix bar at top of issues panel */
   .autofix-bar {
@@ -398,17 +410,41 @@
   .autofix-bar.applied { background: #EDF7EE; border-color: #A8D5AC; }
 
   /* Pulse highlight when an activity is jumped to from an issue card */
-  .activity-highlight { animation: pulse-highlight 1.5s ease-in-out 2; }
+  .activity-highlight { animation: pulse-highlight 1.4s ease-in-out 3; }
   @keyframes pulse-highlight {
-    0%, 100% { background: #FCFCFC; box-shadow: none; }
-    50%      { background: #FFF4E5; box-shadow: 0 0 0 4px rgba(231, 30, 42, 0.18); }
+    0%, 100% { background: transparent; box-shadow: none; outline-color: transparent; }
+    25%, 75% { background: #FFF1D6; box-shadow: 0 0 0 4px rgba(230, 30, 42, 0.30); outline: 2px solid rgba(230, 30, 42, 0.4); outline-offset: 2px; }
+    50%      { background: #FFE0A0; box-shadow: 0 0 0 6px rgba(230, 30, 42, 0.45); outline: 2px solid rgba(230, 30, 42, 0.6); outline-offset: 2px; }
   }
 
   /* Clickable issue cards */
   .issue { cursor: default; }
   .issue.issue-clickable { cursor: pointer; }
   .issue.issue-clickable:hover { background: #F4F4F4; }
+  .issue.issue-clickable:hover .issue-jump-hint { color: var(--rmit-red); }
   .issue.issue-clickable:focus-visible { outline: 2px solid var(--rmit-red); outline-offset: 2px; }
+  /* Static (process-wide) flags read flat so users know they aren't links */
+  .issue.issue-static { background: #F8FAFC; }
+  .issue.issue-static .row1 { opacity: 0.95; }
+  /* Group severity + source on the left of row1; affordance pill sits on the right
+     (the existing .issue .row1 rule below uses justify-content:space-between). */
+  .issue .issue-meta { display: inline-flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+  .issue-jump-hint, .issue-static-hint {
+    display: inline-flex; align-items: center; gap: 4px;
+    font-size: 11.5px; font-weight: 500;
+    padding: 2px 8px; border-radius: 999px;
+    white-space: nowrap;
+    align-self: center;
+  }
+  .issue-jump-hint {
+    color: var(--rmit-red); background: #FFF5F5;
+    border: 1px solid #FFD9D9;
+  }
+  .issue-jump-hint svg { width: 11px; height: 11px; }
+  .issue-static-hint {
+    color: #64748B; background: #F1F5F9;
+    border: 1px solid #E2E8F0;
+  }
 
   /* Toast (inline validation replacement for alert()) */
   #toast {
@@ -513,7 +549,7 @@
   .issue.error { border-left-color: var(--severity-error); }
   .issue.warning { border-left-color: var(--severity-warning); }
   .issue.info { border-left-color: var(--severity-info); }
-  .issue .row1 { display: flex; justify-content: space-between; gap: 10px; }
+  .issue .row1 { display: flex; justify-content: space-between; align-items: center; gap: 10px; flex-wrap: wrap; }
   .issue .severity {
     text-transform: uppercase; font-size: 11px; font-weight: 700; letter-spacing: 0.5px;
     padding: 2px 8px; border-radius: 3px;
@@ -538,7 +574,7 @@
   /* Workflow render area */
   #workflowRender {
     border: 1px solid var(--rmit-grey-mid);
-    background: #FFFFFF; min-height: 480px; height: 480px; max-height: 70vh;
+    background: #FFFFFF; min-height: 520px; height: 60vh; max-height: 720px;
     overflow: hidden; border-radius: 4px; position: relative;
     cursor: grab;
   }
@@ -562,6 +598,41 @@
   .theme-toggle button.active { background: var(--rmit-red); color: #FFFFFF; }
   .theme-toggle button:not(.active):hover { background: var(--rmit-grey); }
   #workflowRender svg { max-width: 100%; }
+
+  /* Output tabs — Generated document / Visual workflow */
+  .output-tabs {
+    display: flex; gap: 4px; margin: 0 0 14px;
+    border-bottom: 2px solid var(--rmit-grey-mid);
+  }
+  .output-tab {
+    display: inline-flex; align-items: center; gap: 8px;
+    background: transparent; border: none;
+    padding: 10px 18px; margin-bottom: -2px;
+    color: #64748B; font-family: inherit; font-size: 14px; font-weight: 600;
+    cursor: pointer; border-bottom: 2px solid transparent;
+    transition: color 0.15s ease, border-color 0.15s ease;
+  }
+  .output-tab:hover { color: var(--rmit-text); }
+  .output-tab.is-active {
+    color: var(--rmit-red); border-bottom-color: var(--rmit-red);
+  }
+  .output-tab:focus-visible {
+    outline: 2px solid var(--rmit-red); outline-offset: 2px; border-radius: 2px;
+  }
+  .output-tab svg { width: 15px; height: 15px; }
+  .output-pane[hidden] { display: none; }
+  /* Workflow toolbar — zoom + download row beneath the diagram */
+  .workflow-toolbar {
+    display: flex; justify-content: space-between; align-items: center;
+    gap: 12px; flex-wrap: wrap; margin-top: 14px;
+  }
+  .workflow-zoom, .workflow-download {
+    display: inline-flex; gap: 6px; flex-wrap: wrap;
+  }
+  @media (max-width: 640px) {
+    .workflow-toolbar { flex-direction: column; align-items: stretch; }
+    .workflow-zoom, .workflow-download { justify-content: center; }
+  }
 
   /* Generated doc preview — also used for PDF export */
   .doc-preview {
@@ -634,10 +705,28 @@
   .hidden { display: none !important; }
 
   footer {
-    margin-top: 60px; padding: 20px 28px;
+    margin-top: 60px; padding: 18px 28px;
     background: var(--rmit-grey); color: #666;
-    font-size: 12px; text-align: center;
+    font-size: 12px;
     border-top: 1px solid var(--rmit-grey-mid);
+  }
+  footer .footer-inner {
+    display: flex; align-items: center; justify-content: space-between;
+    gap: 14px; flex-wrap: wrap; max-width: 1200px; margin: 0 auto;
+  }
+  footer .footer-tagline { color: #666; }
+  footer .footer-link {
+    display: inline-flex; align-items: center; gap: 6px;
+    color: var(--rmit-red); text-decoration: none;
+    font-weight: 500; padding: 4px 8px; border-radius: 4px;
+  }
+  footer .footer-link:hover { text-decoration: underline; background: rgba(230,30,42,0.06); }
+  footer .footer-link:focus-visible {
+    outline: 2px solid var(--rmit-red); outline-offset: 2px; text-decoration: underline;
+  }
+  footer .footer-link svg { width: 14px; height: 14px; }
+  @media (max-width: 640px) {
+    footer .footer-inner { justify-content: center; text-align: center; }
   }
   .pill {
     display: inline-block; padding: 2px 8px; border-radius: 10px;
@@ -800,6 +889,559 @@
   .standards-panel .std-list li { margin-bottom: 8px; }
   .standards-panel .std-source { font-size: 12px; color: #6B7280; font-style: italic; margin-top: 18px; padding-top: 10px; border-top: 1px solid var(--rmit-grey-mid); }
 
+
+
+  /* ============================================================
+     INPUT CARD — heading, action row, paste hint
+     ============================================================ */
+  .input-heading {
+    text-align: center; margin: 4px 0 22px;
+  }
+  .input-heading h2 {
+    font-size: 22px; color: #0F172A; font-weight: 600;
+    margin: 0 0 6px; border: none; padding: 0; text-align: center;
+    line-height: 1.25;
+  }
+  .input-heading p {
+    font-size: 14px; color: #475569; line-height: 1.5;
+    margin: 0 auto; max-width: 540px;
+  }
+
+  .input-actions-row {
+    display: flex; gap: 10px; justify-content: center;
+    flex-wrap: wrap; margin: 0 0 18px;
+  }
+  .action-btn {
+    display: inline-flex; align-items: center; gap: 8px;
+    padding: 10px 16px; min-height: 44px;
+    background: #FFFFFF; color: var(--rmit-text);
+    border: 1.5px solid var(--rmit-grey-mid); border-radius: 6px;
+    cursor: pointer; font-family: inherit;
+    font-size: 14px; font-weight: 500;
+    transition: all 0.15s ease;
+  }
+  .action-btn:hover {
+    border-color: var(--rmit-red); color: var(--rmit-red);
+    background: #FFF5F5; transform: translateY(-1px);
+    box-shadow: 0 2px 6px rgba(230,30,42,0.12);
+  }
+  .action-btn:focus-visible {
+    outline: 2px solid var(--rmit-red); outline-offset: 2px;
+  }
+  .action-btn svg {
+    width: 18px; height: 18px; flex-shrink: 0;
+    color: var(--rmit-red);
+  }
+  /* Highlight the primary action (Upload) — softer-filled to draw the eye without dominating */
+  .action-btn-primary {
+    background: #FFF5F5; border-color: #F4B7BC;
+  }
+
+
+  .input-help-link {
+    text-align: center; margin: 14px 0 0;
+    font-size: 13.5px; color: #64748B;
+  }
+  .input-help-link .help-icon {
+    color: var(--rmit-red); margin-right: 4px;
+  }
+  .input-help-link .text-link {
+    font-size: 13.5px;
+  }
+
+  .input-paste-toggle {
+    display: inline-flex; align-items: center; gap: 8px;
+    margin: 0 auto 12px; padding: 8px 14px;
+    background: transparent; border: 1px solid transparent;
+    color: #475569; font-size: 13.5px; font-weight: 500;
+    border-radius: 6px; cursor: pointer; font-family: inherit;
+    transition: all 0.15s ease;
+  }
+  /* Centre the toggle in its row */
+  .input-paste-toggle { display: flex; }
+  .input-paste-toggle:hover {
+    background: #F4F4F4; border-color: var(--rmit-grey-mid);
+    color: var(--rmit-text);
+  }
+  .input-paste-toggle:focus-visible {
+    outline: 2px solid var(--rmit-red); outline-offset: 2px;
+  }
+  .input-paste-toggle .paste-toggle-chevron {
+    width: 16px; height: 16px; color: var(--rmit-red);
+    transition: transform 0.18s ease;
+  }
+  .input-paste-toggle[aria-expanded="true"] .paste-toggle-chevron {
+    transform: rotate(90deg);
+  }
+
+
+
+
+  /* Document + quality-flags side panel — appears when user clicks "Review the flags myself" */
+  .doc-with-sidebar {
+    display: flex; gap: 18px; align-items: flex-start;
+  }
+  .doc-with-sidebar .doc-main { flex: 1 1 auto; min-width: 0; }
+  .doc-with-sidebar .doc-sidebar {
+    flex: 0 0 360px;
+    position: sticky; top: 12px;
+    max-height: calc(100vh - 100px);
+    overflow-y: auto;
+    border: 1px solid #C7DBF2; border-radius: 8px;
+    background: #F4F7FB;
+    padding: 14px 16px;
+    box-shadow: 0 2px 8px rgba(0, 52, 120, 0.08);
+  }
+  .doc-with-sidebar .doc-sidebar[hidden] { display: none; }
+  .doc-sidebar-header {
+    display: flex; align-items: center; justify-content: space-between;
+    gap: 10px; margin: 0 0 8px;
+    padding-bottom: 10px; border-bottom: 1px solid #C7DBF2;
+  }
+  .doc-sidebar-header h4 {
+    margin: 0; font-size: 14px; font-weight: 700;
+    color: var(--rmit-red); text-transform: uppercase; letter-spacing: 0.6px;
+  }
+  .doc-sidebar-close {
+    background: #FFFFFF; border: 1px solid #C7DBF2; color: var(--rmit-text);
+    border-radius: 50%; width: 28px; height: 28px;
+    font-size: 18px; line-height: 1; cursor: pointer;
+    display: flex; align-items: center; justify-content: center;
+    transition: all 0.15s ease;
+  }
+  .doc-sidebar-close:hover { background: var(--rmit-red); color: #FFFFFF; border-color: var(--rmit-red); }
+  .doc-sidebar-close:focus-visible { outline: 2px solid var(--rmit-red); outline-offset: 2px; }
+  .doc-sidebar-intro {
+    font-size: 12.5px; color: #475569; line-height: 1.5;
+    margin: 0 0 12px;
+  }
+  .doc-with-sidebar .doc-sidebar #issuesOut h3 {
+    font-size: 12.5px; text-transform: uppercase; letter-spacing: 0.5px;
+    margin-top: 12px; padding-bottom: 4px; color: var(--rmit-text);
+  }
+  .doc-with-sidebar .doc-sidebar #issuesOut h3:first-of-type { margin-top: 0; }
+  .doc-with-sidebar .doc-sidebar .issue { padding: 10px; font-size: 13px; margin-bottom: 8px; }
+  .doc-with-sidebar .doc-sidebar .issues-scroll {
+    max-height: none; border: none; padding: 0; background: transparent;
+  }
+  /* Active state — when sidebar is shown, hint the user with a subtle button highlight */
+  .action-card-review.is-active {
+    background: #FFF8E6; border-color: #C77700;
+  }
+
+  @media (max-width: 980px) {
+    .doc-with-sidebar { flex-direction: column; }
+    .doc-with-sidebar .doc-sidebar {
+      flex: 1 1 auto; max-height: none; position: static; width: 100%;
+    }
+  }
+
+  /* Inline recommendation note — soft hint under the stats line */
+  .recommendation-inline {
+    display: flex; align-items: center; gap: 8px; flex-wrap: wrap;
+    justify-content: center; text-align: center;
+    margin: -8px 0 14px; padding: 8px 14px;
+    background: #F5F9FF; border-radius: 6px; border: 1px solid #DCE7F5;
+    font-size: 13.5px; color: #1F3A5F;
+  }
+  .recommendation-inline.hidden { display: none; }
+  .recommendation-inline svg {
+    width: 16px; height: 16px; flex-shrink: 0; color: #1F6FB5;
+  }
+  .recommendation-inline-link {
+    color: var(--rmit-red); font-weight: 600; font-size: 13.5px;
+    padding: 0 2px;
+  }
+
+    /* Post-analyse decision prompt + 2-card choice */
+  .decision-prompt {
+    text-align: center; margin: 0 0 10px;
+    font-size: 15px; font-weight: 600; color: #0F172A;
+  }
+  .results-decision-cards {
+    grid-template-columns: repeat(2, 1fr) !important;
+    gap: 16px !important;
+  }
+  @media (max-width: 720px) {
+    .results-decision-cards { grid-template-columns: 1fr !important; }
+  }
+  .results-decision-cards .action-card {
+    min-height: 96px; padding: 14px 16px 12px; gap: 4px;
+  }
+  .results-decision-cards .action-card .action-card-icon {
+    width: 30px; height: 30px; margin-bottom: 2px;
+  }
+  .results-decision-cards .action-card .action-card-icon svg {
+    width: 16px; height: 16px;
+  }
+  .results-decision-cards .action-card .action-card-title {
+    font-size: 15px;
+  }
+  .results-decision-cards .action-card .action-card-sub {
+    font-size: 13px; line-height: 1.4;
+  }
+  .results-decision-cards .action-card .action-card-cta {
+    margin-top: 4px; font-size: 12.5px;
+  }
+  .action-card-apply .action-card-icon { background: #E0F2FE; color: #1F6FB5; }
+  .action-card-review .action-card-icon { background: #FFF8E6; color: #C77700; }
+
+  /* Header actions row alongside the Analyse another button */
+  .results-header-actions {
+    display: flex; gap: 8px; align-items: center; flex-wrap: wrap;
+  }
+  .results-header-actions .btn-secondary {
+    position: relative; padding: 8px 14px; font-size: 13.5px;
+  }
+  .results-header-actions .action-card-error-badge {
+    position: static; margin-left: 8px; padding: 1px 7px;
+    font-size: 11px; line-height: 1.4;
+  }
+
+  /* PRIMARY ACTIONS row — form-alternative + Analyse CTA */
+  .primary-actions-row {
+    display: flex; gap: 12px; align-items: center; justify-content: center;
+    flex-wrap: wrap; margin: 0 0 8px;
+  }
+  .primary-actions-row .btn-large {
+    padding: 14px 32px; font-size: 16px; min-height: 48px;
+  }
+  .primary-actions-alt {
+    text-align: center; margin: 8px 0 0;
+    font-size: 13px; color: #64748B;
+  }
+  .primary-actions-alt .text-link {
+    color: var(--rmit-red); font-weight: 500;
+    background: transparent; border: none; padding: 2px 4px;
+    text-decoration: underline; cursor: pointer; font-family: inherit;
+    font-size: 13px;
+  }
+  .primary-actions-alt .text-link:hover { color: #B01A26; }
+  .primary-actions-alt .text-link:focus-visible {
+    outline: 2px solid var(--rmit-red); outline-offset: 2px; border-radius: 3px;
+  }
+
+  /* ORIENTATION section — "First time here?" group of secondary actions.
+     Given a soft navy-tinted background so it feels inviting, not lost. */
+  .orientation-section {
+    margin-top: 28px; padding: 22px 22px 20px;
+    background: linear-gradient(135deg, #F4F8FE 0%, #FFF6F6 100%);
+    border: 1px solid #DCE7F5; border-radius: 10px;
+  }
+  .orientation-divider {
+    text-align: center; margin: 0 0 14px;
+    font-size: 13px; font-weight: 700; color: var(--rmit-navy);
+    text-transform: uppercase; letter-spacing: 1.5px;
+    display: flex; align-items: center; justify-content: center; gap: 8px;
+  }
+  .orientation-divider::before {
+    content: "\1F44B"; /* waving hand emoji */ font-size: 16px;
+    -webkit-text-fill-color: initial;
+  }
+  .orientation-actions {
+    display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px;
+  }
+  @media (max-width: 720px) {
+    .orientation-actions { grid-template-columns: 1fr; }
+  }
+  .orientation-action {
+    display: flex; align-items: flex-start; gap: 10px;
+    padding: 14px 16px;
+    background: #FFFFFF; color: var(--rmit-text);
+    border: 1px solid #DCE7F5; border-radius: 8px;
+    cursor: pointer; font-family: inherit;
+    text-align: left; transition: all 0.15s ease;
+    min-height: 64px;
+    box-shadow: 0 1px 2px rgba(31, 58, 95, 0.04);
+  }
+  .orientation-action:hover {
+    background: #FFFFFF; border-color: var(--rmit-red);
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba(230,30,42,0.15);
+  }
+  .orientation-action:focus-visible {
+    outline: 2px solid var(--rmit-red); outline-offset: 2px;
+  }
+  .orientation-action .oa-icon {
+    flex-shrink: 0; display: inline-flex; align-items: center; justify-content: center;
+    width: 34px; height: 34px;
+    background: #FFF5F5; color: var(--rmit-red);
+    border-radius: 8px; border: 1px solid #FED7DA;
+  }
+  .orientation-action:nth-child(2) .oa-icon {
+    background: #EFF6FF; color: #1F6FB5; border-color: #BAD4F0;
+  }
+  .orientation-action:nth-child(3) .oa-icon {
+    background: #FFF8E6; color: #C77700; border-color: #F1D788;
+  }
+  .orientation-action .oa-icon svg { width: 17px; height: 17px; }
+  .orientation-action .oa-text {
+    display: flex; flex-direction: column; gap: 2px; min-width: 0;
+  }
+  .orientation-action .oa-text strong {
+    font-size: 13.5px; font-weight: 600; color: #0F172A;
+  }
+  .orientation-action .oa-text .oa-sub {
+    font-size: 12px; color: #64748B; line-height: 1.4;
+  }
+
+  /* Sample-load flash — brief pulse so users notice the textarea has filled */
+  @keyframes sample-flash {
+    0%, 100% { border-color: #CBD5E1; box-shadow: none; }
+    35%, 65% { border-color: var(--rmit-red); box-shadow: 0 0 0 5px rgba(230,30,42,0.18); }
+  }
+  .input-zone.sample-flash { animation: sample-flash 1.2s ease-in-out 1; }
+
+  /* ============================================================
+     UNIFIED INPUT ZONE — single paste/drop area, no tabs
+     ============================================================ */
+  .input-hint {
+    text-align: center; color: #475569; margin: 0 0 14px;
+    font-size: 14.5px; line-height: 1.5;
+  }
+  .input-hint strong { color: var(--rmit-text); }
+
+  .input-zone {
+    position: relative; margin-bottom: 14px;
+    border: 2px dashed #CBD5E1; border-radius: 8px;
+    background: #FAFBFD;
+    transition: border-color 0.15s ease, background 0.15s ease;
+  }
+  .input-zone:focus-within {
+    border-color: var(--rmit-red); border-style: solid; background: #FFFFFF;
+  }
+  .input-zone.dragging {
+    border-color: var(--rmit-red); background: #FFF5F5; border-style: solid;
+  }
+
+
+  /* DROP-ZONE HEADER — centred coloured affordance for file upload */
+  .dropzone-header {
+    display: flex; align-items: center; justify-content: center; gap: 14px;
+    padding: 14px 18px 12px;
+    background: linear-gradient(to bottom, #FFF5F5 0%, #FAFBFD 100%);
+    border-bottom: 1px solid #FED7DA;
+    transition: background 0.15s ease, border-color 0.15s ease;
+    text-align: center;
+  }
+  .dropzone-icon {
+    flex-shrink: 0;
+    width: 36px; height: 36px;
+    color: var(--rmit-red);
+    background: #FFFFFF; border-radius: 50%;
+    padding: 8px;
+    border: 2px solid var(--rmit-red);
+    box-sizing: border-box;
+  }
+  .dropzone-text { flex: 0 1 auto; min-width: 0; text-align: center; }
+  .dropzone-title {
+    font-size: 15px; font-weight: 600; color: #0F172A; margin: 0 0 4px;
+  }
+  .dropzone-browse {
+    background: none; border: none; padding: 0;
+    color: var(--rmit-red); font-size: 15px; font-weight: 600;
+    cursor: pointer; text-decoration: underline; font-family: inherit;
+  }
+  .dropzone-browse:hover { color: #B01A26; }
+  .dropzone-browse:focus-visible { outline: 2px solid var(--rmit-red); outline-offset: 2px; border-radius: 2px; }
+  /* Discreet inline format hint — no boxes */
+  .dropzone-types {
+    font-size: 12.5px; color: #94A3B8; letter-spacing: 0.2px;
+  }
+  .dropzone-types strong {
+    color: #64748B; font-weight: 500;
+    background: transparent; padding: 0; border: 0; margin: 0;
+  }
+  .dropzone-types .types-sep { color: #CBD5E1; margin: 0 4px; }
+  /* Success / error swap states on the dropzone */
+  .dropzone-header.is-success {
+    background: linear-gradient(to bottom, #ECFDF5 0%, #FAFBFD 100%);
+    border-bottom-color: #B7EBD0;
+  }
+  .dropzone-header.is-success .dropzone-icon {
+    color: #2E7D32; border-color: #2E7D32;
+  }
+  .dropzone-header.is-error {
+    background: linear-gradient(to bottom, #FFEBEE 0%, #FAFBFD 100%);
+    border-bottom-color: #F5C2C7;
+  }
+  .dropzone-header.is-error .dropzone-icon {
+    color: #C62828; border-color: #C62828;
+  }
+  .dropzone-remove {
+    background: none; border: none; padding: 2px 6px;
+    color: var(--rmit-red); font-size: 12.5px; font-weight: 500;
+    text-decoration: underline; cursor: pointer; font-family: inherit;
+    margin-top: 4px;
+  }
+  .dropzone-remove:hover { color: #B01A26; }
+  .dropzone-remove:focus-visible { outline: 2px solid var(--rmit-red); outline-offset: 2px; border-radius: 2px; }
+
+  /* OR-paste divider — clear visual break between drop and paste */
+  .dropzone-divider {
+    position: relative; text-align: center;
+    margin: 0; padding: 12px 0 6px;
+    font-size: 11px; font-weight: 700; letter-spacing: 1.2px;
+    color: #94A3B8;
+  }
+  .dropzone-divider::before {
+    content: ""; position: absolute; left: 18px; right: 18px;
+    top: 50%; height: 1px; background: var(--rmit-grey-mid);
+    z-index: 0;
+  }
+  .dropzone-divider span {
+    position: relative; z-index: 1; background: #FAFBFD; padding: 0 12px;
+  }
+
+  /* Dragging state — fully highlight the drop zone when a file is over it */
+  .input-zone.dragging .dropzone-header {
+    background: linear-gradient(to bottom, #FFE3E3 0%, #FFE3E3 100%);
+    border-bottom-color: var(--rmit-red);
+  }
+  .input-zone.dragging .dropzone-icon {
+    transform: scale(1.1); transition: transform 0.15s ease;
+  }
+  .input-zone.dragging .dropzone-title::after {
+    content: " — release to upload"; color: var(--rmit-red); font-weight: 700;
+  }
+
+  /* Hide divider + drop-zone header when the form view is active */
+  .input-form:not([hidden]) ~ .dropzone-divider,
+  #inputZone:has(.input-form:not([hidden])) .dropzone-header,
+  #inputZone:has(.input-form:not([hidden])) .dropzone-divider { display: none; }
+
+  .input-zone textarea#pasteArea {
+    width: 100%; min-height: 180px; max-height: 420px;
+    padding: 6px 20px 16px; border: none; background: transparent;
+    resize: vertical; outline: none;
+    font-family: 'Segoe UI', Arial, sans-serif;
+    font-size: 14px; line-height: 1.6; color: var(--rmit-text);
+  }
+  .input-zone textarea#pasteArea::placeholder {
+    color: #94A3B8; opacity: 0.85;
+    font-size: 13px; line-height: 1.55;
+  }
+  .input-zone textarea#pasteArea::placeholder {
+    color: #94A3B8; opacity: 1;
+  }
+
+  .input-zone .file-name {
+    margin: 6px 16px 14px;
+  }
+
+  .input-zone .input-form {
+    padding: 18px 20px;
+  }
+
+  .input-alt-row {
+    text-align: center; padding: 6px 0 14px;
+    font-size: 13.5px; color: #64748B;
+  }
+  .input-alt-row a {
+    color: var(--rmit-red); text-decoration: none; font-weight: 500;
+    padding: 4px 6px;
+  }
+  .input-alt-row a:hover { text-decoration: underline; }
+  .input-alt-row a:focus-visible {
+    outline: 2px solid var(--rmit-red); outline-offset: 2px; border-radius: 3px;
+  }
+  .input-alt-row .alt-dot { color: #CBD5E1; margin: 0 4px; }
+
+  .input-action {
+    display: flex; justify-content: center;
+    padding: 4px 0 4px;
+  }
+  .btn-large {
+    font-size: 16px; padding: 14px 32px; min-height: 48px;
+    box-shadow: 0 2px 6px rgba(0,52,120,0.18);
+  }
+  .btn-large:hover {
+    box-shadow: 0 4px 12px rgba(0,52,120,0.28);
+    transform: translateY(-1px);
+  }
+
+
+  /* ============================================================
+     RESULTS HEADER ROW + SIDEBAR sections + EXPORT MENU
+     ============================================================ */
+  .results-header-row {
+    display: flex; align-items: center; justify-content: center;
+    gap: 12px; flex-wrap: wrap; margin: 0 0 16px;
+    padding-bottom: 12px; border-bottom: 2px solid var(--rmit-grey-mid);
+    text-align: center;
+  }
+  .results-header-row h2 { width: 100%; text-align: center; }
+
+  .sidebar-section {
+    margin-top: 18px; padding-top: 16px;
+    border-top: 1px solid var(--rmit-grey-mid);
+  }
+  .sidebar-secondary { padding-top: 14px; }
+
+  .sidebar-cta {
+    display: flex; align-items: flex-start; gap: 10px;
+    width: 100%; padding: 12px 14px;
+    background: linear-gradient(135deg, var(--rmit-red) 0%, #B01A26 100%);
+    color: #FFFFFF; border: none; border-radius: 6px;
+    cursor: pointer; text-align: left;
+    transition: all 0.15s ease; font-family: inherit;
+  }
+  .sidebar-cta:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba(230,30,42,0.28);
+  }
+  .sidebar-cta:focus-visible {
+    outline: 2px solid var(--rmit-red); outline-offset: 2px;
+  }
+  .sidebar-cta svg { flex-shrink: 0; width: 20px; height: 20px; margin-top: 1px; }
+  .sidebar-cta .cta-text { display: flex; flex-direction: column; gap: 2px; }
+  .sidebar-cta .cta-text strong { font-size: 14.5px; font-weight: 700; }
+  .sidebar-cta .cta-text .cta-sub { font-size: 12.5px; opacity: 0.9; }
+
+  .sidebar-link {
+    display: flex; align-items: center; gap: 8px;
+    width: 100%; padding: 8px 10px; margin-bottom: 4px;
+    background: transparent; border: 1px solid transparent;
+    color: var(--rmit-text); cursor: pointer;
+    border-radius: 4px; text-align: left; font-size: 13.5px;
+    font-family: inherit; font-weight: 500;
+    transition: background 0.15s ease, border-color 0.15s ease;
+  }
+  .sidebar-link:hover {
+    background: var(--rmit-grey); border-color: var(--rmit-grey-mid);
+  }
+  .sidebar-link:focus-visible {
+    outline: 2px solid var(--rmit-red); outline-offset: 2px;
+  }
+  .sidebar-link svg {
+    flex-shrink: 0; width: 16px; height: 16px; color: var(--rmit-red);
+  }
+  .sidebar-link.hidden { display: none; }
+
+  /* Export menu (replaces 3 separate download buttons) */
+  .export-menu { position: relative; display: inline-block; }
+  .export-dropdown {
+    position: absolute; bottom: calc(100% + 6px); left: 0;
+    background: #FFFFFF; color: var(--rmit-text);
+    border: 1px solid var(--rmit-grey-mid); border-radius: 6px;
+    box-shadow: 0 6px 20px rgba(0,0,0,0.15);
+    min-width: 240px; padding: 6px;
+    z-index: 50;
+    display: none;
+  }
+  .export-dropdown[aria-hidden="false"] { display: block; }
+  .export-option {
+    display: flex; align-items: center; gap: 10px;
+    width: 100%; padding: 10px 12px;
+    background: transparent; border: none; cursor: pointer;
+    font-family: inherit; font-size: 14px; font-weight: 500;
+    color: var(--rmit-text); text-align: left; border-radius: 4px;
+    min-height: 40px;
+  }
+  .export-option:hover { background: var(--rmit-grey); }
+  .export-option:focus-visible { outline: 2px solid var(--rmit-red); outline-offset: -2px; }
+  .export-option svg { flex-shrink: 0; width: 18px; height: 18px; color: var(--rmit-red); }
+
   /* Get help dropdown */
   .header-link.has-menu { position: relative; }
   .help-menu {
@@ -864,7 +1506,244 @@
   .burger-item:focus-visible { outline: 2px solid var(--rmit-red); outline-offset: -2px; }
   .burger-item svg { flex-shrink: 0; width: 18px; height: 18px; color: var(--rmit-red); }
 
-    .modal-close {
+  
+  /* Ask Copilot — iframe layout for tab + modal */
+  .copilot-tab-wrap, .copilot-modal-wrap {
+    border: 1px solid var(--rmit-grey-mid); border-radius: 6px;
+    overflow: hidden; background: #FAFBFD;
+  }
+  .copilot-tab-wrap { height: 70vh; min-height: 520px; }
+  .copilot-modal-wrap { height: 65vh; min-height: 480px; margin-top: 4px; }
+  .copilot-tab-wrap iframe, .copilot-modal-wrap iframe {
+    width: 100%; height: 100%; border: 0; display: block;
+  }
+  .copilot-empty {
+    display: flex; flex-direction: column; align-items: center; justify-content: center;
+    height: 100%; padding: 32px; text-align: center; color: #475569;
+  }
+  .copilot-empty svg {
+    width: 56px; height: 56px; color: var(--rmit-red); margin-bottom: 14px; opacity: 0.85;
+  }
+  .copilot-empty h3 { margin: 0 0 8px; color: #0F172A; font-size: 18px; }
+  .copilot-empty p { margin: 0 0 6px; max-width: 480px; line-height: 1.5; }
+  .copilot-empty code {
+    font-family: 'Courier New', monospace; background: #FFFFFF;
+    padding: 2px 6px; border-radius: 3px; border: 1px solid var(--rmit-grey-mid);
+    font-size: 12.5px;
+  }
+  .modal.modal-tall { max-width: 900px; }
+  /* Copilot launch CTA — opens M365 Copilot agent in a new tab (iframe blocked by Microsoft) */
+  .copilot-launch {
+    display: flex; flex-direction: column; align-items: center; justify-content: center;
+    height: 100%; padding: 40px 32px; text-align: center; color: var(--rmit-text);
+    background: linear-gradient(135deg, #FFFFFF 0%, #F4F7FB 100%);
+  }
+  .copilot-launch .copilot-icon {
+    width: 64px; height: 64px; color: var(--rmit-red); margin-bottom: 16px;
+  }
+  .copilot-launch h3 {
+    margin: 0 0 8px; color: #0F172A; font-size: 22px; font-weight: 700;
+  }
+  .copilot-launch p {
+    margin: 0 0 8px; max-width: 560px; line-height: 1.55; color: #475569; font-size: 14.5px;
+  }
+  .copilot-launch p.copilot-tip {
+    background: #FFF8E1; border: 1px solid #F1D788; border-radius: 6px;
+    padding: 10px 14px; margin: 14px 0 4px; max-width: 520px; color: #6B5117; font-size: 13.5px;
+  }
+  .copilot-launch .copilot-actions {
+    display: flex; gap: 10px; flex-wrap: wrap; justify-content: center; margin-top: 18px;
+  }
+
+  .copilot-launch .copilot-instructions {
+    background: #FFF8E1; border: 1px solid #F1D788; border-radius: 6px;
+    padding: 12px 16px; margin: 14px 0 4px; max-width: 540px;
+    color: #6B5117; text-align: left; font-size: 13.5px; line-height: 1.55;
+  }
+  .copilot-launch .copilot-instructions strong { color: #6B5117; }
+  .copilot-launch .copilot-instructions ol {
+    margin: 8px 0 0; padding-left: 22px;
+  }
+  .copilot-launch .copilot-instructions ol li {
+    margin-bottom: 4px;
+  }
+  .copilot-launch .copilot-instructions em { font-style: italic; color: #4B3705; }
+
+  .copilot-launch .copilot-launch-btn {
+    background: var(--rmit-red); color: #FFFFFF; border: none;
+    padding: 12px 22px; border-radius: 6px; font-size: 15px; font-weight: 600;
+    cursor: pointer; display: inline-flex; align-items: center; gap: 8px; min-height: 44px;
+    text-decoration: none; transition: all 0.15s ease;
+  }
+  .copilot-launch .copilot-launch-btn:hover {
+    background: #B01A26; transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba(230,30,42,0.25);
+  }
+  .copilot-launch .copilot-launch-btn:focus-visible {
+    outline: 2px solid var(--rmit-red); outline-offset: 3px;
+  }
+  .copilot-launch .copilot-copy-btn {
+    background: #FFFFFF; color: var(--rmit-text);
+    border: 1px solid var(--rmit-grey-mid);
+    padding: 12px 18px; border-radius: 6px; font-size: 14px; font-weight: 500;
+    cursor: pointer; min-height: 44px; transition: all 0.15s ease;
+  }
+  .copilot-launch .copilot-copy-btn:hover {
+    background: var(--rmit-grey); border-color: #94A3B8;
+  }
+  .copilot-launch .copilot-copy-btn:disabled {
+    opacity: 0.55; cursor: not-allowed;
+  }
+
+
+
+  /* ============================================================
+     RESULTS — summary line + 3 action cards + secondary links
+     ============================================================ */
+  .results-summary-line {
+    text-align: center; font-size: 14.5px; color: var(--rmit-text);
+    margin: 0 0 18px; padding: 10px 14px;
+    background: #F8FAFC; border-radius: 6px; border: 1px solid #E2E8F0;
+  }
+  .results-summary-line strong { color: #0F172A; }
+  .results-summary-line .summary-issues { color: #C77700; font-weight: 600; }
+  .results-summary-line .summary-issues.zero { color: #2E7D32; }
+  .results-summary-line .summary-dot { color: #CBD5E1; margin: 0 6px; }
+
+  .results-action-cards {
+    display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px;
+    margin: 0 0 16px;
+  }
+  .action-card {
+    position: relative; display: flex; flex-direction: column;
+    align-items: flex-start; gap: 6px; padding: 18px 18px 16px;
+    background: #FFFFFF; border: 1.5px solid var(--rmit-grey-mid);
+    border-radius: 8px; cursor: pointer; text-align: left;
+    font-family: inherit; transition: all 0.15s ease;
+    min-height: 130px;
+  }
+  .action-card:hover {
+    border-color: var(--rmit-red); transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(230,30,42,0.15);
+  }
+  .action-card:focus-visible {
+    outline: 2px solid var(--rmit-red); outline-offset: 2px;
+  }
+  .action-card-icon {
+    display: inline-flex; align-items: center; justify-content: center;
+    width: 36px; height: 36px; border-radius: 8px;
+    background: #FFF5F5; color: var(--rmit-red); margin-bottom: 4px;
+  }
+  .action-card-icon svg { width: 20px; height: 20px; }
+  .action-card-title {
+    font-size: 16px; font-weight: 700; color: #0F172A;
+  }
+  .action-card-sub {
+    font-size: 13px; color: #475569; line-height: 1.4;
+  }
+
+  .action-card-cta {
+    margin-top: 8px; font-size: 13px; font-weight: 600;
+    color: var(--rmit-red);
+    align-self: flex-end;
+  }
+  .action-card:hover .action-card-cta {
+    text-decoration: underline;
+  }
+  .action-card-error-badge {
+    position: absolute; top: 12px; right: 12px;
+    background: #FEE2E2; color: #C62828;
+    border: 1px solid #FCA5A5; border-radius: 999px;
+    padding: 2px 10px; font-size: 12px; font-weight: 600;
+  }
+  .action-card-error-badge.hidden { display: none; }
+  .action-card-issues .action-card-icon { background: #FFF8E6; color: #C77700; }
+  .action-card-copilot .action-card-icon { background: #EFF6FF; color: #1F6FB5; }
+  .action-card-export .action-card-icon { background: #ECFDF5; color: #2E7D32; }
+
+  .results-secondary-links {
+    text-align: center; font-size: 13.5px; color: #64748B;
+    margin: 0 0 18px;
+  }
+  .text-link {
+    background: transparent; border: none; padding: 4px 6px;
+    color: var(--rmit-red); text-decoration: none; font-weight: 500;
+    cursor: pointer; font-family: inherit; font-size: 13.5px;
+  }
+  .text-link:hover { text-decoration: underline; }
+  .text-link:focus-visible { outline: 2px solid var(--rmit-red); outline-offset: 2px; border-radius: 3px; }
+  .text-link.hidden { display: none; }
+  .text-link-dot { color: #CBD5E1; margin: 0 4px; }
+
+  .doc-preview-wrap {
+    margin-top: 8px; padding-top: 18px; border-top: 1px solid var(--rmit-grey-mid);
+  }
+  .doc-preview-heading {
+    margin: 0 0 6px; font-size: 14px; color: var(--rmit-text);
+    text-transform: uppercase; letter-spacing: 0.6px; font-weight: 600;
+  }
+
+  @media (max-width: 720px) {
+    .results-action-cards { grid-template-columns: 1fr; }
+  }
+
+  /* Export modal — soft-gate warning + format grid */
+  .export-warning {
+    background: #FFEFD5; border: 1px solid #FED7AA; border-left: 4px solid #C77700;
+    border-radius: 6px; padding: 12px 14px; margin: 0 0 8px;
+    font-size: 14px; line-height: 1.55; color: #6B5117;
+  }
+  .export-warning strong { color: #6B5117; }
+  .export-warning.hidden { display: none; }
+
+
+  .nintex-instructions {
+    margin-top: 16px; padding: 12px 14px;
+    background: #F4F7FB; border: 1px solid #C7DBF2; border-radius: 6px;
+    font-size: 13.5px; line-height: 1.55;
+  }
+  .nintex-instructions summary {
+    cursor: pointer; font-weight: 600; color: var(--rmit-red);
+    padding: 4px 0;
+  }
+  .nintex-instructions summary:hover { text-decoration: underline; }
+  .nintex-instructions-body { padding-top: 10px; color: #1F2937; }
+  .nintex-instructions-body p { margin: 0 0 8px; }
+  .nintex-instructions-body ol { margin: 6px 0 12px; padding-left: 22px; }
+  .nintex-instructions-body ol li { margin-bottom: 4px; }
+  .nintex-instructions-body strong { color: #0F172A; }
+
+  .export-format-grid {
+    display: flex; flex-direction: column; gap: 8px;
+  }
+  .export-format-btn {
+    display: grid;
+    grid-template-columns: 24px 1fr;
+    grid-template-rows: auto auto;
+    align-items: center; column-gap: 12px;
+    padding: 14px 16px;
+    background: #FFFFFF; border: 1.5px solid var(--rmit-grey-mid);
+    border-radius: 6px; cursor: pointer; text-align: left;
+    font-family: inherit; transition: all 0.15s ease;
+  }
+  .export-format-btn:hover {
+    border-color: var(--rmit-red); background: #FFF5F5;
+  }
+  .export-format-btn:focus-visible {
+    outline: 2px solid var(--rmit-red); outline-offset: 2px;
+  }
+  .export-format-btn svg {
+    grid-row: 1 / 3; grid-column: 1; width: 20px; height: 20px; color: var(--rmit-red);
+    align-self: center;
+  }
+  .export-format-btn .format-label {
+    grid-row: 1; grid-column: 2; font-size: 14.5px; font-weight: 600; color: #0F172A;
+  }
+  .export-format-btn .format-sub {
+    grid-row: 2; grid-column: 2; font-size: 12.5px; color: #64748B;
+  }
+
+  .modal-close {
     position: absolute; top: 12px; right: 12px;
     background: var(--rmit-grey); border: 1px solid var(--rmit-grey-mid);
     border-radius: 50%; font-size: 20px; line-height: 1; cursor: pointer;
@@ -907,6 +1786,10 @@
         <span class="burger-label">Menu</span>
       </button>
       <div class="help-menu burger-menu" id="burgerMenu" role="menu" aria-hidden="true">
+        <button type="button" class="burger-item" id="askCopilotBtn" role="menuitem">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+          Ask Copilot
+        </button>
         <button type="button" class="burger-item" id="helpBtn" role="menuitem">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="10"/><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
           About this tool
@@ -1160,6 +2043,19 @@ NOTE: What if access is delayed? Escalate to the IT lead and update the new star
   </div>
 </div>
 
+
+<!-- Ask Copilot modal (Phase 5) -->
+<div class="modal-backdrop" id="copilotModal" aria-hidden="true" role="dialog" aria-modal="true" aria-labelledby="copilotModalTitle">
+  <div class="modal modal-wide modal-tall">
+    <button class="modal-close" id="copilotModalClose" type="button" aria-label="Close">&times;</button>
+    <h2 id="copilotModalTitle">Ask Copilot</h2>
+    <p style="font-size:14px;color:#475569;margin:0 0 12px;">Chat with the CoVE Process Coach to ask questions about the writing standards, get help drafting an activity, or paste a section for feedback.</p>
+    <div class="copilot-modal-wrap" id="copilotModalWrap"></div>
+    <div class="modal-footer">
+      <button class="btn btn-primary" id="copilotModalCloseFooter" type="button">Close</button>
+    </div>
+  </div>
+</div>
 <!-- About modal (P2 #9) -->
 <div class="modal-backdrop" id="aboutModal" aria-hidden="true" role="dialog" aria-modal="true" aria-labelledby="aboutModalTitle">
   <div class="modal">
@@ -1180,175 +2076,272 @@ NOTE: What if access is delayed? Escalate to the IT lead and update the new star
 
 <main>
 
-  <!-- ==================== HERO ==================== -->
-  <section class="hero" aria-labelledby="heroTitle">
-    <h1 id="heroTitle">Enhance your process documentation.</h1>
-    <p>Provide your draft process. The tool reviews it against RMIT CoVE and Nintex standards, flags improvements, and generates a polished document and visual workflow.</p>
-  </section>
 
   <!-- ==================== INPUT ==================== -->
   <section class="card" id="inputCard">
-    <h2 class="how-start-heading" style="margin: 0 0 16px;">How do you want to start?</h2>
-    <div class="starter-grid">
-      <button class="starter-card starter-card-tour" id="starterSampleBtn" type="button">
-        <div class="starter-card-icon icon-navy" aria-hidden="true">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>
-        </div>
-        <h3>I'm new here</h3>
-        <p>Take a 60-second guided tour with a sample process loaded to learn the tool.</p>
-        <span class="starter-card-cta">Start tour &rarr;</span>
-      </button>
-      <button class="starter-card starter-card-import" id="starterUploadBtn" type="button">
-        <div class="starter-card-icon icon-green" aria-hidden="true">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M12 4v12"/><polyline points="6 10 12 4 18 10"/><path d="M4 20h16"/></svg>
-        </div>
-        <h3>Import draft</h3>
-        <p>Upload a .docx, .pdf, or .txt file to begin standard alignment checks.</p>
-        <span class="starter-card-cta">Select file &rarr;</span>
-      </button>
-      <button class="starter-card starter-card-build" id="starterBuildBtn" type="button">
-        <div class="starter-card-icon icon-red" aria-hidden="true">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M4 20h4l10-10-4-4L4 16v4z"/><path d="M14 6l4 4"/></svg>
-        </div>
-        <h3>Manual build</h3>
-        <p>Build your process from scratch using the structured guidance assistant.</p>
-        <span class="starter-card-cta">Create new &rarr;</span>
-      </button>
-    </div>
-    <div class="starter-template-row">
-      <span class="starter-template-label">Or use a starting point:</span>
-      <a href="#" id="starterTemplateBtn" class="starter-template-pill">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><circle cx="12" cy="16" r="0.5" fill="currentColor"/></svg>
-        Download RMIT Writing Template (DOCX)
-      </a>
+    <div class="input-heading">
+      <h2>Enhance your process documentation</h2>
+      <p>Provide your draft process. We'll review it against RMIT standards and generate a polished version.</p>
     </div>
 
-    <div id="inputWorkArea" hidden>
-    <div class="tabs" role="tablist">
-      <button class="tab active" data-tab="upload">Upload file</button>
-      <button class="tab" data-tab="paste">Paste / type</button>
-      <button class="tab" data-tab="form">Build with form</button>
-    </div>
+    
 
-    <!-- Upload -->
-    <div class="tab-panel active" data-tab="upload">
-      <div class="file-drop" id="fileDrop">
-        <input type="file" id="fileInput" accept=".pdf,.docx,.doc,.txt">
-        <div>Drop a file or <label class="file-drop-label" for="fileInput">browse to upload</label></div>
-        <div class="hint">Accepted: .pdf, .docx, .txt</div>
+    <div class="input-zone" id="inputZone">
+      <input type="file" id="fileInput" accept=".pdf,.docx,.doc,.txt" hidden>
+
+      <!-- Drop-zone affordance header (visible always; .dragging state when a file is being dragged over) -->
+      <div class="dropzone-header" id="dropzoneHeader">
+        <svg class="dropzone-icon" id="dropzoneIcon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+        <div class="dropzone-text" id="dropzoneText">
+          <div class="dropzone-title">Drop a file here, <button type="button" class="dropzone-browse" id="dropzoneBrowseBtn">or click to browse</button></div>
+          <div class="dropzone-types">Accepted: <strong>.docx</strong><span class="types-sep">&middot;</span><strong>.pdf</strong><span class="types-sep">&middot;</span><strong>.txt</strong></div>
+        </div>
+      </div>
+
+      <div class="dropzone-divider"><span>OR PASTE YOUR DRAFT BELOW</span></div>
+
+      <div class="input-paste" id="inputPaste">
+        <textarea id="pasteArea" placeholder="Process name: Create new TeachVE Hub Site Page&#10;Owner: Deanne Roze&#10;Expert: Natalie Gray&#10;Trigger: New content required&#10;Inputs: None&#10;Outputs: New page published&#10;&#10;1.0 Plan and write content&#10;Role: Subject Matter Expert&#10;a Define the purpose and scope&#10;b Write the content" aria-label="Process content"></textarea>
         <div class="file-name" id="fileName"></div>
       </div>
-    </div>
 
-    <!-- Paste -->
-    <div class="tab-panel" data-tab="paste">
-      <label for="pasteArea">Paste or type your process using the template headings.</label>
-      <textarea id="pasteArea" placeholder="Process name: Create new TeachVE Hub Site Page&#10;Owner: Deanne Roze&#10;Expert: Natalie Gray&#10;Trigger: New content required on TeachVE Hub site&#10;Inputs: None&#10;Outputs: New page published&#10;&#10;1.0 Plan and write content&#10;Role: CoVE - Subject Matter Expert (SME)&#10;a Define the purpose and scope of the new content&#10;b Determine if the content requires a new page&#10;c Write the content for the page&#10;&#10;2.0 Draft page in TeachVE&#10;Role: CoVE - Teach VE Site Member&#10;a Develop a draft of the new page&#10;b Save the page as a draft"></textarea>
-    </div>
-
-    <!-- Form -->
-    <div class="tab-panel" data-tab="form">
-      <div class="form-grid">
-        <div><label>Process name</label><input type="text" id="formTitle" placeholder="Verb-first name, e.g. 'Create New TeachVE Hub Site Page'"></div>
-        <div><label>Process owner</label><input type="text" id="formOwner" placeholder="Single name"></div>
-        <div><label>Process expert</label><input type="text" id="formExpert" placeholder="Single name (must differ from owner)"></div>
-        <div><label>Trigger</label><input type="text" id="formTrigger" placeholder="What starts the process"></div>
-        <div><label>Inputs</label><input type="text" id="formInputs" placeholder="Forms, data, materials needed"></div>
-        <div><label>Outputs</label><input type="text" id="formOutputs" placeholder="What the process produces"></div>
-      </div>
-      <h3>Activities</h3>
-      <div id="activityList"></div>
-      <div class="button-row">
-        <button class="small-btn" id="addActivityBtn">+ Add activity</button>
+      <div class="input-form" id="inputForm" hidden>
+        <div class="form-grid">
+          <div><label>Process name</label><input type="text" id="formTitle" placeholder="Verb-first name, e.g. Create new TeachVE Hub Site Page"></div>
+          <div><label>Process owner</label><input type="text" id="formOwner" placeholder="Single name"></div>
+          <div><label>Process expert</label><input type="text" id="formExpert" placeholder="Single name (must differ from owner)"></div>
+          <div><label>Trigger</label><input type="text" id="formTrigger" placeholder="What starts the process"></div>
+          <div><label>Inputs</label><input type="text" id="formInputs" placeholder="Forms, data, materials needed"></div>
+          <div><label>Outputs</label><input type="text" id="formOutputs" placeholder="What the process produces"></div>
+        </div>
+        <h3>Activities</h3>
+        <div id="activityList"></div>
+        <div class="button-row">
+          <button class="small-btn" id="addActivityBtn">+ Add activity</button>
+        </div>
       </div>
     </div>
 
-    <div class="button-row">
-      <button class="btn btn-primary" id="analyseBtn">Analyse content</button>
+    <div class="primary-actions-row">
+      <button class="btn btn-primary btn-large" id="analyseBtn" type="button">Analyse content</button>
     </div>
-    </div><!-- /#inputWorkArea -->
+    <p class="primary-actions-alt">
+      Don't have a draft yet?
+      <button type="button" class="text-link" id="toggleFormLink">
+        <span id="toggleFormLabel">Build with a form instead</span>
+      </button>
+    </p>
+
+    <div class="orientation-section" aria-labelledby="orientationLabel">
+      <div class="orientation-divider"><span id="orientationLabel">First time here?</span></div>
+      <div class="orientation-actions">
+        <button type="button" class="orientation-action" id="trySampleLink">
+          <span class="oa-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg></span>
+          <span class="oa-text">
+            <strong>Try the sample</strong>
+            <span class="oa-sub">See what the tool does, no input needed</span>
+          </span>
+        </button>
+        <button type="button" class="orientation-action" id="downloadTemplateLink">
+          <span class="oa-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="12" y1="18" x2="12" y2="12"/><polyline points="9 15 12 18 15 15"/></svg></span>
+          <span class="oa-text">
+            <strong>Download a blank template</strong>
+            <span class="oa-sub">Word doc with the format already set up</span>
+          </span>
+        </button>
+        <button type="button" class="orientation-action" id="homeAskCopilotBtn">
+          <span class="oa-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/><path d="M9 9h6M9 13h4"/></svg></span>
+          <span class="oa-text">
+            <strong>Ask AI for help</strong>
+            <span class="oa-sub">Chat with the agent before you draft</span>
+          </span>
+        </button>
+      </div>
+    </div>
   </section>
 
   <!-- ==================== RESULTS ==================== -->
   <section class="card hidden" id="resultsCard">
-    <h2>Here's what we found</h2>
+    <div class="results-header-row">
+      <h2 style="margin:0; text-align:center; padding:0; border:none;">Your draft has been analysed</h2>
+    </div>
 
-    <div class="auto-fix-banner hidden" id="autoSpellingBanner" role="status" aria-live="polite">
+    <div class="auto-fix-banner hidden" id="combinedFixBanner" role="status" aria-live="polite">
       <div class="auto-fix-icon" aria-hidden="true">&#10003;</div>
-      <div class="auto-fix-text" id="autoSpellingBannerText"></div>
-      <button class="auto-fix-banner-dismiss" type="button" id="autoSpellingBannerDismiss" aria-label="Dismiss">&times;</button>
+      <div class="auto-fix-text" id="combinedFixBannerText"></div>
+      <button class="auto-fix-banner-dismiss" type="button" id="combinedFixBannerDismiss" aria-label="Dismiss">&times;</button>
     </div>
 
-    <div class="auto-fix-banner manual hidden" id="manualFixBanner" role="status" aria-live="polite">
-      <div class="auto-fix-icon" aria-hidden="true">&#10003;</div>
-      <div class="auto-fix-text" id="manualFixBannerText"></div>
-      <button class="auto-fix-banner-dismiss" type="button" id="manualFixBannerDismiss" aria-label="Dismiss">&times;</button>
+    <p class="results-summary-line" id="resultsSummaryLine"></p>
+    <p class="recommendation-inline hidden" id="recommendationInline">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M12 8v4"/><circle cx="12" cy="16" r="0.6" fill="currentColor"/></svg>
+      <span id="recommendationInlineText"></span>
+      <button type="button" class="text-link recommendation-inline-link" id="recommendationInlineBtn">See why</button>
+    </p>
+
+    <p class="decision-prompt">What would you like to do?</p>
+    <div class="results-action-cards results-decision-cards">
+      <button type="button" class="action-card action-card-apply" id="actionAskCopilotBtn">
+        <span class="action-card-icon" aria-hidden="true">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 12l2 2 4-4"/><circle cx="12" cy="12" r="10"/></svg>
+        </span>
+        <span class="action-card-title">Apply the changes with Copilot</span>
+        <span class="action-card-sub">Copilot will apply the suggested fixes for you to review.</span>
+        <span class="action-card-cta">Open AI &rarr;</span>
+      </button>
+
+      <button type="button" class="action-card action-card-review" id="reviewIssuesBtn">
+        <span class="action-card-icon" aria-hidden="true">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
+        </span>
+        <span class="action-card-title">Review the flags myself</span>
+        <span class="action-card-sub" id="reviewIssuesSub">See each flag and edit the document yourself.</span>
+        <span class="action-card-cta">Open the flags &rarr;</span>
+      </button>
     </div>
 
-    <div class="summary-groups" id="summaryGroups"></div>
+    <!-- secondary links removed — workflow now lives next to the doc heading, recommendation shows inline above when relevant -->
 
-    <div class="tabs results-tabs" role="tablist">
-      <button class="tab active" data-rtab="document">Generated document &amp; issues</button>
-      <button class="tab" data-rtab="workflow">Visual workflow</button>
-      <button class="tab" data-rtab="recommendation">What to make</button>
-    </div>
-
-    <div class="tab-panel" data-rtab="recommendation"><div id="recommendationOut"></div></div>
-    <div class="tab-panel" data-rtab="workflow">
-      <h3 id="workflowTitle" style="margin:0 0 4px;color:var(--rmit-red);font-size:16px;"></h3>
-      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;">
-        <span class="hint" style="margin:0;"><strong>Drag</strong> to pan &middot; <strong>Ctrl + scroll</strong> or use the buttons to zoom</span>
-
-      </div>
-      <div id="workflowRender" class="theme-nintex"></div>
-      <div class="button-row" style="justify-content:space-between;">
-        <div style="display:flex;gap:6px;">
-          <button class="small-btn" id="zoomInBtn" title="Zoom in">+</button>
-          <button class="small-btn" id="zoomOutBtn" title="Zoom out">&minus;</button>
-          <button class="small-btn" id="zoomFitBtn" title="Fit to view">Fit</button>
+    <div class="doc-with-sidebar">
+      <div class="doc-main">
+        <div class="output-tabs" role="tablist" aria-label="Output view">
+          <button type="button" role="tab" id="outputTabDoc" class="output-tab is-active" aria-selected="true" aria-controls="outputPaneDoc">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
+            Generated document
+          </button>
+          <button type="button" role="tab" id="outputTabFlow" class="output-tab" aria-selected="false" aria-controls="outputPaneFlow">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/><path d="M10 6.5h4"/><path d="M10 17.5h4"/><path d="M6.5 10v4"/><path d="M17.5 10v4"/></svg>
+            Visual workflow
+          </button>
         </div>
-        <div style="display:flex;gap:12px;flex-wrap:wrap;">
-          <button class="btn btn-secondary" id="downloadSvgBtn">Download SVG</button>
-          <button class="btn btn-secondary" id="downloadPngBtn">Download PNG</button>
-        </div>
-      </div>
-    </div>
-    <div class="tab-panel active" data-rtab="document">
-      <div class="issue-context-banner hidden" id="issueContextBanner" role="status" aria-live="polite">
-        <span class="severity-icon-wrap" aria-hidden="true"></span>
-        <div class="issue-context-text"></div>
-        <div class="issue-context-actions">
-          <button class="issue-context-dismiss" type="button" id="issueContextDismissBtn" aria-label="Dismiss">&times;</button>
-        </div>
-      </div>
-      <div class="doc-with-issues">
-        <div class="doc-main">
-          <p class="hint" style="margin-bottom:6px;"><strong>Tip:</strong> click to edit. Edits flow into the Word and PDF download.</p>
+
+        <div class="output-pane is-active" id="outputPaneDoc" role="tabpanel" aria-labelledby="outputTabDoc">
+          <p class="hint" style="margin-bottom:6px;"><strong>Tip:</strong> click anywhere in the document to edit. Edits flow into your downloads.</p>
           <div class="doc-preview" id="docPreview" contenteditable="true" spellcheck="true" lang="en-AU" aria-label="Editable process document"></div>
           <div id="docLiveRegion" aria-live="polite" aria-atomic="true" style="position:absolute;left:-9999px;width:1px;height:1px;overflow:hidden;"></div>
-          <div class="button-row">
-            <button class="btn btn-primary" id="downloadDocxBtn">Download Word doc</button>
-            <button class="btn btn-primary" id="downloadPdfBtn">Download PDF</button>
-            <button class="btn btn-secondary" id="resetEditsBtn">Reset edits</button>
+        </div>
+
+        <div class="output-pane" id="outputPaneFlow" role="tabpanel" aria-labelledby="outputTabFlow" hidden>
+          <p class="hint" style="margin: 0 0 8px;"><strong>Drag</strong> to pan &middot; <strong>Ctrl + scroll</strong> or use the buttons to zoom.</p>
+          <h4 id="workflowTitle" style="margin:0 0 8px;color:var(--rmit-red);font-size:15px;font-weight:600;"></h4>
+          <div id="workflowRender" class="theme-nintex"></div>
+          <div class="workflow-toolbar">
+            <div class="workflow-zoom">
+              <button class="small-btn" id="zoomInBtn" title="Zoom in">+</button>
+              <button class="small-btn" id="zoomOutBtn" title="Zoom out">&minus;</button>
+              <button class="small-btn" id="zoomFitBtn" title="Fit to view">Fit</button>
+            </div>
+            <div class="workflow-download">
+              <button class="btn btn-secondary" id="downloadSvgBtn" type="button">Download SVG</button>
+              <button class="btn btn-secondary" id="downloadPngBtn" type="button">Download PNG</button>
+            </div>
           </div>
         </div>
-        <aside class="doc-sidebar" aria-labelledby="issuesSidebarHeading">
-          <h4 class="sidebar-heading" id="issuesSidebarHeading">Issues &amp; gaps</h4>
-          <div id="issuesOut"></div>
-        </aside>
+
+        <div class="doc-next-step-row">
+          <div class="doc-next-step-secondary">
+            <button class="btn btn-secondary" id="resetEditsBtn" type="button">Reset edits</button>
+          </div>
+          <div class="doc-next-step-primary">
+            <button class="btn btn-secondary" id="analyseAnotherBtn" type="button">&uarr; Analyse another</button>
+            <button class="btn btn-primary" id="actionExportBtn" type="button">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" style="width:14px;height:14px;vertical-align:-2px;margin-right:4px;"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+              Export
+              <span class="action-card-error-badge hidden" id="actionExportErrorBadge"></span>
+            </button>
+          </div>
+        </div>
       </div>
-    </div>
-  
-    <!-- P3 #12: Next-action CTA -->
-    <div class="button-row" style="margin-top:24px;border-top:1px solid var(--rmit-grey-mid);padding-top:18px;justify-content:center;">
-      <button class="btn btn-secondary" id="analyseAnotherBtn" type="button">&uarr; Analyse another process</button>
+      <aside class="doc-sidebar" id="docSidebar" hidden aria-labelledby="docSidebarHeading">
+        <div class="doc-sidebar-header">
+          <h4 id="docSidebarHeading">Quality flags</h4>
+          <button type="button" class="doc-sidebar-close" id="docSidebarClose" aria-label="Close quality flags panel">&times;</button>
+        </div>
+        <p class="doc-sidebar-intro" id="issuesModalIntro"></p>
+        <div id="issuesOut"></div>
+      </aside>
     </div>
   </section>
+
+<!-- Export modal (NEW — replaces inline export dropdown, includes soft-gate confirmation) -->
+<div class="modal-backdrop" id="exportModal" aria-hidden="true" role="dialog" aria-modal="true" aria-labelledby="exportModalTitle">
+  <div class="modal">
+    <button class="modal-close" id="exportModalClose" type="button" aria-label="Close">&times;</button>
+    <h2 id="exportModalTitle">Export your document</h2>
+
+    <div class="export-warning hidden" id="exportWarning" role="alert">
+      <strong>This draft has <span id="exportWarningCount">0</span> errors.</strong>
+      Errors won't be fixed automatically — they'll appear in your download as written. Resolve them first for the best result.
+      <div style="margin-top:10px;">
+        <button class="btn btn-secondary" type="button" id="exportReviewBtn">Review issues first</button>
+      </div>
+    </div>
+
+    <p style="font-size:14px;color:#475569;margin:14px 0 12px;">Choose a format:</p>
+    <div class="export-format-grid">
+      <button class="export-format-btn" type="button" id="downloadDocxBtn">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
+        <span class="format-label">Word document (.docx)</span>
+        <span class="format-sub">Editable in Microsoft Word</span>
+      </button>
+      <button class="export-format-btn" type="button" id="downloadPdfBtn">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
+        <span class="format-label">PDF</span>
+        <span class="format-sub">For sharing or printing</span>
+      </button>
+      <button class="export-format-btn" type="button" id="downloadNintexBtn">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="9 11 12 14 22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg>
+        <span class="format-label">Nintex import file (.txt)</span>
+        <span class="format-sub">Ready to import directly into Nintex Process Manager</span>
+      </button>
+    </div>
+
+    <details class="nintex-instructions">
+      <summary>How to use this in Nintex &mdash; instructions</summary>
+      <div class="nintex-instructions-body">
+        <p><strong>If this is a new process:</strong></p>
+        <ol>
+          <li>In Nintex Process Manager, click <strong>Create new process</strong>.</li>
+          <li>Open the downloaded .txt file in Notepad. Copy the <em>process title</em> (line 5 of the file) into the Nintex title field.</li>
+          <li>Copy the <em>Process Objective</em> and <em>Process Background</em> blocks (after the second header) into their matching Nintex fields.</li>
+          <li>Copy the <em>Process Map</em> block (after the third header) into the Nintex AI import / "Import process from text" field.</li>
+          <li>Save and review.</li>
+        </ol>
+        <p><strong>If you're updating an existing process:</strong> archive the old version first, then either (a) update the links in any process that references the old version, or (b) copy the new content into the existing process shell to keep links intact. Don't leave two live versions of the same process in Nintex.</p>
+      </div>
+    </details>
+
+    <div class="modal-footer">
+      <button class="btn btn-secondary" id="exportModalCloseFooter" type="button">Cancel</button>
+    </div>
+  </div>
+</div>
+
+<!-- Visual workflow modal removed — workflow now lives in an inline tab next to Generated document -->
+
+<!-- Recommendation (What to make) modal -->
+<div class="modal-backdrop" id="recommendationModal" aria-hidden="true" role="dialog" aria-modal="true" aria-labelledby="recommendationModalTitle">
+  <div class="modal">
+    <button class="modal-close" id="recommendationModalClose" type="button" aria-label="Close">&times;</button>
+    <h2 id="recommendationModalTitle">What to make</h2>
+    <p style="font-size:14px;color:#475569;margin:0 0 12px;">Based on your content, here's what kind of artefact suits it best.</p>
+    <div id="recommendationOut"></div>
+    <div class="modal-footer">
+      <button class="btn btn-primary" id="recommendationModalCloseFooter" type="button">Close</button>
+    </div>
+  </div>
+</div>
 
 </main>
 
 <footer>
-  CoVE Process Writing Assistant &middot; Projects and Business Transformation
+  <div class="footer-inner">
+    <span class="footer-tagline">CoVE Process Writing Assistant &middot; Projects and Business Transformation</span>
+    <a class="footer-link" href="https://forms.office.com/r/PBT-BUGS" target="_blank" rel="noopener">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M10.29 3.86 1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+      Report an issue with this tool
+    </a>
+  </div>
 </footer>
 
 <script>
@@ -1394,7 +2387,13 @@ const APPROVED_VERBS = {
     'introduce','invite','join','mediate','meet','mention','message','post','present',
     'propose','question','raise','reach out','refer','reply','report','request','share',
     'speak','suggest','talk','thank','welcome','write',
-    'answer','comment','reassure','remind','update'
+    'answer','comment','reassure','remind','update',
+    // Added (meetings, recruitment, mentoring, recognition)
+    'chair','minute','second','table','motion','move','vote','adjourn',
+    'interview','shortlist','reference-check','reference check','headhunt',
+    'mentor','coach','supervise','tutor','train',
+    'endorse','sponsor','nominate','recognise','recognize','award','present','celebrate',
+    'liaison','partner','collaborate','co-design','workshop'
   ],
   'Implementation & Execution': [
     // Original list
@@ -1423,7 +2422,22 @@ const APPROVED_VERBS = {
     'retrieve','return','review','revoke','save','scan','search','secure','segment',
     'select','set','setup','sign','sign in','sign off','sign out','sort','specify',
     'split','start','state','sync','tag','take','test','tick','transfer','translate',
-    'transmit','trigger','troubleshoot','unlock','validate','verify','view','visit'
+    'transmit','trigger','troubleshoot','unlock','validate','verify','view','visit',
+    // Added (HR/student lifecycle, finance, procurement, operations)
+    'onboard','offboard','induct','reinduct','orient','orientate',
+    'recruit','hire','employ','engage','appoint','contract','second','redeploy',
+    'promote','demote','transfer','relocate','redirect','reassign',
+    'roster','timetable','allocate','reallocate','handover','hand over','takeover','take over',
+    'procure','source','tender','quote','estimate','forecast','budget','cost','price',
+    'invoice','bill','charge','pay','refund','reimburse','disburse','recover','recoup',
+    'lease','rent','lend','borrow','loan','reserve','book',
+    'pilot','trial','prototype','test','dry-run','dry run',
+    'triage','prioritise','prioritize','escalate','de-escalate',
+    'renew','expire','lapse','revoke','suspend','reinstate','restore',
+    'vet','screen','background-check','background check','clear',
+    'mobilise','mobilize','demobilise','demobilize','stand up','stand down',
+    'roll out','rollout','launch','release','retire','sunset','wind down',
+    'outsource','insource','onshore','offshore'
   ],
   'Documentation & Knowledge': [
     // Original list
@@ -1431,7 +2445,11 @@ const APPROVED_VERBS = {
     // Added
     'annotate','cite','classify','describe','detail','draft','index','label','log',
     'note','record','redact','reference','store','summarise','summarize','tag',
-    'transcribe','version'
+    'transcribe','version',
+    // Added (records, governance, evidence)
+    'codify','formalise','formalize','endorse','approve','ratify','sign-off','sign off',
+    'cross-reference','cross reference','footnote','watermark','minute','timestamp',
+    'inventory','schedule','librarian','curate','preserve'
   ],
   'Improvement & Change': [
     // Original list
@@ -1440,7 +2458,13 @@ const APPROVED_VERBS = {
     'accelerate','automate','consolidate','correct','customise','customize','decommission',
     'deprecate','eliminate','evolve','migrate','minimise','minimize','modernise',
     'modernize','overhaul','prioritise','prioritize','rebuild','refactor','refine',
-    'reform','reorganise','reorganize','rework','scale','simplify','transform','upgrade'
+    'reform','reorganise','reorganize','rework','scale','simplify','transform','upgrade',
+    // Added (continuous improvement, change management, transitions)
+    'pilot','trial','prototype','iterate','retrospective','retro',
+    'mature','grow','expand','contract','reduce','rationalise','rationalize',
+    'centralise','centralize','decentralise','decentralize',
+    'standardise','standardize','harmonise','harmonize','unify','align',
+    'phase in','phase out','transition','retire','sunset','decommission','replace'
   ]
 };
 const APPROVED_VERBS_FLAT = Object.values(APPROVED_VERBS).flat();
@@ -1467,6 +2491,49 @@ const REQUIRED_TITLE_PREFIXES = ['CoVE - '];
 /* ============================================================
    STATE
    ============================================================ */
+// ============================================================
+// COPILOT STUDIO AGENT — set this to your published agent's iframe URL.
+// Get it from Copilot Studio > Channels > Custom Website > copy iframe src.
+// Leave as empty string until the agent is published; the tab and modal
+// will show a friendly setup-instructions panel until then.
+// ============================================================
+const COPILOT_AGENT_URL = 'https://m365.cloud.microsoft/chat/?titleId=T_174fb8d2-f02b-95ed-0b22-f1354ae96de1&source=embedded-builder';
+
+// Sample CoVE process used by 'Try the sample' on the home page and by the
+// guided tour. Module-level constant so any handler can reference it.
+const SAMPLE_PROCESS = [
+  'Process name: CoVE - PBT - Create new TeachVE Hub Site Page',
+  'Owner: Deanne Roze',
+  'Expert: Natalie Gray',
+  'Trigger: New content required on TeachVE Hub site',
+  'Inputs: None',
+  'Outputs: New page published on TeachVE Hub site',
+  'Objective: To create new content on the TeachVE site so staff have access to current information.',
+  '',
+  '1.0 Plan and write content',
+  'Role: CoVE - Subject Matter Expert (SME)',
+  'a Define the purpose and scope of the new content',
+  'b Determine if the content requires a new page or updates to an existing page',
+  'c Write the content for the page',
+  '',
+  '2.0 Draft page in TeachVE',
+  'Role: CoVE - Teach VE Site Member',
+  'a Develop a draft of the new SharePoint page',
+  'b Save the page as a draft',
+  'c Notify another site member or manager the page is ready for review',
+  '',
+  '3.0 Review page',
+  'Role: CoVE - Subject Matter Expert (SME)',
+  'a Check for grammar, spelling, style consistency and clarity',
+  'b Verify all links are functioning correctly',
+  '',
+  '4.0 Publish page',
+  'Role: CoVE - Teach VE Site Member',
+  'a Publish the page',
+  'b Communicate to stakeholders about the new page'
+].join('\n');
+
+
 let currentModel = null; // ProcessModel after parse
 let currentIssues = [];
 let currentRecommendation = null;
@@ -1518,39 +2585,13 @@ function showToast(message, severity, duration) {
 /* ============================================================
    TAB SWITCHING (input + results)
    ============================================================ */
-document.querySelectorAll('#inputCard .tabs .tab').forEach(btn => {
-  btn.addEventListener('click', () => {
-    document.querySelectorAll('#inputCard .tabs .tab').forEach(b => b.classList.remove('active'));
-    document.querySelectorAll('#inputCard .tab-panel').forEach(p => p.classList.remove('active'));
-    btn.classList.add('active');
-    const panel = document.querySelector(`#inputCard .tab-panel[data-tab="${btn.dataset.tab}"]`);
-    if (panel) panel.classList.add('active');
-  });
-});
-document.querySelectorAll('.results-tabs .tab').forEach(btn => {
-  btn.addEventListener('click', () => {
-    document.querySelectorAll('.results-tabs .tab').forEach(b => b.classList.remove('active'));
-    document.querySelectorAll('#resultsCard > .tab-panel').forEach(p => p.classList.remove('active'));
-    btn.classList.add('active');
-    document.querySelector(`#resultsCard > .tab-panel[data-rtab="${btn.dataset.rtab}"]`).classList.add('active');
-    // When the workflow tab becomes visible, re-fit + re-theme the BPMN diagram
-    if (btn.dataset.rtab === 'workflow' && bpmnViewer) {
-      // Several retries to let layout settle, then fit-viewport reliably.
-      const fitAndTheme = () => {
-        try { bpmnViewer.get('canvas').zoom('fit-viewport', 'auto'); } catch (e) {}
-        const activeTheme = document.querySelector('#themeToggle button.active');
-        applyBpmnTheme(activeTheme ? activeTheme.dataset.theme : 'nintex');
-      };
-      setTimeout(fitAndTheme, 50);
-      setTimeout(fitAndTheme, 200);
-    }
-  });
-});
+// Input tabs removed in UX simplification
+// Results tabs removed in UX simplification — workflow + recommendation now live in modals
 
 /* ============================================================
    FILE UPLOAD
    ============================================================ */
-const fileDrop = document.getElementById('fileDrop');
+const fileDrop = document.getElementById('inputZone');
 const fileInput = document.getElementById('fileInput');
 const fileNameEl = document.getElementById('fileName');
 let uploadedFile = null;
@@ -1559,30 +2600,77 @@ const ACCEPTED_EXTENSIONS = ['pdf', 'docx', 'txt'];
 const TICK_SVG  = '<svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="#2E7D32" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="8" cy="8" r="7" fill="#FFFFFF"/><path d="M5 8.5l2 2 4-5"/></svg>';
 const CROSS_SVG = '<svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="#C62828" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="8" cy="8" r="7" fill="#FFFFFF"/><path d="M5 5l6 6M11 5l-6 6"/></svg>';
 
+// Swap the dropzone-header content between default, success and error states.
+// Keeps the file feedback up where the upload action is, not in the textarea area.
+const DROPZONE_DEFAULT_HTML = `
+  <div class="dropzone-title">Drop a file here, <button type="button" class="dropzone-browse" id="dropzoneBrowseBtn">or click to browse</button></div>
+  <div class="dropzone-types">Accepted: <strong>.docx</strong><span class="types-sep">&middot;</span><strong>.pdf</strong><span class="types-sep">&middot;</span><strong>.txt</strong></div>
+`;
+const DROPZONE_ICON_DEFAULT = '<path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/>';
+const DROPZONE_ICON_SUCCESS = '<polyline points="20 6 9 17 4 12"/>';
+const DROPZONE_ICON_ERROR = '<circle cx="12" cy="12" r="10"/><line x1="15" y1="9" x2="9" y2="15"/><line x1="9" y1="9" x2="15" y2="15"/>';
+
+function setDropzoneState(state, opts) {
+  const header = document.getElementById('dropzoneHeader');
+  const textEl = document.getElementById('dropzoneText');
+  const iconEl = document.getElementById('dropzoneIcon');
+  if (!header || !textEl || !iconEl) return;
+  header.classList.remove('is-success','is-error');
+  if (state === 'default') {
+    iconEl.innerHTML = DROPZONE_ICON_DEFAULT;
+    textEl.innerHTML = DROPZONE_DEFAULT_HTML;
+    // Re-wire the inline browse link since we just rebuilt its host
+    const browseBtn = document.getElementById('dropzoneBrowseBtn');
+    if (browseBtn) browseBtn.addEventListener('click', () => fileInput.click());
+  } else if (state === 'success') {
+    header.classList.add('is-success');
+    iconEl.innerHTML = DROPZONE_ICON_SUCCESS;
+    textEl.innerHTML =
+      '<div class="dropzone-title">Ready to analyse: <strong>' + (opts && opts.filename ? opts.filename : '') + '</strong></div>' +
+      '<button type="button" class="dropzone-remove" id="dropzoneRemoveBtn">Remove and choose another file</button>';
+    const removeBtn = document.getElementById('dropzoneRemoveBtn');
+    if (removeBtn) removeBtn.addEventListener('click', () => {
+      uploadedFile = null;
+      fileInput.value = '';
+      setDropzoneState('default');
+    });
+  } else if (state === 'error') {
+    header.classList.add('is-error');
+    iconEl.innerHTML = DROPZONE_ICON_ERROR;
+    textEl.innerHTML =
+      '<div class="dropzone-title">' + (opts && opts.message ? opts.message : 'Something went wrong with that file.') + '</div>' +
+      '<button type="button" class="dropzone-remove" id="dropzoneRemoveBtn">Try a different file</button>';
+    const removeBtn = document.getElementById('dropzoneRemoveBtn');
+    if (removeBtn) removeBtn.addEventListener('click', () => {
+      uploadedFile = null;
+      fileInput.value = '';
+      setDropzoneState('default');
+    });
+  }
+}
+
 function handleFile(file) {
+  // Clear the legacy file-name node — feedback now lives in the dropzone header
+  if (fileNameEl) { fileNameEl.className = 'file-name'; fileNameEl.innerHTML = ''; }
   if (!file) {
     uploadedFile = null;
-    fileNameEl.className = 'file-name';
-    fileNameEl.innerHTML = '';
+    setDropzoneState('default');
     return;
   }
   const ext = file.name.toLowerCase().split('.').pop();
   if (!ACCEPTED_EXTENSIONS.includes(ext)) {
     uploadedFile = null;
-    fileNameEl.className = 'file-name error';
-    fileNameEl.innerHTML = `${CROSS_SVG}<span>Unsupported file type: <strong>.${ext}</strong>. Use .pdf, .docx or .txt.</span>`;
-    if (typeof showToast === 'function') showToast(`Unsupported file type: .${ext}`, 'error');
+    setDropzoneState('error', { message: 'Unsupported file type: .' + ext + '. Use .docx, .pdf or .txt.' });
+    if (typeof showToast === 'function') showToast('Unsupported file type: .' + ext, 'error');
     return;
   }
   if (file.size === 0) {
     uploadedFile = null;
-    fileNameEl.className = 'file-name error';
-    fileNameEl.innerHTML = `${CROSS_SVG}<span>File appears empty. Please try a different file.</span>`;
+    setDropzoneState('error', { message: 'That file looks empty. Please try a different file.' });
     return;
   }
   uploadedFile = file;
-  fileNameEl.className = 'file-name success';
-  fileNameEl.innerHTML = `${TICK_SVG}<span>Ready to analyse: <strong>${file.name}</strong></span>`;
+  setDropzoneState('success', { filename: file.name });
 }
 
 ['dragenter','dragover'].forEach(ev => fileDrop.addEventListener(ev, e => {
@@ -1641,9 +2729,12 @@ addActivityRow(); // start with one empty activity
    RESET
    ============================================================ */
 document.getElementById('headerResetBtn').addEventListener('click', () => {
+  // Bring the input card back so the user can start fresh
+  document.getElementById('inputCard').classList.remove('hidden');
   uploadedFile = null;
   fileInput.value = '';
   fileNameEl.textContent = '';
+  if (typeof setDropzoneState === 'function') setDropzoneState('default');
   document.getElementById('pasteArea').value = '';
   document.getElementById('formTitle').value = '';
   document.getElementById('formOwner').value = '';
@@ -1655,6 +2746,10 @@ document.getElementById('headerResetBtn').addEventListener('click', () => {
   activityCounter = 0;
   addActivityRow();
   document.getElementById('resultsCard').classList.add('hidden');
+  // Clear the doc preview too, so stale content from a previous run can't linger
+  const dp = document.getElementById('docPreview');
+  if (dp) dp.innerHTML = '';
+  originalDocHtml = '';
   currentModel = null; currentIssues = []; currentRecommendation = null; currentMermaid = '';
   // Send the user back to the home view: hide the work area and the Reset button
   if (inputWorkArea) inputWorkArea.hidden = true;
@@ -1666,18 +2761,19 @@ document.getElementById('headerResetBtn').addEventListener('click', () => {
    ANALYSE — main entry point (parsers/rules/render added later)
    ============================================================ */
 document.getElementById('analyseBtn').addEventListener('click', async () => {
-  const activeTab = document.querySelector('#inputCard .tabs .tab.active').dataset.tab;
+  // New simplified flow: choose source by what's currently visible/loaded
+  // Form view active? → form. File uploaded? → file. Otherwise → paste textarea.
+  const formShown = !document.getElementById('inputForm').hidden;
   let model;
   try {
-    if (activeTab === 'upload') {
-      if (!uploadedFile) { showToast('Please upload a file first.', 'error'); return; }
-      model = await parseUploadedFile(uploadedFile);
-    } else if (activeTab === 'paste') {
-      const txt = document.getElementById('pasteArea').value.trim();
-      if (!txt) { showToast('Please paste your process content first.', 'error'); return; }
-      model = parseStructuredText(txt);
-    } else {
+    if (formShown) {
       model = readFormModel();
+    } else if (uploadedFile) {
+      model = await parseUploadedFile(uploadedFile);
+    } else {
+      const txt = document.getElementById('pasteArea').value.trim();
+      if (!txt) { showToast('Paste your process content or drop a file first.', 'error'); return; }
+      model = parseStructuredText(txt);
     }
   } catch (err) {
     console.error(err);
@@ -1685,19 +2781,45 @@ document.getElementById('analyseBtn').addEventListener('click', async () => {
     return;
   }
 
-  // Auto-correct American → Australian spellings BEFORE the rules engine so
-  // that verbs like 'authorize' don't get flagged as not-an-approved-verb just
-  // because the verb list is Australian. The user is told via a banner.
-  const spellingLog = applyAuSpellingOnly(model);
-  model._autoSpellingFixes = spellingLog;
+  // Empty-input guard: a model with no title and no activities produces a useless
+  // stub document. This catches the common cases:
+  //  - Form-tab Analyse clicked with a blank form
+  //  - Upload that parsed but extracted nothing
+  //  - Paste content that contains no recognisable headings or activity numbers
+  const hasTitle = !!(model.title && model.title.trim());
+  const hasActivities = Array.isArray(model.activities) &&
+    model.activities.some(a => (a.title && a.title.trim()) || (a.tasks && a.tasks.length > 0));
+  if (!hasTitle && !hasActivities) {
+    showToast('Nothing to analyse. Add a process name and at least one activity, or paste/upload content with the expected headings.', 'error', 6000);
+    return;
+  }
 
-  currentModel = model;
-  currentIssues = runRulesEngine(model);
-  currentRecommendation = recommendArtefactType(model);
-  currentMermaid = buildMermaid(model);
-  currentBpmnXml = buildBpmnXml(model);
+  try {
+    // Auto-correct American → Australian spellings BEFORE the rules engine so
+    // that verbs like 'authorize' don't get flagged as not-an-approved-verb just
+    // because the verb list is Australian.
+    const spellingLog = applyAuSpellingOnly(model);
+    model._autoSpellingFixes = spellingLog;
 
-  renderResults();
+    // Auto-apply the safe mechanical fixes silently (banned terms, doubled
+    // words, whitespace, NOTE punctuation, task re-lettering). Users see what
+    // changed via the combined "what changed" banner — no manual button.
+    modelBeforeAutoFix = JSON.parse(JSON.stringify(model));
+    const autoFixLog = applyAutoFixes(model);
+    model._manualAutoFixLog = autoFixLog;
+    if (autoFixLog.length === 0) modelBeforeAutoFix = null;
+
+    currentModel = model;
+    currentIssues = runRulesEngine(model);
+    currentRecommendation = recommendArtefactType(model);
+    currentMermaid = buildMermaid(model);
+    currentBpmnXml = buildBpmnXml(model);
+
+    await renderResults();
+  } catch (err) {
+    console.error('Analyse pipeline failed:', err);
+    showToast('Something went wrong while analysing: ' + (err.message || err), 'error', 8000);
+  }
 });
 
 /* ============================================================
@@ -3028,8 +4150,8 @@ function recommendArtefactType(model) {
     summary = 'Your content reads more like task-level instruction than a multi-role process. Consider a knowledge article or attached guide rather than a process map.';
   } else {
     type = 'both';
-    title = 'Create both — a process map AND a supporting guide';
-    summary = 'You have process-shaped content but with detailed transactional steps. Build a high-level process map and attach a knowledge article or guide for the click-through detail (Nintex Technique 7, CoVE Rule 8).';
+    title = 'Best as a process map plus a supporting guide';
+    summary = 'Your draft mixes two kinds of content: structured workflow steps (suited to a process map in Nintex) and detailed how-to instructions (better as a knowledge article or guide). The cleanest approach is to build BOTH — keep the process map high-level, then create a separate guide for the click-through detail. Link them so users can drill into the detail when they need it (Nintex Technique 7, CoVE Rule 8).';
   }
 
   return { type, title, summary, reasons, scores: { processScore, guideScore } };
@@ -3488,25 +4610,16 @@ function buildMermaid(model) {
 /* ============================================================
    RESULTS RENDERING
    ============================================================ */
-function showIssueContextBanner(issue) {
-  const banner = document.getElementById('issueContextBanner');
-  if (!banner) return;
-  const iconWrap = banner.querySelector('.severity-icon-wrap');
-  const textEl = banner.querySelector('.issue-context-text');
-  if (iconWrap) iconWrap.innerHTML = SEVERITY_ICONS[issue.severity] || '';
-  textEl.innerHTML =
-    '<strong>' + (issue.severity[0].toUpperCase() + issue.severity.slice(1)) + ':</strong> ' + issue.message +
-    (issue.suggestion ? ' <em>Try:</em> ' + issue.suggestion : '');
-  banner.classList.remove('hidden');
+// Mark the active flag in the sidebar so users know which one they're on.
+function markActiveFlag(el) {
+  document.querySelectorAll('.issue.issue-active').forEach(n => n.classList.remove('issue-active'));
+  if (el) el.classList.add('issue-active');
 }
-function hideIssueContextBanner() {
-  const banner = document.getElementById('issueContextBanner');
-  if (banner) banner.classList.add('hidden');
+function clearActiveFlag() {
+  document.querySelectorAll('.issue.issue-active').forEach(n => n.classList.remove('issue-active'));
 }
-// Wire banner dismiss button once on load
+// Wire dismiss buttons for the remaining inline banners
 (function wireBannerButtons() {
-  const dismiss = document.getElementById('issueContextDismissBtn');
-  if (dismiss) dismiss.addEventListener('click', hideIssueContextBanner);
   const sDismiss = document.getElementById('autoSpellingBannerDismiss');
   if (sDismiss) sDismiss.addEventListener('click', () => {
     const b = document.getElementById('autoSpellingBanner');
@@ -3517,31 +4630,44 @@ function hideIssueContextBanner() {
     const b = document.getElementById('manualFixBanner');
     if (b) b.classList.add('hidden');
   });
+  const cDismiss = document.getElementById('combinedFixBannerDismiss');
+  if (cDismiss) cDismiss.addEventListener('click', () => {
+    const b = document.getElementById('combinedFixBanner');
+    if (b) b.classList.add('hidden');
+  });
 })();
 
 function attachIssueNav() {
   document.querySelectorAll('.issue.issue-clickable').forEach(el => {
-    const target = el.dataset.targetActivity;
+    const targetId = el.dataset.targetId || 'doc-title';
     const idx = parseInt(el.dataset.issueIdx, 10);
     const handler = () => {
-      // Show the issue context banner so the user retains context after navigating
-      const issue = currentIssues[idx];
-      if (issue) showIssueContextBanner(issue);
-      // Switch to Generated document tab
-      const docTab = document.querySelector('.results-tabs .tab[data-rtab="document"]');
-      if (docTab) docTab.click();
-      // Find the activity div by ID and scroll/highlight
+      // Mark this flag as active in the sidebar
+      markActiveFlag(el);
+      // If the user is currently looking at the workflow, switch back to the
+      // document tab so the highlighted section is visible.
+      if (typeof window.switchOutputTab === 'function') window.switchOutputTab('doc');
       setTimeout(() => {
-        const id = 'doc-activity-' + target.replace('.', '-');
-        const activityEl = document.getElementById(id);
-        if (activityEl) {
-          activityEl.scrollIntoView({ behavior: 'smooth', block: 'center' });
-          activityEl.classList.remove('activity-highlight');
-          // Force reflow so the animation re-triggers
-          void activityEl.offsetWidth;
-          activityEl.classList.add('activity-highlight');
+        const targetEl = document.getElementById(targetId);
+        // Bring the doc area into the page viewport first
+        const wrap = document.querySelector('.doc-with-sidebar') || document.querySelector('.doc-preview-wrap');
+        if (wrap) wrap.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        if (targetEl) {
+          setTimeout(() => {
+            targetEl.scrollIntoView({ behavior: 'smooth', block: 'center' });
+            targetEl.classList.remove('activity-highlight');
+            // Force reflow so the animation re-triggers
+            void targetEl.offsetWidth;
+            targetEl.classList.add('activity-highlight');
+          }, 220);
+        } else {
+          // No element found — scroll happened to the doc area at least
+          if (typeof showToast === 'function') {
+            showToast('Jumped to the document \u2014 couldn\'t pin-point the exact section.', 'info');
+          }
+          console.warn('[issue-click] target element not found:', targetId);
         }
-      }, 100);
+      }, 180);
     };
     el.addEventListener('click', handler);
     el.addEventListener('keydown', e => {
@@ -3552,55 +4678,43 @@ function attachIssueNav() {
 
 async function renderResults() {
   document.getElementById('resultsCard').classList.remove('hidden');
+  // Hide the input card now that results are showing — keeps the screen focused
+  // on the deliverable. Reset and 'Analyse another' bring it back.
+  document.getElementById('inputCard').classList.add('hidden');
   document.getElementById('resultsCard').scrollIntoView({ behavior: 'smooth' });
-  // Clear any previous issue-context banner from a prior run
-  hideIssueContextBanner();
-  // Default-land users on the Generated document tab so they see the deliverable first
-  const docTabBtn = document.querySelector('.results-tabs .tab[data-rtab="document"]');
-  if (docTabBtn) docTabBtn.click();
+  // Clear any previously-active flag from a prior run
+  clearActiveFlag();
+  // Reset to the document tab on each new analyse
+  if (typeof window.switchOutputTab === 'function') window.switchOutputTab('doc');
+  // No tabs to switch in the simplified UI — the document is always front-and-centre
 
-  // AU spelling auto-correct banner — show what was changed before analysis
-  const sBanner = document.getElementById('autoSpellingBanner');
-  const sText = document.getElementById('autoSpellingBannerText');
-  const fixes = (currentModel && currentModel._autoSpellingFixes) || [];
-  if (sBanner && sText) {
-    if (fixes.length > 0) {
-      // Group identical before→after pairs and count them
-      const byPair = {};
-      fixes.forEach(f => {
-        const key = f.before.toLowerCase() + '→' + f.after.toLowerCase();
-        if (!byPair[key]) byPair[key] = { before: f.before, after: f.after, count: 0 };
-        byPair[key].count += 1;
-      });
-      const pairs = Object.values(byPair).sort((a,b) => b.count - a.count);
-      const pairList = pairs.map(p =>
-        '<li><code>' + p.before + '</code> &rarr; <code>' + p.after + '</code>' +
-        (p.count > 1 ? ' <span style="color:#475569;">(×' + p.count + ')</span>' : '') + '</li>'
-      ).join('');
-      const totalWord = fixes.length === 1 ? 'spelling' : 'spellings';
-      sText.innerHTML =
-        '<strong>Australian English applied.</strong> We auto-corrected ' + fixes.length + ' American ' + totalWord +
-        ' before reviewing your content, so they wouldn\'t be flagged as unapproved verbs.' +
-        '<details><summary>What changed</summary><ul>' + pairList + '</ul></details>';
-      sBanner.classList.remove('hidden');
-    } else {
-      sBanner.classList.add('hidden');
-    }
-  }
-
-  // Manual auto-fix banner — show what was changed when 'Apply safe auto-fixes' was clicked
-  const mBanner = document.getElementById('manualFixBanner');
-  const mText = document.getElementById('manualFixBannerText');
-  const mLog = (currentModel && currentModel._manualAutoFixLog) || null;
-  if (mBanner && mText) {
-    if (mLog && mLog.length > 0) {
-      // Group by category, then by before->after pair within each category
+  // Combined "what changed automatically" banner — covers BOTH the AU-spelling
+  // pass (always silent, runs before rules) AND the safe auto-fix pass (now
+  // also silent — banned terms, doubled words, NOTE punctuation, task
+  // re-lettering, whitespace). Users see one consolidated panel listing
+  // everything we changed without asking.
+  const cBanner = document.getElementById('combinedFixBanner');
+  const cText = document.getElementById('combinedFixBannerText');
+  const spellingFixes = (currentModel && currentModel._autoSpellingFixes) || [];
+  const autoFixLog = (currentModel && currentModel._manualAutoFixLog) || [];
+  if (cBanner && cText) {
+    const total = spellingFixes.length + autoFixLog.length;
+    if (total > 0) {
+      // Group by category. AU spelling pairs use 'AU spelling' as their category.
       const byCat = {};
-      mLog.forEach(f => {
-        if (!byCat[f.category]) byCat[f.category] = {};
-        const key = (f.before || '').toLowerCase() + '->' + (f.after || '').toLowerCase();
-        if (!byCat[f.category][key]) byCat[f.category][key] = { before: f.before, after: f.after, count: 0 };
-        byCat[f.category][key].count += 1;
+      spellingFixes.forEach(f => {
+        const cat = 'AU spelling';
+        if (!byCat[cat]) byCat[cat] = {};
+        const key = (f.before||'').toLowerCase() + '->' + (f.after||'').toLowerCase();
+        if (!byCat[cat][key]) byCat[cat][key] = { before: f.before, after: f.after, count: 0 };
+        byCat[cat][key].count += 1;
+      });
+      autoFixLog.forEach(f => {
+        const cat = f.category || 'other';
+        if (!byCat[cat]) byCat[cat] = {};
+        const key = (f.before||'').toLowerCase() + '->' + (f.after||'').toLowerCase();
+        if (!byCat[cat][key]) byCat[cat][key] = { before: f.before, after: f.after, count: 0 };
+        byCat[cat][key].count += 1;
       });
       const sections = Object.keys(byCat).sort().map(cat => {
         const items = Object.values(byCat[cat]).sort((a,b) => b.count - a.count);
@@ -3612,56 +4726,63 @@ async function renderResults() {
         }).join('');
         return '<li><strong>' + cat + '</strong> &mdash; ' + items.reduce((s,i)=>s+i.count,0) + ' change' + (items.length===1?'':'s') + '<ul>' + list + '</ul></li>';
       }).join('');
-      const totalCount = mLog.length;
-      mText.innerHTML =
-        '<strong>Auto-fixes applied.</strong> We made ' + totalCount + ' mechanical change' + (totalCount===1?'':'s') +
-        ' to your content. Click <em>Undo auto-fixes</em> in the sidebar to revert.' +
+      cText.innerHTML =
+        '<strong>We tidied a few things automatically.</strong> ' +
+        total + ' small change' + (total===1?'':'s') +
+        ' applied (Australian spelling, banned terms, whitespace, NOTE punctuation, task re-lettering).' +
         '<details><summary>What changed</summary><ul>' + sections + '</ul></details>';
-      mBanner.classList.remove('hidden');
+      cBanner.classList.remove('hidden');
     } else {
-      mBanner.classList.add('hidden');
+      cBanner.classList.add('hidden');
     }
   }
 
-  // Summary — split into Process shape (neutral) + Findings (clickable severity buttons)
+  // Summary — single line + 3 action cards (no more process-shape / findings cards)
   const counts = currentIssues.reduce((acc, i) => { acc[i.severity] = (acc[i.severity]||0)+1; return acc; }, {});
-  const sb = document.getElementById('summaryGroups');
   const taskTotal = currentModel.activities.reduce(function(s,a){return s+a.tasks.length;},0);
-  const findingsBtn = (severity, label) =>
-    '<button class="summary-stat findings-stat ' + severity + '" type="button" data-jump-severity="' + severity + '" aria-label="Show ' + (counts[severity]||0) + ' ' + label.toLowerCase() + '">' +
-      SEVERITY_ICONS[severity] +
-      '<span class="num">' + (counts[severity]||0) + '</span>' +
-      '<span class="lbl">' + label + '</span>' +
-    '</button>';
-  sb.innerHTML =
-    '<div class="summary-group process-shape">' +
-      '<div class="summary-group-title">Process shape</div>' +
-      '<div class="summary-stats-row">' +
-        '<div class="summary-stat"><span class="num">' + currentModel.activities.length + '</span><span class="lbl">Activities</span></div>' +
-        '<div class="summary-stat"><span class="num">' + taskTotal + '</span><span class="lbl">Tasks</span></div>' +
-      '</div>' +
-    '</div>' +
-    '<div class="summary-group findings">' +
-      '<div class="summary-group-title">Findings &mdash; click to view</div>' +
-      '<div class="summary-stats-row">' +
-        findingsBtn('error', 'Errors') +
-        findingsBtn('warning', 'Warnings') +
-        findingsBtn('info', 'Suggestions') +
-      '</div>' +
-    '</div>';
-  // Wire up click-to-jump on findings stats — scroll the issues sidebar to that severity
-  sb.querySelectorAll('.findings-stat').forEach(btn => {
-    btn.addEventListener('click', () => {
-      const sev = btn.dataset.jumpSeverity;
-      // Make sure we're on the Document tab (which contains the sidebar)
-      const docTab = document.querySelector('.results-tabs .tab[data-rtab="document"]');
-      if (docTab && !docTab.classList.contains('active')) docTab.click();
-      setTimeout(() => {
-        const heading = document.querySelector('.doc-sidebar #issuesOut h3[data-severity="' + sev + '"]');
-        if (heading) heading.scrollIntoView({ behavior: 'smooth', block: 'start' });
-      }, 80);
-    });
-  });
+  const totalIssues = currentIssues.length;
+  const errorCount = counts.error || 0;
+  const warningCount = counts.warning || 0;
+  const suggestionCount = counts.info || 0;
+
+  // Summary line — concise stats with issue total highlighted when present
+  const summaryEl = document.getElementById('resultsSummaryLine');
+  if (summaryEl) {
+    const issuesPart = totalIssues === 0
+      ? '<span class="summary-issues zero">&#10003; No quality flags</span>'
+      : '<span class="summary-issues">' + totalIssues + ' quality flag' + (totalIssues===1?'':'s') + ' to review</span>';
+    summaryEl.innerHTML =
+      '<strong>' + currentModel.activities.length + '</strong> activities' +
+      '<span class="summary-dot">&middot;</span>' +
+      '<strong>' + taskTotal + '</strong> tasks' +
+      '<span class="summary-dot">&middot;</span>' +
+      issuesPart;
+  }
+
+  // Review issues action-card subtitle
+  const reviewSub = document.getElementById('reviewIssuesSub');
+  if (reviewSub) {
+    if (totalIssues === 0) {
+      reviewSub.textContent = 'No flags — looking good!';
+    } else {
+      const parts = [];
+      if (errorCount > 0) parts.push(errorCount + ' error' + (errorCount===1?'':'s'));
+      if (warningCount > 0) parts.push(warningCount + ' warning' + (warningCount===1?'':'s'));
+      if (suggestionCount > 0) parts.push(suggestionCount + ' suggestion' + (suggestionCount===1?'':'s'));
+      reviewSub.textContent = parts.join(' · ');
+    }
+  }
+
+  // Export action-card error badge — soft-gate visual indicator
+  const errBadge = document.getElementById('actionExportErrorBadge');
+  if (errBadge) {
+    if (errorCount > 0) {
+      errBadge.textContent = '⚠ ' + errorCount + ' error' + (errorCount===1?'':'s');
+      errBadge.classList.remove('hidden');
+    } else {
+      errBadge.classList.add('hidden');
+    }
+  }
 
   // Recommendation
   const r = currentRecommendation;
@@ -3675,45 +4796,124 @@ async function renderResults() {
     </div>
   `;
 
+  // Inline recommendation note — sits under the stats line. Only shown when the
+  // recommendation isn't a plain "make a process". A 'See why' link opens the
+  // recommendation modal with the full reasoning.
+  const recInline = document.getElementById('recommendationInline');
+  const recInlineText = document.getElementById('recommendationInlineText');
+  if (recInline && recInlineText) {
+    const isProcess = currentRecommendation && currentRecommendation.type === 'process';
+    if (!currentRecommendation || isProcess) {
+      recInline.classList.add('hidden');
+      recInlineText.textContent = '';
+    } else {
+      // Phrase the recommendation as a natural sentence
+      const titleLower = (currentRecommendation.title || '').toLowerCase();
+      let phrase = titleLower;
+      // Strip leading verbs like "Make ", "Create " for cleaner wording
+      phrase = phrase.replace(/^(make|create|build|produce)\s+/i, '');
+      // Make sure there's an article
+      if (!/^(a |an |the )/.test(phrase)) phrase = 'a ' + phrase;
+      recInlineText.textContent = 'We identified this as best suited for ' + phrase + '.';
+      recInline.classList.remove('hidden');
+    }
+  }
+
   // Issues
   const grouped = { error: [], warning: [], info: [] };
   currentIssues.forEach((i, idx) => { i._idx = idx; grouped[i.severity]?.push(i); });
   const renderIssue = (i) => {
-    // Try to extract an activity number from the location for click-to-navigate.
-    const numMatch = (i.location || '').match(/(\d+\.\d+)/);
-    const targetActivity = numMatch ? numMatch[1] : '';
-    const cls = 'issue ' + i.severity + (targetActivity ? ' issue-clickable' : '');
-    const tabAttr = targetActivity ? ' role="button" tabindex="0" data-target-activity="' + targetActivity + '" data-issue-idx="' + i._idx + '" aria-label="Jump to activity ' + targetActivity + '"' : '';
+    // Figure out the best place in the document to jump to. We use both the
+    // location string and the issue id, since most "field is missing" errors
+    // don't carry a location.
+    const targetId = resolveJumpTarget(i.location || '', i.message || '', i.id || '');
+    const isClickable = !!targetId;
+    const cls = 'issue ' + i.severity + (isClickable ? ' issue-clickable' : ' issue-static');
+    const tabAttr = isClickable
+      ? ' role="button" tabindex="0" data-target-id="' + targetId + '" data-issue-idx="' + i._idx + '" aria-label="Jump to ' + (i.location || 'document') + '"'
+      : '';
+    const affordance = isClickable
+      ? '<span class="issue-jump-hint" aria-hidden="true">' +
+          '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M7 17L17 7"/><polyline points="8 7 17 7 17 16"/></svg>' +
+          'Jump to section' +
+        '</span>'
+      : '<span class="issue-static-hint" aria-hidden="true">Process-wide</span>';
     return '<div class="' + cls + '"' + tabAttr + '>' +
       '<div class="row1">' +
-        '<span class="severity">' + (SEVERITY_ICONS[i.severity] || '') + ' ' + i.severity + '</span>' +
-        '<span class="source pill ' + i.source.toLowerCase() + '">' + i.source + '</span>' +
+        '<div class="issue-meta">' +
+          '<span class="severity">' + (SEVERITY_ICONS[i.severity] || '') + ' ' + i.severity + '</span>' +
+        '</div>' +
+        affordance +
       '</div>' +
       '<div class="message">' + i.message + '</div>' +
       (i.location ? '<div class="location">' + i.location + '</div>' : '') +
       (i.suggestion ? '<div class="suggestion"><strong>Try:</strong> ' + i.suggestion + '</div>' : '') +
       '</div>';
   };
-  // Auto-fix bar at top of issues panel
-  const autofixHtml = currentIssues.length === 0 ? '' :
-    '<div class="autofix-bar' + (modelBeforeAutoFix ? ' applied' : '') + '">' +
-      '<button class="btn btn-primary" id="autofixBtn" type="button">Apply safe auto-fixes</button>' +
-      (modelBeforeAutoFix ? '<button class="btn btn-secondary" id="autofixUndoBtn" type="button">Undo auto-fixes</button>' : '') +
-      '<span class="hint">Mechanical fixes only — spelling, banned terms, whitespace, doubled words, NOTE punctuation, task re-lettering. No content rewriting.</span>' +
-    '</div>';
-  // Wire up click-to-navigate for issue cards (added later via attachIssueNav)
+
+  // Map an issue to a DOM element ID inside the doc preview. Uses the issue's
+  // location string first, then falls back to its id for issues whose location
+  // isn't set (most "field is missing" errors). Returns null for process-wide
+  // flags that don't pin to a single section — these render non-clickable.
+  function resolveJumpTarget(location, message, id) {
+    const loc = (location || '').toLowerCase().trim();
+    const msg = (message || '').toLowerCase();
+    const iid = (id || '').toLowerCase();
+
+    // ---- id-based mapping for issues with no location field ----
+    const ID_TO_TARGET = {
+      'title-missing': 'doc-title',
+      'title-prefix': 'doc-title',
+      'title-verb': 'doc-title',
+      'no-trigger': 'doc-meta-trigger',
+      'no-inputs': 'doc-meta-inputs',
+      'no-outputs': 'doc-meta-outputs',
+      'no-owner': 'doc-meta-owner',
+      'no-expert': 'doc-meta-expert',
+      'owner-equals-expert': 'doc-meta-owner',
+      'no-objective': 'doc-objective',
+      'no-background': 'doc-background'
+    };
+    if (iid && ID_TO_TARGET[iid]) return ID_TO_TARGET[iid];
+
+    if (!loc) return null;
+    // Generic process-wide markers — not pinned to any one section
+    if (loc === 'process' || loc === 'process overall' || loc === 'overall' || loc === 'whole process' || loc === 'document') return null;
+
+    // Task X.Ya — exact task within an activity
+    const taskMatch = location.match(/(\d+)\.(\d+)\s*([a-z])\b/i);
+    if (taskMatch) {
+      return 'doc-task-' + taskMatch[1] + '-' + taskMatch[2] + '-' + taskMatch[3].toLowerCase();
+    }
+
+    // Activity X.Y
+    const numMatch = location.match(/(\d+)\.(\d+)/);
+    if (numMatch) {
+      return 'doc-activity-' + numMatch[1] + '-' + numMatch[2];
+    }
+
+    // Process-level locations
+    if (loc.includes('process title') || loc.includes('process name') || msg.includes('process title')) return 'doc-title';
+    if (loc.startsWith('owner') || loc.includes('process owner')) return 'doc-meta-owner';
+    if (loc.startsWith('expert') || loc.includes('process expert')) return 'doc-meta-expert';
+    if (loc.startsWith('trigger')) return 'doc-meta-trigger';
+    if (loc.startsWith('inputs')) return 'doc-meta-inputs';
+    if (loc.startsWith('outputs')) return 'doc-meta-outputs';
+    if (loc.startsWith('objective') || loc.includes('process objective')) return 'doc-objective';
+    if (loc.startsWith('background') || loc.includes('process background')) return 'doc-background';
+    if (loc.startsWith('procedure')) return 'doc-procedure';
+
+    // Unknown location — treat as process-wide, no jump
+    return null;
+  }
+  // Issues panel — fixes are now applied silently, so no manual button at the top.
   document.getElementById('issuesOut').innerHTML = currentIssues.length === 0
-    ? '<p>No issues found — your process meets the encoded rules.</p>'
-    : autofixHtml + '<div class="issues-scroll">' + (
+    ? '<p>No quality flags — your draft meets the encoded standards.</p>'
+    : '<div class="issues-scroll">' + (
         (grouped.error.length ? `<h3 data-severity="error">Errors</h3>${grouped.error.map(renderIssue).join('')}` : '') +
         (grouped.warning.length ? `<h3 data-severity="warning">Warnings</h3>${grouped.warning.map(renderIssue).join('')}` : '') +
         (grouped.info.length ? `<h3 data-severity="info">Suggestions</h3>${grouped.info.map(renderIssue).join('')}` : '')
       ) + '</div>';
-  // Wire auto-fix buttons if present
-  const afBtn = document.getElementById('autofixBtn');
-  if (afBtn) afBtn.addEventListener('click', autoFixAndRefresh);
-  const afUndoBtn = document.getElementById('autofixUndoBtn');
-  if (afUndoBtn) afUndoBtn.addEventListener('click', undoAutoFix);
 
   // Workflow — render with bpmn-js (Mermaid kept as fallback)
   const wf = document.getElementById('workflowRender');
@@ -3723,6 +4923,7 @@ async function renderResults() {
     try {
       if (bpmnViewer) { try { bpmnViewer.destroy(); } catch (e) {} }
       bpmnViewer = new BpmnJS({ container: wf });
+      window.bpmnViewer = bpmnViewer;
       const { warnings } = await bpmnViewer.importXML(currentBpmnXml);
       if (warnings && warnings.length) console.warn('BPMN warnings:', warnings);
       // Try to fit-viewport — if container is hidden (tab not active) this throws,
@@ -3776,26 +4977,30 @@ function renderDocPreview(m) {
     }
     return `<p><strong>${label}:</strong> ${escapeHtml(v)}</p>`;
   };
-  let html = `<h1>${escapeHtml(m.title || 'Untitled process')}${m.version ? ' <small>'+escapeHtml(m.version)+'</small>' : ''}</h1>`;
+  let html = `<h1 id="doc-title">${escapeHtml(m.title || 'Untitled process')}${m.version ? ' <small>'+escapeHtml(m.version)+'</small>' : ''}</h1>`;
   html += `<p class="generated-line">Generated: ${formatAusDate(new Date())}</p>`;
-  html += `<div class="meta">`;
-  html += `<p><strong>Owner:</strong> ${escapeHtml(m.owner||'—')}</p>`;
-  html += `<p><strong>Expert:</strong> ${escapeHtml(m.expert||'—')}</p>`;
-  html += metaField('Trigger', m.trigger);
-  html += metaField('Inputs', m.inputs);
-  html += metaField('Outputs', m.outputs);
+  html += `<div class="meta" id="doc-meta">`;
+  html += `<p id="doc-meta-owner"><strong>Owner:</strong> ${escapeHtml(m.owner||'—')}</p>`;
+  html += `<p id="doc-meta-expert"><strong>Expert:</strong> ${escapeHtml(m.expert||'—')}</p>`;
+  // Wrap each meta field with an ID so flags about trigger/inputs/outputs can jump here
+  html += `<div id="doc-meta-trigger">${metaField('Trigger', m.trigger)}</div>`;
+  html += `<div id="doc-meta-inputs">${metaField('Inputs', m.inputs)}</div>`;
+  html += `<div id="doc-meta-outputs">${metaField('Outputs', m.outputs)}</div>`;
   html += `</div>`;
-  if (m.objective) html += `<h2>Objective</h2><p>${escapeHtml(m.objective)}</p>`;
-  if (m.background) html += `<h2>Background</h2><p>${escapeHtml(m.background)}</p>`;
-  html += `<h2>Procedure</h2>`;
+  if (m.objective) html += `<h2 id="doc-objective">Objective</h2><p>${escapeHtml(m.objective)}</p>`;
+  if (m.background) html += `<h2 id="doc-background">Background</h2><p>${escapeHtml(m.background)}</p>`;
+  html += `<h2 id="doc-procedure">Procedure</h2>`;
   m.activities.forEach(a => {
     html += '<div class="activity" id="doc-activity-' + escapeHtml(a.number).replace('.', '-') + '"><div><span class="num">' + escapeHtml(a.number) + '</span> <strong>' + escapeHtml(a.title) + '</strong></div>';
     if (a.role) html += `<div class="role">Role: ${escapeHtml(a.role)}</div>`;
+    const actId = escapeHtml(a.number).replace('.', '-');
     a.tasks.forEach(t => {
-      html += `<div class="task"><strong>${escapeHtml(t.letter)}.</strong> ${escapeHtml(t.text)}</div>`;
+      const taskId = 'doc-task-' + actId + '-' + escapeHtml(t.letter);
+      html += `<div class="task" id="${taskId}"><strong>${escapeHtml(t.letter)}.</strong> ${escapeHtml(t.text)}</div>`;
     });
-    a.notes.forEach(n => {
-      html += `<div class="note"><strong>NOTE:</strong> ${escapeHtml(n.title)}<br>${escapeHtml(n.body||'')}</div>`;
+    a.notes.forEach((n, ni) => {
+      const noteId = 'doc-note-' + actId + '-' + ni;
+      html += `<div class="note" id="${noteId}"><strong>NOTE:</strong> ${escapeHtml(n.title)}<br>${escapeHtml(n.body||'')}</div>`;
     });
     a.links.forEach(l => {
       html += `<div class="task" style="font-style:italic;color:#666;">&#x21B3; Linked process: ${escapeHtml(l.name)}</div>`;
@@ -4219,8 +5424,111 @@ async function generateBlankTemplate() {
 /* ============================================================
    Wire up download buttons
    ============================================================ */
+
+// ============================================================
+// NINTEX IMPORT EXPORT — produces a .txt file with the three
+// Nintex import blocks: Title, Supporting Fields, Process Map.
+// Format spec from the Nintex Process Mapping Coach persona:
+//   - Activity line: name [Role Name]  (square brackets, no prefix)
+//   - Task lines: SINGLE TAB (U+0009) indent — never spaces
+//   - NOTE: question on its own line, answer on the next line, no blank line between
+//   - Blank line between activity blocks
+//   - No labels (PROCESS:, ACTIVITY:, TASK:, Role:)
+// ============================================================
+function buildNintexImport(m) {
+  const TAB = '\t'; // U+0009 — Nintex requires this exact character
+  if (!m) return '';
+
+  // Block 1: Title (verb-first, single line)
+  const title = (m.title || 'Untitled process').trim().replace(/\s+/g, ' ');
+
+  // Block 2: Supporting fields — Process Objective + Process Background
+  const objective = (m.objective || '').trim() ||
+    'Describes how ' + (title.charAt(0).toLowerCase() + title.slice(1)) + ' is performed and what it produces.';
+  const background = (m.background || '').trim() ||
+    'Background details (scope, owners, frequency, compliance context) were not captured. Edit before importing.';
+  const supporting =
+    'Process Objective\n' + objective + '\n\n' +
+    'Process Background\n' + background;
+
+  // Block 3: Process Map — activities, tasks, NOTEs in Nintex format
+  const stripLabel = (s) => (s || '').replace(/^\s*(?:PROCESS|ACTIVITY|TASK|Role)\s*:\s*/i, '').trim();
+  const cleanRole = (role) => {
+    const r = stripLabel(role).replace(/[\[\]]/g, '').trim();
+    return r || 'Staff Role';
+  };
+  const cleanLine = (s) => stripLabel(s).replace(/\s+/g, ' ').trim();
+  const stripLeadingLetter = (s) => cleanLine(s).replace(/^[a-zA-Z]\.\s*/, '').replace(/^[a-zA-Z]\s+/, '');
+
+  const blocks = (m.activities || []).map(a => {
+    const actName = cleanLine(a.title || ('Activity ' + (a.number || '')));
+    const role = cleanRole(a.role);
+    const lines = [actName + ' [' + role + ']'];
+    (a.tasks || []).forEach(t => {
+      const taskText = stripLeadingLetter(t.text || '').trim();
+      if (taskText) lines.push(TAB + taskText);
+    });
+    (a.notes || []).forEach(n => {
+      let q = cleanLine(n.title || '');
+      if (q && !/[?]\s*$/.test(q)) q = q.replace(/[.,;:]+$/, '') + '?';
+      const a = cleanLine(n.body || '');
+      if (q) {
+        lines.push('NOTE: ' + q);
+        if (a) lines.push(a);
+      }
+    });
+    return lines.join('\n');
+  });
+
+  const processMap = blocks.join('\n\n');
+
+  // Combine into a single downloadable file with section headers so the
+  // user can copy each block into the right Nintex field.
+  return [
+    '====================================================',
+    '1. PROCESS TITLE — paste into the Nintex title field',
+    '====================================================',
+    '',
+    title,
+    '',
+    '',
+    '====================================================',
+    '2. SUPPORTING FIELDS — paste the Process Objective and Process Background into Nintex separately',
+    '====================================================',
+    '',
+    supporting,
+    '',
+    '',
+    '====================================================',
+    '3. PROCESS MAP — paste this entire block into the Nintex import field',
+    '====================================================',
+    '',
+    processMap,
+    ''
+  ].join('\n');
+}
+
+function downloadNintexImport() {
+  if (!currentModel) {
+    showToast('Run Analyse first so we have a process to export.', 'error');
+    return;
+  }
+  const text = buildNintexImport(currentModel);
+  const safeTitle = (currentModel.title || 'process').toLowerCase()
+    .replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '').slice(0, 60) || 'process';
+  const blob = new Blob([text], { type: 'text/plain;charset=utf-8' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = safeTitle + '-nintex-import.txt';
+  document.body.appendChild(a); a.click(); a.remove();
+  setTimeout(() => URL.revokeObjectURL(url), 1000);
+  showToast('Nintex import file downloaded — three blocks ready to paste into Nintex.', 'success', 6000);
+}
+
 document.getElementById('downloadDocxBtn').addEventListener('click', downloadAsDocx);
 document.getElementById('downloadPdfBtn').addEventListener('click', downloadAsPdf);
+document.getElementById('downloadNintexBtn').addEventListener('click', downloadNintexImport);
 document.getElementById('downloadSvgBtn').addEventListener('click', downloadSvg);
 document.getElementById('downloadPngBtn').addEventListener('click', downloadPng);
 // downloadBpmn button removed (was too technical for users)
@@ -4233,39 +5541,18 @@ const TOUR_STEPS = [
     target: null
   },
   {
-    title: 'Your starting point',
-    body: 'Three ways to start: <strong>I\'m new here</strong>, <strong>Import draft</strong>, or <strong>Manual build</strong>. We\'ll walk through each.',
-    target: '.starter-grid'
+    title: 'Your input',
+    body: 'Paste your draft here, or drop a <strong>.docx</strong>, <strong>.pdf</strong> or <strong>.txt</strong> file. The tool reads either.',
+    target: '#inputZone'
   },
   {
-    title: 'I\'m new here',
-    body: 'You picked this path. A sample CoVE process is loaded so you can see how the tool works. Best for first-timers.',
-    target: '#starterSampleBtn'
-  },
-  {
-    title: 'Import draft',
-    body: 'Upload an existing process as <strong>.docx</strong>, <strong>.pdf</strong>, or <strong>.txt</strong>. The tool parses it, reviews it against the standards, and generates a polished version. Best for cleaning up a draft.',
-    target: '#starterUploadBtn'
-  },
-  {
-    title: 'Manual build',
-    body: 'Opens a guided form: name, owner, trigger, then activities and tasks. Best for writing from scratch.',
-    target: '#starterBuildBtn'
-  },
-  {
-    title: 'The input',
-    body: 'The sample is loaded in <strong>Paste / type</strong>. Notice the structure: process name, owner, trigger, activities, roles, tasks, NOTEs \u2014 this is the format the tool reads.',
-    target: '#pasteArea',
-    before: () => {
-      const pasteTab = document.querySelector('#inputCard .tabs .tab[data-tab="paste"]');
-      if (pasteTab) pasteTab.click();
-      const ta = document.getElementById('pasteArea');
-      if (ta && !ta.value.trim()) ta.value = SAMPLE_PROCESS;
-    }
+    title: 'Or try the sample',
+    body: 'Three small links below the input let you load a sample, switch to a guided form, download a blank template, or browse for a file.',
+    target: '.input-alt-row'
   },
   {
     title: 'Click Analyse',
-    body: 'Click <strong>Analyse content</strong>. We\'ll run it now to show the results.',
+    body: 'Click <strong>Analyse content</strong>. We\'ll review your content against the standards.',
     target: '#analyseBtn',
     before: () => {
       const ta = document.getElementById('pasteArea');
@@ -4274,50 +5561,38 @@ const TOUR_STEPS = [
   },
   {
     title: 'The generated document',
-    body: 'A polished version of your process. <strong>Click to edit</strong>; download as Word or PDF.',
+    body: 'A polished version of your process. <strong>Click anywhere</strong> to edit \u2014 your edits flow into the export.',
     target: '#docPreview',
     before: () => {
-      if (!currentModel) document.getElementById('analyseBtn').click();
-      const t = document.querySelector('.results-tabs .tab[data-rtab="document"]');
-      if (t) t.click();
+      if (typeof currentModel === 'undefined' || !currentModel) {
+        document.getElementById('analyseBtn').click();
+      }
     },
-    waitMs: 600
+    waitMs: 700
   },
   {
     title: 'Issues and gaps',
-    body: 'Issues sit alongside your document. Click any issue to jump to where it occurs.',
-    target: '.doc-sidebar',
-    before: () => {
-      const t = document.querySelector('.results-tabs .tab[data-rtab="document"]');
-      if (t && !t.classList.contains('active')) t.click();
-    }
+    body: 'The sidebar lists anything that breaks the standards. Click an issue to jump to where it occurs in the document.',
+    target: '.doc-sidebar'
   },
   {
-    title: 'The visual workflow',
-    body: 'A swimlane diagram with one lane per role. Drag to pan, <strong>Ctrl + scroll</strong> to zoom. Download as SVG or PNG.',
-    target: '.results-tabs .tab[data-rtab="workflow"]',
-    before: () => {
-      const t = document.querySelector('.results-tabs .tab[data-rtab="workflow"]');
-      if (t) t.click();
-    }
+    title: 'Need help? Ask Copilot',
+    body: 'For conversational help \u2014 paste a draft, ask about a rule, get suggestions \u2014 use the <strong>Ask Copilot</strong> button. It opens a Microsoft 365 Copilot agent in a new tab.',
+    target: '.sidebar-cta'
   },
   {
-    title: 'Decide what to make',
-    body: 'Tells you whether your content suits a <strong>process map</strong>, a <strong>guide</strong>, or both \u2014 with reasoning from the standards.',
-    target: '.results-tabs .tab[data-rtab="recommendation"]',
-    before: () => {
-      const t = document.querySelector('.results-tabs .tab[data-rtab="recommendation"]');
-      if (t) t.click();
-    }
+    title: 'Export your output',
+    body: 'When you\'re happy, click <strong>Export</strong> to download as Word, PDF, or Nintex import format.',
+    target: '#exportMenuBtn'
   },
   {
     title: 'The menu',
-    body: 'The <strong>Menu</strong> (top right) holds the writing guide, standards reference, About, and links to ask PBT for help or log an issue.',
+    body: 'The <strong>Menu</strong> in the header (top right) holds the writing guide, the standards reference, About this tool, and links to ask PBT for help or log an issue.',
     target: '#burgerBtn'
   },
   {
     title: 'You\'re ready',
-    body: 'That\'s it. Replace the sample with your own content and Analyse \u2014 or open the Menu any time for help.',
+    body: 'That\'s it. Replace the sample with your own content and click Analyse \u2014 or open the Menu any time for help.',
     target: null
   }
 ];
@@ -4342,6 +5617,8 @@ function startTour() {
 function endTour() {
   if (!tourOverlayEl) return;
   tourOverlayEl.classList.remove('active');
+  // Mark the tour as seen so first-time-users get auto-tour but returning users skip
+  try { localStorage.setItem('cove-tour-completed', '1'); } catch (e) {}
 }
 function showTourStep(i) {
   const step = TOUR_STEPS[i];
@@ -4472,82 +5749,103 @@ document.addEventListener('keydown', e => {
   if (e.key === 'Escape' && aboutModal && aboutModal.getAttribute('aria-hidden') === 'false') closeAbout();
 });
 
-// Starter buttons (item 1)
-const inputWorkArea = document.getElementById('inputWorkArea');
-function revealInputArea(tabName) {
-  if (inputWorkArea) inputWorkArea.hidden = false;
-  // Reset button is always visible; nothing extra to do here
-  if (tabName) {
-    const tab = document.querySelector('#inputCard .tabs .tab[data-tab="' + tabName + '"]');
-    if (tab) tab.click();
+// Alt-link handlers for the simplified home (replaces starter cards + tabs)
+
+function loadSampleIntoPaste() {
+  const ta = document.getElementById('pasteArea');
+  if (ta) ta.value = SAMPLE_PROCESS;
+  const inputForm = document.getElementById('inputForm');
+  const inputPaste = document.getElementById('inputPaste');
+  if (inputForm) inputForm.hidden = true;
+  if (inputPaste) inputPaste.hidden = false;
+  const toggleLabel = document.getElementById('toggleFormLabel');
+  if (toggleLabel) toggleLabel.textContent = 'Build with a form instead';
+  // Make sure the user actually SEES the sample load
+  const inputZone = document.getElementById('inputZone');
+  if (inputZone) {
+    inputZone.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    inputZone.classList.remove('sample-flash');
+    void inputZone.offsetWidth;
+    inputZone.classList.add('sample-flash');
   }
-  // Smoothly scroll to it so the user sees what just appeared
-  setTimeout(() => {
-    const tabsEl = document.querySelector('#inputWorkArea .tabs');
-    if (tabsEl) tabsEl.scrollIntoView({ behavior: 'smooth', block: 'start' });
-  }, 80);
+  if (ta) {
+    setTimeout(() => {
+      ta.focus();
+      ta.scrollTop = 0;
+    }, 350);
+  }
+  if (typeof showToast === 'function') {
+    showToast('Sample loaded \u2014 click Analyse content when ready.', 'info', 4500);
+  }
 }
 
-const SAMPLE_PROCESS = [
-  'Process name: CoVE - PBT - Create new TeachVE Hub Site Page',
-  'Owner: Deanne Roze',
-  'Expert: Natalie Gray',
-  'Trigger: New content required on TeachVE Hub site',
-  'Inputs: None',
-  'Outputs: New page published on TeachVE Hub site',
-  'Objective: To create new content on the TeachVE site so staff have access to current information.',
-  '',
-  '1.0 Plan and write content',
-  'Role: CoVE - Subject Matter Expert (SME)',
-  'a Define the purpose and scope of the new content',
-  'b Determine if the content requires a new page or updates to an existing page',
-  'c Write the content for the page',
-  '',
-  '2.0 Draft page in TeachVE',
-  'Role: CoVE - Teach VE Site Member',
-  'a Develop a draft of the new SharePoint page',
-  'b Save the page as a draft',
-  'c Notify another site member or manager the page is ready for review',
-  '',
-  '3.0 Review page',
-  'Role: CoVE - Subject Matter Expert (SME)',
-  'a Check for grammar, spelling, style consistency and clarity',
-  'b Verify all links are functioning correctly',
-  '',
-  '4.0 Publish page',
-  'Role: CoVE - Teach VE Site Member',
-  'a Publish the page',
-  'b Communicate to stakeholders about the new page'
-].join('\n');
+function toggleInputForm() {
+  const inputForm = document.getElementById('inputForm');
+  const inputPaste = document.getElementById('inputPaste');
+  const toggleLabel = document.getElementById('toggleFormLabel');
+  if (!inputForm || !inputPaste) return;
+  const showingForm = !inputForm.hidden;
+  if (showingForm) {
+    // Toggle back to paste view
+    inputForm.hidden = true;
+    inputPaste.hidden = false;
+    if (toggleLabel) toggleLabel.textContent = 'Build with form';
+  } else {
+    // Toggle to form view (textarea hidden, form fields shown)
+    inputForm.hidden = false;
+    inputPaste.hidden = true;
+    if (toggleLabel) toggleLabel.textContent = 'Back to paste';
+  }
+}
 
-const starterSample = document.getElementById('starterSampleBtn');
-if (starterSample) starterSample.addEventListener('click', () => {
-  // 'I\'m new here' launches the guided walkthrough. Reveal the input area first so the tour has somewhere to land.
-  revealInputArea('paste');
-  startTour();
+const trySampleLink = document.getElementById('trySampleLink');
+if (trySampleLink) trySampleLink.addEventListener('click', (e) => {
+  e.preventDefault();
+  loadSampleIntoPaste();
+  // First-time visitors get the tour automatically; returning users skip it.
+  let tourSeen = false;
+  try { tourSeen = !!localStorage.getItem('cove-tour-completed'); } catch (err) {}
+  if (!tourSeen) startTour();
 });
-const starterTemplate = document.getElementById('starterTemplateBtn');
-if (starterTemplate) starterTemplate.addEventListener('click', (e) => {
+
+const toggleFormLink = document.getElementById('toggleFormLink');
+if (toggleFormLink) toggleFormLink.addEventListener('click', (e) => {
+  e.preventDefault();
+  toggleInputForm();
+});
+
+const downloadTemplateLink = document.getElementById('downloadTemplateLink');
+if (downloadTemplateLink) downloadTemplateLink.addEventListener('click', (e) => {
   e.preventDefault();
   if (typeof generateBlankTemplate === 'function') generateBlankTemplate();
-  else showToast('Template generator not loaded.', 'error');
+  else if (typeof showToast === 'function') showToast('Template generator not loaded.', 'error');
 });
 
-// "I'm building from scratch" — jumps to the guided form tab
-const starterBuild = document.getElementById('starterBuildBtn');
-if (starterBuild) starterBuild.addEventListener('click', () => {
-  revealInputArea('form');
-  setTimeout(() => {
-    const firstField = document.getElementById('formTitle');
-    if (firstField) firstField.focus();
-  }, 250);
-  showToast('Fill in each section, then click Analyse.', 'info');
+const browseFileLink = document.getElementById('browseFileLink');
+if (browseFileLink) browseFileLink.addEventListener('click', (e) => {
+  e.preventDefault();
+  document.getElementById('fileInput').click();
 });
-const starterUpload = document.getElementById('starterUploadBtn');
-if (starterUpload) starterUpload.addEventListener('click', () => {
-  revealInputArea('upload');
-  setTimeout(() => document.getElementById('fileInput').click(), 200);
+
+// The drop-zone's inline "or click to browse" link also opens the file picker
+const dropzoneBrowseBtn = document.getElementById('dropzoneBrowseBtn');
+if (dropzoneBrowseBtn) dropzoneBrowseBtn.addEventListener('click', (e) => {
+  e.preventDefault();
+  document.getElementById('fileInput').click();
 });
+
+// Paste-area toggle removed — the input zone is always visible now.
+// File picker still ensures paste view is the active sub-view (in case the form was open).
+const fileInput2 = document.getElementById('fileInput');
+if (fileInput2) fileInput2.addEventListener('change', () => {
+  if (fileInput2.files && fileInput2.files.length) {
+    const inputForm = document.getElementById('inputForm');
+    const inputPaste = document.getElementById('inputPaste');
+    if (inputForm) inputForm.hidden = true;
+    if (inputPaste) inputPaste.hidden = false;
+  }
+});
+
 document.getElementById('zoomInBtn').addEventListener('click', () => {
   if (!bpmnViewer) return;
   const c = bpmnViewer.get('canvas');
@@ -4567,8 +5865,10 @@ document.getElementById('zoomFitBtn').addEventListener('click', () => {
 const analyseAnotherBtn = document.getElementById('analyseAnotherBtn');
 if (analyseAnotherBtn) {
   analyseAnotherBtn.addEventListener('click', () => {
+    document.getElementById('resultsCard').classList.add('hidden');
+    document.getElementById('inputCard').classList.remove('hidden');
     document.getElementById('inputCard').scrollIntoView({ behavior: 'smooth', block: 'start' });
-    showToast('Edit input above, then click Analyse.', 'info');
+    showToast('Edit your input above, then click Analyse content.', 'info');
   });
 }
 
@@ -4810,6 +6110,382 @@ if (restoreBtn) {
     document.body.appendChild(a); a.click(); a.remove();
     setTimeout(() => URL.revokeObjectURL(url), 1000);
     showToast('Writing guide downloaded.', 'success');
+  });
+})();
+
+
+// Ask Copilot — render a launch-CTA panel that opens the M365 Copilot agent in
+// a new tab. M365 Copilot pages can't be iframed (Microsoft blocks them via
+// X-Frame-Options), so we use the launch pattern instead.
+(function wireCopilot() {
+  const tabWrap = document.getElementById('copilotTabWrap');
+  const modalWrap = document.getElementById('copilotModalWrap');
+  const modal = document.getElementById('copilotModal');
+  const askBtn = document.getElementById('askCopilotBtn');
+  const closeBtn = document.getElementById('copilotModalClose');
+  const closeFooter = document.getElementById('copilotModalCloseFooter');
+
+  function emptyState() {
+    return '<div class="copilot-empty">' +
+      '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>' +
+      '<h3>Copilot agent not configured yet</h3>' +
+      '<p>Paste the published agent URL into the <code>COPILOT_AGENT_URL</code> constant in this file.</p>' +
+      '</div>';
+  }
+
+  function launchPanel(url) {
+    const safeUrl = String(url).replace(/"/g, '&quot;');
+    return '<div class="copilot-launch">' +
+      '<svg class="copilot-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/><path d="M9 9h6M9 13h4"/></svg>' +
+      '<h3>Open the CoVE Process Coach</h3>' +
+      '<p>A specialist Microsoft 365 Copilot agent trained on RMIT process writing standards. Ask questions about the standards, paste a draft for review, or get help refining an activity.</p>' +
+      (currentModel ? '<p class="copilot-tip"><strong>Tip:</strong> click <em>Copy generated document</em> first, then paste it into the agent so it has your content as context.</p>' : '<p class="copilot-tip"><strong>Tip:</strong> Analyse a draft first, then come back here so you can copy the generated document before opening the agent.</p>') +
+      '<div class="copilot-actions">' +
+        '<button class="copilot-copy-btn" type="button" data-copilot-copy ' + (currentModel ? '' : 'disabled') + '>' +
+          'Copy generated document' +
+        '</button>' +
+        '<a class="copilot-launch-btn" href="' + safeUrl + '" target="_blank" rel="noopener" data-copilot-launch>' +
+          'Open in Microsoft 365 Copilot' +
+          '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>' +
+        '</a>' +
+      '</div>' +
+    '</div>';
+  }
+
+  function fill(wrap) {
+    if (!wrap) return;
+    wrap.innerHTML = (COPILOT_AGENT_URL && COPILOT_AGENT_URL.trim().length > 0)
+      ? launchPanel(COPILOT_AGENT_URL.trim())
+      : emptyState();
+  }
+
+  // Wire the Copy button (delegated since we may re-render)
+  function wireCopyButtons(scope) {
+    if (!scope) return;
+    scope.querySelectorAll('[data-copilot-copy]').forEach(btn => {
+      if (btn.dataset.wired) return;
+      btn.dataset.wired = '1';
+      btn.addEventListener('click', async () => {
+        const docEl = document.getElementById('docPreview');
+        if (!docEl) {
+          if (typeof showToast === 'function') showToast('Run Analyse first.', 'error');
+          return;
+        }
+        // Plain-text version of the editable doc, for friendly pasting into chat
+        const text = docEl.innerText || docEl.textContent || '';
+        try {
+          await navigator.clipboard.writeText(text);
+          if (typeof showToast === 'function') showToast('Generated document copied to clipboard. Paste it into the agent for context.', 'success', 5000);
+        } catch (err) {
+          if (typeof showToast === 'function') showToast('Could not copy automatically. Select the text in the document and copy manually (Ctrl+C).', 'error');
+        }
+      });
+    });
+  }
+
+  fill(tabWrap);
+  wireCopyButtons(tabWrap);
+
+  // Modal: lazy-fill on first open so we re-evaluate currentModel each time
+  function openModal() {
+    if (!modal) return;
+    fill(modalWrap);
+    wireCopyButtons(modalWrap);
+    modal.setAttribute('aria-hidden', 'false');
+  }
+  function closeModal() {
+    if (modal) modal.setAttribute('aria-hidden', 'true');
+  }
+  if (askBtn) askBtn.addEventListener('click', openModal);
+  if (closeBtn) closeBtn.addEventListener('click', closeModal);
+  if (closeFooter) closeFooter.addEventListener('click', closeModal);
+  if (modal) modal.addEventListener('click', e => { if (e.target === modal) closeModal(); });
+  document.addEventListener('keydown', e => {
+    if (e.key === 'Escape' && modal && modal.getAttribute('aria-hidden') === 'false') closeModal();
+  });
+
+  // Re-render the tab panel after analysis runs (so the Copy button enables)
+  // Hook into the existing renderResults via a MutationObserver on docPreview's parent.
+  const docHost = document.getElementById('resultsCard');
+  if (docHost) {
+    const observer = new MutationObserver(() => {
+      if (currentModel && tabWrap) {
+        fill(tabWrap);
+        wireCopyButtons(tabWrap);
+      }
+    });
+    observer.observe(docHost, { attributes: true, attributeFilter: ['class'] });
+  }
+})();
+
+
+
+// ============================================================
+// SIMPLIFIED RESULTS — wire 3-action cards + issues modal + export modal (soft gate)
+// ============================================================
+(function wireRestructuredResults() {
+  // Quality flags side panel — toggle the sidebar next to the document
+  const docSidebar = document.getElementById('docSidebar');
+  const docSidebarClose = document.getElementById('docSidebarClose');
+  const reviewIssuesBtn = document.getElementById('reviewIssuesBtn');
+  function openFlagsSidebar() {
+    if (!docSidebar) return;
+    docSidebar.hidden = false;
+    // Set the intro text based on the current flag count
+    const intro = document.getElementById('issuesModalIntro');
+    if (intro && typeof currentIssues !== 'undefined') {
+      const total = currentIssues.length;
+      intro.textContent = total === 0
+        ? 'No quality flags — your draft meets the encoded standards.'
+        : 'Click any flag to jump to where it occurs in the document. The document stays editable beside this panel.';
+    }
+    // Mark the Review card as active so the user can see the state
+    if (reviewIssuesBtn) reviewIssuesBtn.classList.add('is-active');
+    // Scroll the document area into view so the user sees the panel open
+    const docWrap = document.querySelector('.doc-with-sidebar');
+    if (docWrap) docWrap.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  }
+  function closeFlagsSidebar() {
+    if (docSidebar) docSidebar.hidden = true;
+    if (reviewIssuesBtn) reviewIssuesBtn.classList.remove('is-active');
+  }
+  if (reviewIssuesBtn) reviewIssuesBtn.addEventListener('click', openFlagsSidebar);
+  if (docSidebarClose) docSidebarClose.addEventListener('click', closeFlagsSidebar);
+
+  // Action card "Ask Copilot" — same behaviour as the burger-menu Ask Copilot
+  const actionAsk = document.getElementById('actionAskCopilotBtn');
+  const copilotModal = document.getElementById('copilotModal');
+  if (actionAsk && copilotModal) {
+    actionAsk.addEventListener('click', () => {
+      const modalWrap = document.getElementById('copilotModalWrap');
+      if (modalWrap && typeof launchPanelForCopilot === 'function') {
+        modalWrap.innerHTML = launchPanelForCopilot();
+      }
+      copilotModal.setAttribute('aria-hidden', 'false');
+    });
+  }
+
+  // Export modal — soft gate when there are errors
+  const exportModal = document.getElementById('exportModal');
+  const actionExport = document.getElementById('actionExportBtn');
+  const exportClose = document.getElementById('exportModalClose');
+  const exportCloseFooter = document.getElementById('exportModalCloseFooter');
+  const exportWarning = document.getElementById('exportWarning');
+  const exportWarningCount = document.getElementById('exportWarningCount');
+  const exportReviewBtn = document.getElementById('exportReviewBtn');
+  function openExportModal() {
+    if (!exportModal) return;
+    // Show / hide soft-gate warning based on error count
+    const errorCount = (currentIssues || []).filter(i => i.severity === 'error').length;
+    if (exportWarning && exportWarningCount) {
+      if (errorCount > 0) {
+        exportWarningCount.textContent = String(errorCount);
+        exportWarning.classList.remove('hidden');
+      } else {
+        exportWarning.classList.add('hidden');
+      }
+    }
+    exportModal.setAttribute('aria-hidden', 'false');
+  }
+  function closeExportModal() { if (exportModal) exportModal.setAttribute('aria-hidden', 'true'); }
+  if (actionExport) actionExport.addEventListener('click', openExportModal);
+  if (exportClose) exportClose.addEventListener('click', closeExportModal);
+  if (exportCloseFooter) exportCloseFooter.addEventListener('click', closeExportModal);
+  if (exportModal) exportModal.addEventListener('click', e => { if (e.target === exportModal) closeExportModal(); });
+  if (exportReviewBtn) exportReviewBtn.addEventListener('click', () => {
+    closeExportModal();
+    // Open the side panel (if not already open) and scroll the doc area into view
+    openFlagsSidebar();
+  });
+  // Close export modal after picking a format
+  ['downloadDocxBtn','downloadPdfBtn','downloadNintexBtn'].forEach(id => {
+    const b = document.getElementById(id);
+    if (b) b.addEventListener('click', () => setTimeout(closeExportModal, 80));
+  });
+
+  // Esc closes the export modal (the flag sidebar has its own close button)
+  document.addEventListener('keydown', e => {
+    if (e.key !== 'Escape') return;
+    if (exportModal && exportModal.getAttribute('aria-hidden') === 'false') closeExportModal();
+  });
+})();
+
+// ============================================================
+// SIMPLIFIED RESULTS UI — wire sidebar buttons, modals, export menu
+// ============================================================
+(function wireSimplifiedResultsUI() {
+  // Sidebar Ask Copilot button — opens the existing Copilot modal (the same one
+  // that the burger-menu "Ask Copilot" item opens).
+  const sidebarAsk = document.getElementById('sidebarAskCopilotBtn');
+  const copilotModal = document.getElementById('copilotModal');
+  if (sidebarAsk && copilotModal) {
+    sidebarAsk.addEventListener('click', () => {
+      // Re-fill the modal so the iframe/launch panel reflects the latest currentModel
+      const modalWrap = document.getElementById('copilotModalWrap');
+      if (modalWrap && typeof launchPanelForCopilot === 'function') {
+        modalWrap.innerHTML = launchPanelForCopilot();
+      }
+      copilotModal.setAttribute('aria-hidden', 'false');
+    });
+  }
+
+  // Output tabs — Generated document / Visual workflow. Lives next to the sidebar
+  // so flags stay visible regardless of which view is active.
+  const outputTabDoc = document.getElementById('outputTabDoc');
+  const outputTabFlow = document.getElementById('outputTabFlow');
+  const outputPaneDoc = document.getElementById('outputPaneDoc');
+  const outputPaneFlow = document.getElementById('outputPaneFlow');
+  function switchOutputTab(target) {
+    const showFlow = target === 'flow';
+    if (outputTabDoc) {
+      outputTabDoc.classList.toggle('is-active', !showFlow);
+      outputTabDoc.setAttribute('aria-selected', String(!showFlow));
+    }
+    if (outputTabFlow) {
+      outputTabFlow.classList.toggle('is-active', showFlow);
+      outputTabFlow.setAttribute('aria-selected', String(showFlow));
+    }
+    if (outputPaneDoc) {
+      outputPaneDoc.hidden = showFlow;
+      outputPaneDoc.classList.toggle('is-active', !showFlow);
+    }
+    if (outputPaneFlow) {
+      outputPaneFlow.hidden = !showFlow;
+      outputPaneFlow.classList.toggle('is-active', showFlow);
+    }
+    // bpmn-js needs the container sized — re-fit after the pane becomes visible
+    if (showFlow) {
+      const fitAndTheme = () => {
+        if (!window.bpmnViewer) return;
+        try { window.bpmnViewer.get('canvas').zoom('fit-viewport', 'auto'); } catch (e) {}
+        if (typeof applyBpmnTheme === 'function') applyBpmnTheme('nintex');
+      };
+      requestAnimationFrame(() => requestAnimationFrame(fitAndTheme));
+      setTimeout(fitAndTheme, 200);
+    }
+  }
+  // Expose so attachIssueNav can switch back to the doc tab before scrolling
+  window.switchOutputTab = switchOutputTab;
+  if (outputTabDoc) outputTabDoc.addEventListener('click', () => switchOutputTab('doc'));
+  if (outputTabFlow) outputTabFlow.addEventListener('click', () => switchOutputTab('flow'));
+  // Keyboard left/right navigation between the tabs
+  [outputTabDoc, outputTabFlow].forEach(tab => {
+    if (!tab) return;
+    tab.addEventListener('keydown', e => {
+      if (e.key === 'ArrowRight' || e.key === 'ArrowLeft') {
+        e.preventDefault();
+        const next = (tab === outputTabDoc) ? outputTabFlow : outputTabDoc;
+        if (next) { next.focus(); next.click(); }
+      }
+    });
+  });
+
+  // Recommendation modal — same pattern
+  const recModal = document.getElementById('recommendationModal');
+  const recOpenBtn = document.getElementById('recommendationInlineBtn');
+  const recCloseBtn = document.getElementById('recommendationModalClose');
+  const recCloseFooter = document.getElementById('recommendationModalCloseFooter');
+  function openRecommendationModal() { if (recModal) recModal.setAttribute('aria-hidden', 'false'); }
+  function closeRecommendationModal() { if (recModal) recModal.setAttribute('aria-hidden', 'true'); }
+  if (recOpenBtn) recOpenBtn.addEventListener('click', openRecommendationModal);
+  if (recCloseBtn) recCloseBtn.addEventListener('click', closeRecommendationModal);
+  if (recCloseFooter) recCloseFooter.addEventListener('click', closeRecommendationModal);
+  if (recModal) recModal.addEventListener('click', e => { if (e.target === recModal) closeRecommendationModal(); });
+
+  // Esc closes the recommendation modal
+  document.addEventListener('keydown', e => {
+    if (e.key !== 'Escape') return;
+    if (recModal && recModal.getAttribute('aria-hidden') === 'false') closeRecommendationModal();
+  });
+
+  // Export menu — single button replaces three download buttons
+  const exportBtn = document.getElementById('exportMenuBtn');
+  const exportDropdown = document.getElementById('exportDropdown');
+  const exportWrap = document.getElementById('exportMenuWrap');
+  function openExport() {
+    if (!exportDropdown || !exportBtn) return;
+    exportDropdown.setAttribute('aria-hidden', 'false');
+    exportBtn.setAttribute('aria-expanded', 'true');
+  }
+  function closeExport() {
+    if (!exportDropdown || !exportBtn) return;
+    exportDropdown.setAttribute('aria-hidden', 'true');
+    exportBtn.setAttribute('aria-expanded', 'false');
+  }
+  if (exportBtn) exportBtn.addEventListener('click', (e) => {
+    e.stopPropagation();
+    if (exportDropdown.getAttribute('aria-hidden') === 'false') closeExport(); else openExport();
+  });
+  document.addEventListener('click', (e) => {
+    if (exportWrap && !exportWrap.contains(e.target)) closeExport();
+  });
+  // Close the dropdown after any export option is chosen
+  if (exportDropdown) {
+    exportDropdown.querySelectorAll('.export-option').forEach(opt => {
+      opt.addEventListener('click', () => setTimeout(closeExport, 50));
+    });
+  }
+})();
+
+// Helper: build the Copilot launch panel HTML on demand. Used by both the
+// sidebar CTA and the burger menu item so they show identical content.
+function launchPanelForCopilot() {
+  const url = COPILOT_AGENT_URL && COPILOT_AGENT_URL.trim();
+  if (!url) {
+    return '<div class="copilot-empty">' +
+      '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>' +
+      '<h3>Copilot agent not configured yet</h3>' +
+      '<p>Paste the published agent URL into the <code>COPILOT_AGENT_URL</code> constant.</p>' +
+    '</div>';
+  }
+  const safe = url.replace(/"/g, '&quot;');
+  const ctxTip = (typeof currentModel !== 'undefined' && currentModel)
+    ? '<div class="copilot-instructions">' +
+      '<strong>How to use this:</strong>' +
+      '<ol>' +
+        '<li>Click <strong>Copy generated document</strong> below.</li>' +
+        '<li>Click <strong>Open in Microsoft 365 Copilot</strong> &mdash; the agent opens in a new tab.</li>' +
+        '<li>In Copilot, pick the prompt <em>"Review my existing process"</em> (or type it).</li>' +
+        '<li>Paste the copied content. The agent will review it against the standards.</li>' +
+        '<li>Once reviewed, ask Copilot to <em>"create a Nintex-ready document"</em> and it\'ll produce the three import blocks ready to paste into Nintex.</li>' +
+      '</ol>' +
+    '</div>'
+    : '<div class="copilot-instructions">' +
+      '<strong>How to use this:</strong>' +
+      '<ol>' +
+        '<li>Click <strong>Open in Microsoft 365 Copilot</strong> &mdash; the agent opens in a new tab.</li>' +
+        '<li>Ask the agent for help: try <em>"I need to create a new process map from scratch"</em> to get a guided start.</li>' +
+        '<li>If you have a draft already, come back here, click Analyse, and use the Ask Copilot card on the results page.</li>' +
+      '</ol>' +
+    '</div>';
+  return '<div class="copilot-launch">' +
+    '<svg class="copilot-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/><path d="M9 9h6M9 13h4"/></svg>' +
+    '<h3>Open the CoVE Process Coach</h3>' +
+    '<p>A specialist Microsoft 365 Copilot agent trained on RMIT process writing standards. Ask questions, paste a draft for review, or get help refining an activity.</p>' +
+    ctxTip +
+    '<div class="copilot-actions">' +
+      '<button class="copilot-copy-btn" type="button" data-copilot-copy ' + (currentModel ? '' : 'disabled') + '>Copy generated document</button>' +
+      '<a class="copilot-launch-btn" href="' + safe + '" target="_blank" rel="noopener" data-copilot-launch>Open in Microsoft 365 Copilot' +
+        '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>' +
+      '</a>' +
+    '</div>' +
+  '</div>';
+}
+
+
+
+// Home-page "Ask Copilot first" link — opens the same Copilot modal so users
+// can ask for help before they have a draft to analyse.
+(function wireHomeCopilot() {
+  const homeAsk = document.getElementById('homeAskCopilotBtn');
+  const copilotModal = document.getElementById('copilotModal');
+  if (!homeAsk || !copilotModal) return;
+  homeAsk.addEventListener('click', () => {
+    const modalWrap = document.getElementById('copilotModalWrap');
+    if (modalWrap && typeof launchPanelForCopilot === 'function') {
+      modalWrap.innerHTML = launchPanelForCopilot();
+    }
+    copilotModal.setAttribute('aria-hidden', 'false');
   });
 })();
 
